@@ -1,0 +1,1249 @@
+
+==================== FINAL INTERFACE ====================
+2017-10-26 13:18:32.939113576 UTC
+
+interface pointless-hs-0.1.0.0-GwVh2N5kUKWGOs2l6I0wCu:Primitives 8002
+  interface hash: cdfeb0a3aec2af54afd812a37de0abd3
+  ABI hash: fdc5e52bc20f92ecf64226eefe084c7d
+  export-list hash: 927da6c639ffae5748ec461d4a0d5fc6
+  orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
+  flag hash: 98b768f82b68e5d7609c08567665dc92
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  Primitives.primitives
+module dependencies: Interpreter StackManip
+package dependencies: array-0.5.1.1@array-0.5.1.1 base-4.9.1.0
+                      containers-0.5.7.1@containers-0.5.7.1
+                      deepseq-1.4.2.0@deepseq-1.4.2.0 ghc-prim-0.5.0.0
+                      integer-gmp-1.0.0.1 time-1.6.0.1@time-1.6.0.1
+orphans: base-4.9.1.0:GHC.Base base-4.9.1.0:GHC.Float
+family instance modules: base-4.9.1.0:Control.Applicative
+                         base-4.9.1.0:Data.Complex base-4.9.1.0:Data.Either
+                         base-4.9.1.0:Data.Functor.Const base-4.9.1.0:Data.Functor.Identity
+                         base-4.9.1.0:Data.List.NonEmpty base-4.9.1.0:Data.Monoid
+                         base-4.9.1.0:Data.Semigroup base-4.9.1.0:Data.Type.Equality
+                         base-4.9.1.0:Data.Version base-4.9.1.0:Data.Void
+                         base-4.9.1.0:GHC.Exts base-4.9.1.0:GHC.Generics
+                         base-4.9.1.0:GHC.IO.Exception base-4.9.1.0:GHC.TypeLits
+                         containers-0.5.7.1@containers-0.5.7.1:Data.Map.Base
+                         containers-0.5.7.1@containers-0.5.7.1:Data.Set.Base
+import  -/  base-4.9.1.0:Debug.Trace a9edf3aec504f4423d8ba829ab373a25
+import  -/  base-4.9.1.0:GHC.Base c4231c43c07e46080a26bf94094c7aa1
+import  -/  base-4.9.1.0:GHC.Err 3bba35a16538d33d424682ce66876cdd
+import  -/  base-4.9.1.0:GHC.Num 00bfaa7b2f9d6084913c0697a8a49ec8
+import  -/  base-4.9.1.0:GHC.Real 82e4e59051a13dba1da63e1e970a69e6
+import  -/  base-4.9.1.0:Prelude 22dd289b8469a8fa8dc81cab7b237771
+import  -/  base-4.9.1.0:System.IO e4a64a8e3dce8616da54f0ee7104f7db
+import  -/  ghc-prim-0.5.0.0:GHC.Classes 0bdf3d057a415ec1b84a7b1994efbe47
+import  -/  Interpreter df20e2a78c0cc313b17847d5831fa842
+  exports: 9e51e7c901fb7af6b7c0f7bd0c19e3be
+  EnvPrimitive 6183a8bf1fd08a10c1f5867d11281320
+  Number 7753d0b51849e6e4867a3cb95381bbe1
+  Primitive 0674b4156f35a1733677b47d6a1b15a3
+  Quot 18560b3e9e4119b6d04f09a6cb0e3393
+  dumpStack b8dbd72e155ef9d36870b9e09d2f3079
+  format 89de6bea98c2db6ba098839e25eaa8e1
+  isTrue f2ea3de8fdfa315f1be499d427000888
+  runQuotation 9f42f292128b14a8ccede1aeda3bb975
+  toTruth b512aeb2826f53c0a38e82af39bf3af4
+import  -/  StackManip 9c8d696e74e567112753dcc78c9027a8
+  exports: 876e5922eb3064d002f48169ac3f35c2
+import  -/  time-1.6.0.1@time-1.6.0.1:Data.Time.Clock.POSIX efad62e13fac03dd30679954eca385be
+802a8b66f67bdf4594054067e147b4a1
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module
+                   Primitives.$trModule2
+                   Primitives.$trModule1) -}
+0d17f652a79cb2f70e248176694d81f6
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "Primitives"#) -}
+25fda9a1ca3791ef8130629aa3bf4cd3
+  $trModule2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS
+                   "pointless-hs-0.1.0.0-GwVh2N5kUKWGOs2l6I0wCu"#) -}
+0819d4b801f64ed9bd1ece339c523261
+  $wfail ::
+    GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, Interpreter.Stack #)
+  {- Arity: 1, Strictness: <B,A>b, Inline: [0] -}
+fbbcfc4a302a84d118ecae3f4940d2f0
+  $wfail1 ::
+    GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, [Interpreter.Value] #)
+  {- Arity: 1, Strictness: <B,A>b, Inline: [0] -}
+3fe84ac5c933ada0be43cd7d6a72b96b
+  $wprimitives ::
+    [Interpreter.Value]
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, [Interpreter.Value] #)
+  {- Arity: 2, Strictness: <L,U><S,U>, Inline: [0],
+     Unfolding: (\ (w :: [Interpreter.Value])
+                   (w1 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case Data.Time.Clock.CTimespec.getCTimespec1
+                        w1 of ds { (#,#) ipv ipv1 ->
+                 (# ipv,
+                    GHC.Types.:
+                      @ Interpreter.Value
+                      (Interpreter.Number
+                         (case ipv1 of ww { Data.Time.Clock.CTimespec.MkCTimespec ww1 ww2 ->
+                          case ww1
+                                 `cast`
+                               (Foreign.C.Types.N:CTime[0]) of ww3 { GHC.Int.I64# ww4 ->
+                          case ww2
+                                 `cast`
+                               (Foreign.C.Types.N:CLong[0]) of ww5 { GHC.Int.I64# ww6 ->
+                          case GHC.Real.$w$s$c/
+                                 (Data.Time.Clock.POSIX.$wgetPOSIXTime ww4 ww6)
+                                 GHC.Real.$fEnumRatio1
+                                 Data.Fixed.$fHasResolutionE5
+                                 GHC.Real.$fEnumRatio1 of ww7 { (#,#) ww8 ww9 ->
+                          GHC.Float.rationalToDouble ww8 ww9 } } } }))
+                      w #) }) -}
+bfdaf42792ad12f71537b2cd0b80b8de
+  $wprimitives1 ::
+    [Interpreter.Value] -> (# Interpreter.Value, [Interpreter.Value] #)
+  {- Arity: 1, Strictness: <S,1*U>, Inline: [0],
+     Unfolding: (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   []
+                   -> case Primitives.primitives50
+                      ret_ty (# Interpreter.Value, [Interpreter.Value] #)
+                      of {}
+                   : y ds
+                   -> case ds of wild1 {
+                        []
+                        -> case Primitives.primitives50
+                           ret_ty (# Interpreter.Value, [Interpreter.Value] #)
+                           of {}
+                        : x xs
+                        -> (# let {
+                                $j :: GHC.Prim.Void# -> Interpreter.Value
+                                  {- Arity: 1, Strictness: <L,A> -}
+                                = \ (w1 :: GHC.Prim.Void#)[OneShot] ->
+                                  case y of wild2 {
+                                    Interpreter.Symbol ipv
+                                    -> case Interpreter.isTrue1 ret_ty Interpreter.Value of {}
+                                    Interpreter.Number x1
+                                    -> case x1 of wild3 { GHC.Types.D# x2 ->
+                                       case GHC.Prim.tagToEnum#
+                                              @ GHC.Types.Bool
+                                              (GHC.Prim.==## x2 0.0##) of wild4 {
+                                         GHC.Types.False -> Interpreter.toTruth1
+                                         GHC.Types.True -> Interpreter.toTruth3 } }
+                                    Interpreter.Quot q
+                                    -> case q of wild3 {
+                                         [] -> Interpreter.toTruth3
+                                         : ds1 ds2 -> Interpreter.toTruth1 } }
+                              } in
+                              case x of wild2 {
+                                Interpreter.Symbol ipv
+                                -> case Interpreter.isTrue1 ret_ty Interpreter.Value of {}
+                                Interpreter.Number x1
+                                -> case x1 of wild3 { GHC.Types.D# x2 ->
+                                   case GHC.Prim.tagToEnum#
+                                          @ GHC.Types.Bool
+                                          (GHC.Prim.==## x2 0.0##) of wild4 {
+                                     GHC.Types.False -> Interpreter.toTruth1
+                                     GHC.Types.True -> $j GHC.Prim.void# } }
+                                Interpreter.Quot q
+                                -> case q of wild3 {
+                                     [] -> $j GHC.Prim.void# : ds1 ds2 -> Interpreter.toTruth1 } },
+                              xs #) } }) -}
+79125c516f29444f3508fe6519572ab0
+  $wprimitives2 ::
+    [Interpreter.Value] -> (# Interpreter.Value, [Interpreter.Value] #)
+  {- Arity: 1, Strictness: <S,1*U>, Inline: [0],
+     Unfolding: (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   []
+                   -> case Primitives.primitives50
+                      ret_ty (# Interpreter.Value, [Interpreter.Value] #)
+                      of {}
+                   : y ds
+                   -> case ds of wild1 {
+                        []
+                        -> case Primitives.primitives50
+                           ret_ty (# Interpreter.Value, [Interpreter.Value] #)
+                           of {}
+                        : x xs
+                        -> (# let {
+                                $j :: GHC.Prim.Void# -> Interpreter.Value
+                                  {- Arity: 1, Strictness: <L,A> -}
+                                = \ (w1 :: GHC.Prim.Void#)[OneShot] ->
+                                  case y of wild2 {
+                                    Interpreter.Symbol ipv
+                                    -> case Interpreter.isTrue1 ret_ty Interpreter.Value of {}
+                                    Interpreter.Number x1
+                                    -> case x1 of wild3 { GHC.Types.D# x2 ->
+                                       case GHC.Prim.tagToEnum#
+                                              @ GHC.Types.Bool
+                                              (GHC.Prim.==## x2 0.0##) of wild4 {
+                                         GHC.Types.False -> Interpreter.toTruth1
+                                         GHC.Types.True -> Interpreter.toTruth3 } }
+                                    Interpreter.Quot q
+                                    -> case q of wild3 {
+                                         [] -> Interpreter.toTruth3
+                                         : ds1 ds2 -> Interpreter.toTruth1 } }
+                              } in
+                              case x of wild2 {
+                                Interpreter.Symbol ipv
+                                -> case Interpreter.isTrue1 ret_ty Interpreter.Value of {}
+                                Interpreter.Number x1
+                                -> case x1 of wild3 { GHC.Types.D# x2 ->
+                                   case GHC.Prim.tagToEnum#
+                                          @ GHC.Types.Bool
+                                          (GHC.Prim.==## x2 0.0##) of wild4 {
+                                     GHC.Types.False -> $j GHC.Prim.void#
+                                     GHC.Types.True -> Interpreter.toTruth3 } }
+                                Interpreter.Quot q
+                                -> case q of wild3 {
+                                     [] -> Interpreter.toTruth3 : ds1 ds2 -> $j GHC.Prim.void# } },
+                              xs #) } }) -}
+20ff36280129a194f0f03e80add4264e
+  $wprimitives3 ::
+    [Interpreter.Value] -> (# Interpreter.Value, [Interpreter.Value] #)
+  {- Arity: 1, Strictness: <S,1*U>, Inline: [0] -}
+618f39dd70eb0c948b4b83c2222c8496
+  primitives :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives132
+                   Primitives.primitives1) -}
+e8456b6f5fda745dbe2677866bb594d7
+  primitives1 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives127
+                   Primitives.primitives2) -}
+bb6097426ed4b42b2f275622688c8750
+  primitives10 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives86
+                   Primitives.primitives11) -}
+3d836bf3495c412a64459b47678d395f
+  primitives100 ::
+    Interpreter.Vocabulary
+    -> [Interpreter.Value]
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, Interpreter.Stack #)
+  {- Arity: 3, Strictness: <L,U><S,1*U><S,U>,
+     Unfolding: (\ (vocab :: Interpreter.Vocabulary)
+                   (ds :: [Interpreter.Value])
+                   (eta :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case ds of wild {
+                   [] -> Primitives.$wfail eta
+                   : ds1 ds2
+                   -> case ds1 of wild1 {
+                        DEFAULT -> Primitives.$wfail eta
+                        Interpreter.Quot qelse
+                        -> case ds2 of wild2 {
+                             [] -> Primitives.$wfail eta
+                             : ds3 ds4
+                             -> case ds3 of wild3 {
+                                  DEFAULT -> Primitives.$wfail eta
+                                  Interpreter.Quot qthen
+                                  -> case ds4 of wild4 {
+                                       [] -> Primitives.$wfail eta
+                                       : ds5 xs
+                                       -> case ds5 of wild5 {
+                                            DEFAULT -> Primitives.$wfail eta
+                                            Interpreter.Quot qif
+                                            -> case Interpreter.runInstruction3
+                                                      qif
+                                                      vocab
+                                                      xs
+                                                      eta of ds6 { (#,#) ipv ipv1 ->
+                                               case ipv1 of wild6 {
+                                                 []
+                                                 -> GHC.IO.failIO1
+                                                      @ Interpreter.Stack
+                                                      Primitives.primitives101
+                                                      ipv
+                                                 : result ds7
+                                                 -> case result of wild7 {
+                                                      Interpreter.Symbol ipv2
+                                                      -> case Interpreter.isTrue1
+                                                         ret_ty (# GHC.Prim.State#
+                                                                     GHC.Prim.RealWorld,
+                                                                   Interpreter.Stack #)
+                                                         of {}
+                                                      Interpreter.Number x
+                                                      -> case x of wild8 { GHC.Types.D# x1 ->
+                                                         case GHC.Prim.tagToEnum#
+                                                                @ GHC.Types.Bool
+                                                                (GHC.Prim.==## x1 0.0##) of wild9 {
+                                                           GHC.Types.False
+                                                           -> Interpreter.runInstruction3
+                                                                qthen
+                                                                vocab
+                                                                xs
+                                                                ipv
+                                                           GHC.Types.True
+                                                           -> Interpreter.runInstruction3
+                                                                qelse
+                                                                vocab
+                                                                xs
+                                                                ipv } }
+                                                      Interpreter.Quot q
+                                                      -> case q of wild8 {
+                                                           []
+                                                           -> Interpreter.runInstruction3
+                                                                qelse
+                                                                vocab
+                                                                xs
+                                                                ipv
+                                                           : ds8 ds9
+                                                           -> Interpreter.runInstruction3
+                                                                qthen
+                                                                vocab
+                                                                xs
+                                                                ipv } } } } } } } } } }) -}
+4297765f43d471fb6fb887a46816ae9f
+  primitives101 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString#
+                   "Pattern match failure in do expression at src/Primitives.hs:34:8-17"#) -}
+de462d9f28be5d180ceae28401a3732e
+  primitives102 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "ifte"#) -}
+9411903f31d948b0a31af175d72cb1c5
+  primitives103 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives107,
+                  Primitives.primitives104)) -}
+4e5efbd831bc19ead01dfe08dc1eedef
+  primitives104 :: Interpreter.WordP
+  {- Strictness: m3,
+     Unfolding: (Interpreter.EnvPrimitive
+                   Primitives.primitives105
+                     `cast`
+                   (<Interpreter.Vocabulary>_R
+                    ->_R <[Interpreter.Value]>_R
+                    ->_R Sym (GHC.Types.N:IO[0] <[Interpreter.Value]>_R))) -}
+a2d117790c9cacd3dea7a16d9f3899b4
+  primitives105 ::
+    Interpreter.Vocabulary
+    -> [Interpreter.Value]
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, [Interpreter.Value] #)
+  {- Arity: 3, Strictness: <L,A><S,1*U><S,U>,
+     Unfolding: InlineRule (3, True, False)
+                (\ (ds :: Interpreter.Vocabulary)
+                   (ds1 :: [Interpreter.Value])
+                   (eta :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case ds1 of wild {
+                   []
+                   -> case Primitives.primitives106
+                      ret_ty (# GHC.Prim.State# GHC.Prim.RealWorld,
+                                [Interpreter.Value] #)
+                      of {}
+                   : x xs
+                   -> case GHC.IO.Handle.Text.hPutStr2
+                             GHC.IO.Handle.FD.stdout
+                             (Interpreter.format x)
+                             GHC.Types.True
+                             eta of ds2 { (#,#) ipv ipv1 ->
+                      (# ipv, xs #) } }) -}
+0d01c6beed5e5ed3fdfe3d7651666e29
+  primitives106 :: GHC.Types.IO [Interpreter.Value]
+  {- Strictness: x -}
+7b4600dd719684a344d7c1afea9a0dfc
+  primitives107 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "."#) -}
+2ff44859271b7a96756fc8442f8e2bdd
+  primitives108 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives112,
+                  Primitives.primitives109)) -}
+fcf0d051700d986f863444faa3f2e592
+  primitives109 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives110) -}
+e5019e3f2c3671ca06848e1150c30783
+  primitives11 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives81
+                   Primitives.primitives12) -}
+e1916e19267307ef5cf02a8b6e9e9894
+  primitives110 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives111
+                   : ds ds1
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives111
+                        Interpreter.Quot r
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives111
+                             : ds2 xs
+                             -> case ds2 of wild3 {
+                                  DEFAULT -> Primitives.primitives111
+                                  Interpreter.Quot q
+                                  -> GHC.Types.:
+                                       @ Interpreter.Value
+                                       (Interpreter.Quot (GHC.Base.++ @ Interpreter.Value q r))
+                                       xs } } } }) -}
+7269f3e04c2fa5d655db761472457827
+  primitives111 :: [Interpreter.Value]
+  {- Strictness: x -}
+ab3fa5ac46cef72ba74cf831a0f2b523
+  primitives112 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "append"#) -}
+bf7c4e9c391fb9f237c2cc99637a7260
+  primitives113 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives117,
+                  Primitives.primitives114)) -}
+09dafa395e74e1b26d6c0e8d15baca95
+  primitives114 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives115) -}
+d589c98620127e4d6da3ccf2fa83deb6
+  primitives115 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives116
+                   : ds xs
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives116
+                        Interpreter.Quot ds1
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives116
+                             : x is
+                             -> GHC.Types.:
+                                  @ Interpreter.Value
+                                  (Interpreter.Quot is)
+                                  (GHC.Types.: @ Interpreter.Value x xs) } } }) -}
+c1838c3ba0d5bae03c976e35ec5a910e
+  primitives116 :: [Interpreter.Value]
+  {- Strictness: x -}
+ebdc171743d8fb68cbb6381e0c97e485
+  primitives117 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "uncons"#) -}
+3db165c7ecbea70532d01e0978f0fcb6
+  primitives118 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives122,
+                  Primitives.primitives119)) -}
+d850a526514cc45e05fb52cd9d8d99f4
+  primitives119 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives120) -}
+2a80dc6af031686ce69002317a6fb9e3
+  primitives12 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives77
+                   Primitives.primitives13) -}
+907f78e88d8620882ecce114e1a720ee
+  primitives120 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives121
+                   : ds ds1
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives121
+                        Interpreter.Quot q
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives121
+                             : x xs
+                             -> GHC.Types.:
+                                  @ Interpreter.Value
+                                  (Interpreter.Quot (GHC.Types.: @ Interpreter.Value x q))
+                                  xs } } }) -}
+10cc6b1b72ffe0138c1f60dee5673836
+  primitives121 :: [Interpreter.Value]
+  {- Strictness: x -}
+1b3f7452316a54ab10c9af69dc73bdee
+  primitives122 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "cons"#) -}
+12305c1c4aae3fbea1b6dbbb22f38f30
+  primitives123 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives126,
+                  Primitives.primitives124)) -}
+58695938ee3bf9f9363df9465d04454a
+  primitives124 :: Interpreter.WordP
+  {- Strictness: m3,
+     Unfolding: (Interpreter.EnvPrimitive
+                   Primitives.primitives125
+                     `cast`
+                   (<Interpreter.Vocabulary>_R
+                    ->_R <[Interpreter.Value]>_R
+                    ->_R Sym (GHC.Types.N:IO[0] <[Interpreter.Value]>_R))) -}
+136fd49d21adc7b536b8f8e83d960903
+  primitives125 ::
+    Interpreter.Vocabulary
+    -> [Interpreter.Value]
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, [Interpreter.Value] #)
+  {- Arity: 3, Strictness: <L,U><S,1*U><S,U>,
+     Unfolding: (\ (vocab :: Interpreter.Vocabulary)
+                   (ds :: [Interpreter.Value])
+                   (eta :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case ds of wild {
+                   [] -> Primitives.$wfail1 eta
+                   : ds1 ds2
+                   -> case ds1 of wild1 {
+                        DEFAULT -> Primitives.$wfail1 eta
+                        Interpreter.Quot q
+                        -> case ds2 of wild2 {
+                             [] -> Primitives.$wfail1 eta
+                             : x xs
+                             -> case Interpreter.runInstruction3
+                                       q
+                                       vocab
+                                       xs
+                                       eta of ds3 { (#,#) ipv ipv1 ->
+                                (# ipv, GHC.Types.: @ Interpreter.Value x ipv1 #) } } } }) -}
+34ce3df499587239ab314907d6245219
+  primitives126 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "dip"#) -}
+70870188f8470ceeb205c70ace2b78c9
+  primitives127 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives131,
+                  Primitives.primitives128)) -}
+2abb15b201bad0e87520d89fae9eef7c
+  primitives128 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives129) -}
+198e8e8ec6c84439f5e20b19462c1c9d
+  primitives129 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: [Interpreter.Value]) ->
+                 case ds of wild {
+                   [] -> Primitives.primitives130
+                   : x xs
+                   -> GHC.Types.:
+                        @ Interpreter.Value
+                        x
+                        (GHC.Types.: @ Interpreter.Value x xs) }) -}
+874ef90c8eb007dc4f3ea7ed0fabc2d5
+  primitives13 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives73
+                   Primitives.primitives14) -}
+5010580b61b776d0a70f4b58ad3ff768
+  primitives130 :: [Interpreter.Value]
+  {- Strictness: x -}
+4d03842e965de4202203487176b419cd
+  primitives131 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "dup"#) -}
+8337aa002be79567b57a20bdf465f043
+  primitives132 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives136,
+                  Primitives.primitives133)) -}
+1711447b177d7e5670ac366cb45fec2d
+  primitives133 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives134) -}
+cdc27a2e472b1f642f63347d0a8c47aa
+  primitives134 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: [Interpreter.Value]) ->
+                 case ds of wild { [] -> Primitives.primitives135 : x xs -> xs }) -}
+92b68df181ede343a6879e7ae4b332ed
+  primitives135 :: [Interpreter.Value]
+  {- Strictness: x -}
+35d6a14628b3bce7317fbca15116713a
+  primitives136 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "pop"#) -}
+97ac815fdde6a19d0173e333c4194a31
+  primitives14 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives69
+                   Primitives.primitives15) -}
+c29d4d140a1311ae6c16664a3b6e369f
+  primitives15 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives65
+                   Primitives.primitives16) -}
+758a4d53b98c755d587bb87425787772
+  primitives16 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives61
+                   Primitives.primitives17) -}
+899e12e0e8bab241e1405a76bd278835
+  primitives17 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives56
+                   Primitives.primitives18) -}
+0e07af8d338591b693d56a8ef2715ff4
+  primitives18 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives52
+                   Primitives.primitives19) -}
+564dd366ab57112c107288feaeb38292
+  primitives19 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives47
+                   Primitives.primitives20) -}
+9666bb735b8def68b47228a7bba5627f
+  primitives2 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives123
+                   Primitives.primitives3) -}
+b95f96627ce54470c005b437a039bf1c
+  primitives20 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives42
+                   Primitives.primitives21) -}
+86e1d2a46dd416dace8b94ed1490b76f
+  primitives21 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives38
+                   Primitives.primitives22) -}
+1e4266c984a4df9fb7a956121e3d5a41
+  primitives22 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives33
+                   Primitives.primitives23) -}
+23323937d9c29ffcbe40469066e047e1
+  primitives23 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives29
+                   Primitives.primitives24) -}
+ef6f4a1dd3af93a8bf1fc1a41224dcaa
+  primitives24 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives25
+                   (GHC.Types.[] @ ([GHC.Types.Char], Interpreter.WordP))) -}
+74bc7a7f2c36c785d7d316bcdd49b8e9
+  primitives25 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives28, Primitives.primitives26)) -}
+3a7f505eee97a6a9ca4e4a3733200c3d
+  primitives26 :: Interpreter.WordP
+  {- Strictness: m3,
+     Unfolding: (Interpreter.EnvPrimitive
+                   Primitives.primitives27
+                     `cast`
+                   (<Interpreter.Vocabulary>_R
+                    ->_R <[Interpreter.Value]>_R
+                    ->_R Sym (GHC.Types.N:IO[0] <[Interpreter.Value]>_R))) -}
+6298d050e5a725da3bc7c17727325203
+  primitives27 ::
+    Interpreter.Vocabulary
+    -> [Interpreter.Value]
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, [Interpreter.Value] #)
+  {- Arity: 3, Strictness: <L,A><L,U><S,U>, Inline: INLINE[0],
+     Unfolding: InlineRule (3, True, True)
+                (\ (w :: Interpreter.Vocabulary)
+                   (w1 :: [Interpreter.Value])
+                   (w2 :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 Primitives.$wprimitives w1 w2) -}
+59330a2921f4830297b149565b01c233
+  primitives28 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "time"#) -}
+b91210e9498b3683e9065976e886a31e
+  primitives29 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives32, Primitives.primitives30)) -}
+9d431cfbd2a640befebafc463b32e93d
+  primitives3 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives118
+                   Primitives.primitives4) -}
+53d9543510c3552885a251be3f6e453f
+  primitives30 :: Interpreter.WordP
+  {- Strictness: m3,
+     Unfolding: (Interpreter.EnvPrimitive
+                   Primitives.primitives31
+                     `cast`
+                   (<Interpreter.Vocabulary>_R
+                    ->_R <[Interpreter.Value]>_R
+                    ->_R Sym (GHC.Types.N:IO[0] <[Interpreter.Value]>_R))) -}
+c86c44f549a6ba7797a192865dca3e63
+  primitives31 ::
+    Interpreter.Vocabulary
+    -> [Interpreter.Value]
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, [Interpreter.Value] #)
+  {- Arity: 3, Strictness: <L,A><L,U><S,U>,
+     Unfolding: InlineRule (3, True, False)
+                (\ (ds :: Interpreter.Vocabulary)
+                   (s :: [Interpreter.Value])
+                   (eta :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case GHC.IO.Handle.Text.hPutStr2
+                        GHC.IO.Handle.FD.stdout
+                        (Interpreter.formatStack s)
+                        GHC.Types.True
+                        eta of ds1 { (#,#) ipv ipv1 ->
+                 (# ipv, s #) }) -}
+c5fa0e61a97dafbd33b153a1c2d1e4e8
+  primitives32 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "???"#) -}
+3143040b535e837eaf0084f2a2174e79
+  primitives33 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives37, Primitives.primitives34)) -}
+32bfa43e462cf035dd7fd829e240028e
+  primitives34 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives35) -}
+ac1bf3cbb70add3942f7b8e47e4262c9
+  primitives35 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: [Interpreter.Value]) ->
+                 case ds of wild {
+                   [] -> Primitives.primitives36
+                   : ds1 xs
+                   -> case ds1 of wild1 {
+                        DEFAULT -> Primitives.primitives36
+                        Interpreter.Quot ys -> ys } }) -}
+e286a6d1f7e22bdcd78dd0b4f4d5cf17
+  primitives36 :: [Interpreter.Value]
+  {- Strictness: x -}
+9ae11da590de8df43b548dc3d4f78810
+  primitives37 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "unstack"#) -}
+8f05b6708a1bb391211f8abca3f9c087
+  primitives38 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives41, Primitives.primitives39)) -}
+d53816fc264bf8a95fe75bf895ff2326
+  primitives39 :: Interpreter.WordP
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives40) -}
+05a520b756c5c8158b6c85c2eae072da
+  primitives4 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives113
+                   Primitives.primitives5) -}
+d3a64ecbf09bfb84f3b115099be381ee
+  primitives40 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, HasNoCafRefs, Strictness: <L,U>m2,
+     Unfolding: InlineRule (1, True, False)
+                (\ (xs :: [Interpreter.Value]) ->
+                 GHC.Types.: @ Interpreter.Value (Interpreter.Quot xs) xs) -}
+102b2eef244ea15a6facd016cd0a9540
+  primitives41 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "stack"#) -}
+4fb238c3c507f223f240483778da60d0
+  primitives42 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives46, Primitives.primitives43)) -}
+7dedb4d84fd9ac7d57c01d2207fb9ce1
+  primitives43 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives44) -}
+d7f9d02420af0ecf194be97137270975
+  primitives44 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives45
+                   : x xs
+                   -> GHC.Types.:
+                        @ Interpreter.Value
+                        (case x of wild1 {
+                           Interpreter.Symbol ipv
+                           -> case Interpreter.isTrue1 ret_ty Interpreter.Value of {}
+                           Interpreter.Number x1
+                           -> case x1 of wild2 { GHC.Types.D# x2 ->
+                              case GHC.Prim.tagToEnum#
+                                     @ GHC.Types.Bool
+                                     (GHC.Prim.==## x2 0.0##) of wild3 {
+                                GHC.Types.False -> Interpreter.toTruth3
+                                GHC.Types.True -> Interpreter.toTruth1 } }
+                           Interpreter.Quot q
+                           -> case q of wild2 {
+                                [] -> Interpreter.toTruth1 : ds1 ds2 -> Interpreter.toTruth3 } })
+                        xs }) -}
+48e1c979bfb0a0381782e662bb3aa32c
+  primitives45 :: [Interpreter.Value]
+  {- Strictness: x -}
+89f059f4e05cce38e02fe8e92d23324c
+  primitives46 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "null"#) -}
+10be4f2a231144f1c8c269488c0d23ff
+  primitives47 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives51, Primitives.primitives48)) -}
+8d64af4d7ea6ce679c5ab69303284e91
+  primitives48 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives49) -}
+f2c69844040414e3b42998f8c459ff14
+  primitives49 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case Primitives.$wprimitives1 w of ww { (#,#) ww1 ww2 ->
+                 GHC.Types.: @ Interpreter.Value ww1 ww2 }) -}
+073dc2f86fb143187b295c6f450c6bfd
+  primitives5 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives108
+                   Primitives.primitives6) -}
+c80d5b8dcc34e381cd8910899f963c4a
+  primitives50 :: [Interpreter.Value]
+  {- Strictness: x -}
+c7b422ec198eba0aa869c7dc9699eb6d
+  primitives51 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "or"#) -}
+a0410f0f5c022be504be8681b07c12fc
+  primitives52 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives55, Primitives.primitives53)) -}
+f102a3a3a9d3a1e3858cc237a37f4690
+  primitives53 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives54) -}
+3697ab5d366b39596d1bfe455d88e4c5
+  primitives54 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case Primitives.$wprimitives2 w of ww { (#,#) ww1 ww2 ->
+                 GHC.Types.: @ Interpreter.Value ww1 ww2 }) -}
+b59dae0752d43d14eb440379ff5f46af
+  primitives55 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "and"#) -}
+1b87e9b3b5252c50ba3b9dcca679e108
+  primitives56 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives60, Primitives.primitives57)) -}
+602392e541e47aab1595d22110cb6184
+  primitives57 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives58) -}
+858b3666a7948cec24c61c66e049ef28
+  primitives58 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives59
+                   : ds ds1
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives59
+                        Interpreter.Number y
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives59
+                             : ds2 xs
+                             -> case ds2 of wild3 {
+                                  DEFAULT -> Primitives.primitives59
+                                  Interpreter.Number x
+                                  -> GHC.Types.:
+                                       @ Interpreter.Value
+                                       (case x of wild4 { GHC.Types.D# x1 ->
+                                        case y of wild5 { GHC.Types.D# y1 ->
+                                        case GHC.Prim.tagToEnum#
+                                               @ GHC.Types.Bool
+                                               (GHC.Prim.>## x1 y1) of wild6 {
+                                          GHC.Types.False -> Interpreter.toTruth3
+                                          GHC.Types.True -> Interpreter.toTruth1 } } })
+                                       xs } } } }) -}
+40807ddb7f4ccf377c4def851b9ceb80
+  primitives59 :: [Interpreter.Value]
+  {- Strictness: x -}
+840c2fa41d035f2d13ca01612ab01f3b
+  primitives6 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives103
+                   Primitives.primitives7) -}
+d69576f76847811ba1f679b90fe51330
+  primitives60 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# ">"#) -}
+b1b80beeb676dc3aa348f38cee1ce19b
+  primitives61 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives64, Primitives.primitives62)) -}
+8cc20e5306d89283077a93cf84233266
+  primitives62 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives63) -}
+39eee2806bdca74768685c1dcb4cd07b
+  primitives63 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives59
+                   : ds ds1
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives59
+                        Interpreter.Number y
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives59
+                             : ds2 xs
+                             -> case ds2 of wild3 {
+                                  DEFAULT -> Primitives.primitives59
+                                  Interpreter.Number x
+                                  -> GHC.Types.:
+                                       @ Interpreter.Value
+                                       (case x of wild4 { GHC.Types.D# x1 ->
+                                        case y of wild5 { GHC.Types.D# y1 ->
+                                        case GHC.Prim.tagToEnum#
+                                               @ GHC.Types.Bool
+                                               (GHC.Prim.<## x1 y1) of wild6 {
+                                          GHC.Types.False -> Interpreter.toTruth3
+                                          GHC.Types.True -> Interpreter.toTruth1 } } })
+                                       xs } } } }) -}
+08dbbfa64979f20c1b5170305225f9bc
+  primitives64 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "<"#) -}
+eb487c1c003605c9fd4a3ad45ca094b7
+  primitives65 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives68, Primitives.primitives66)) -}
+43a243d650a7913642cd1a68403d3fe9
+  primitives66 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives67) -}
+56f7c0d86bfce0bfc4bb4c0d2a5c7029
+  primitives67 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives59
+                   : ds ds1
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives59
+                        Interpreter.Number y
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives59
+                             : ds2 xs
+                             -> case ds2 of wild3 {
+                                  DEFAULT -> Primitives.primitives59
+                                  Interpreter.Number x
+                                  -> GHC.Types.:
+                                       @ Interpreter.Value
+                                       (case x of wild4 { GHC.Types.D# x1 ->
+                                        case y of wild5 { GHC.Types.D# y1 ->
+                                        case GHC.Prim.tagToEnum#
+                                               @ GHC.Types.Bool
+                                               (GHC.Prim.>=## x1 y1) of wild6 {
+                                          GHC.Types.False -> Interpreter.toTruth3
+                                          GHC.Types.True -> Interpreter.toTruth1 } } })
+                                       xs } } } }) -}
+b7a8d9752db622340940ee8ca997241a
+  primitives68 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# ">="#) -}
+55bcba2c6e0cc19a9e579642d42a6f12
+  primitives69 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives72, Primitives.primitives70)) -}
+7caca95386448380148c6d6cf115cf5f
+  primitives7 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives98
+                   Primitives.primitives8) -}
+e6801f4abc83d27eae470ffcf7309db8
+  primitives70 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives71) -}
+ecf6e4b01bb89e0e1c1089f186ea61af
+  primitives71 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives59
+                   : ds ds1
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives59
+                        Interpreter.Number y
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives59
+                             : ds2 xs
+                             -> case ds2 of wild3 {
+                                  DEFAULT -> Primitives.primitives59
+                                  Interpreter.Number x
+                                  -> GHC.Types.:
+                                       @ Interpreter.Value
+                                       (case x of wild4 { GHC.Types.D# x1 ->
+                                        case y of wild5 { GHC.Types.D# y1 ->
+                                        case GHC.Prim.tagToEnum#
+                                               @ GHC.Types.Bool
+                                               (GHC.Prim.<=## x1 y1) of wild6 {
+                                          GHC.Types.False -> Interpreter.toTruth3
+                                          GHC.Types.True -> Interpreter.toTruth1 } } })
+                                       xs } } } }) -}
+0fdd6aa67c05b83079d475daa35d1f42
+  primitives72 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "<="#) -}
+25f3fe26de340969e0ecda80552ef711
+  primitives73 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives76, Primitives.primitives74)) -}
+ad9b531ca08584e95f1fb672bd9aced3
+  primitives74 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives75) -}
+226f939e52909a70266ca808fcaf1a99
+  primitives75 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives59
+                   : ds ds1
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives59
+                        Interpreter.Number y
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives59
+                             : ds2 xs
+                             -> case ds2 of wild3 {
+                                  DEFAULT -> Primitives.primitives59
+                                  Interpreter.Number x
+                                  -> GHC.Types.:
+                                       @ Interpreter.Value
+                                       (case x of wild4 { GHC.Types.D# x1 ->
+                                        case y of wild5 { GHC.Types.D# y1 ->
+                                        case GHC.Prim.tagToEnum#
+                                               @ GHC.Types.Bool
+                                               (GHC.Prim.==## x1 y1) of wild6 {
+                                          GHC.Types.False -> Interpreter.toTruth3
+                                          GHC.Types.True -> Interpreter.toTruth1 } } })
+                                       xs } } } }) -}
+55abaeb3f68d4197bffad596e7231e59
+  primitives76 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "="#) -}
+3c08eb1f182753ddb2a5d2c6659d2613
+  primitives77 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives80, Primitives.primitives78)) -}
+94cd97d43af8e22ab9436c710af91a92
+  primitives78 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives79) -}
+50f7de1e7785c94214810f1dec1c2b89
+  primitives79 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case Primitives.$wprimitives3 w of ww { (#,#) ww1 ww2 ->
+                 GHC.Types.: @ Interpreter.Value ww1 ww2 }) -}
+5cf6e21bb4faaab518d6422f36d60c77
+  primitives8 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives94
+                   Primitives.primitives9) -}
+cc93544faa3aed7c95557705eb0f8263
+  primitives80 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "%"#) -}
+3fbc261b90c5d723105d6fe1498361fb
+  primitives81 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives85, Primitives.primitives82)) -}
+a162a935312fbed5267b4a7051688d78
+  primitives82 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives83) -}
+732e35383828e72890b6b3fc9d2991ab
+  primitives83 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives84
+                   : ds ds1
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives84
+                        Interpreter.Number y
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives84
+                             : ds2 xs
+                             -> case ds2 of wild3 {
+                                  DEFAULT -> Primitives.primitives84
+                                  Interpreter.Number x
+                                  -> GHC.Types.:
+                                       @ Interpreter.Value
+                                       (Interpreter.Number (GHC.Float.divideDouble x y))
+                                       xs } } } }) -}
+e96d4b59b164e2ef67a065441c650a96
+  primitives84 :: [Interpreter.Value]
+  {- Strictness: x -}
+d8856bf0c1bd351b87e1f47a2e467bc9
+  primitives85 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "/"#) -}
+cbf9a18e6b0bca25058e630a3dcf59c4
+  primitives86 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives89, Primitives.primitives87)) -}
+b3be46dfbda8fc6d770cb17019c7ac6b
+  primitives87 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives88) -}
+def6bbcba23cd734b49e9f22dff1825f
+  primitives88 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives84
+                   : ds ds1
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives84
+                        Interpreter.Number y
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives84
+                             : ds2 xs
+                             -> case ds2 of wild3 {
+                                  DEFAULT -> Primitives.primitives84
+                                  Interpreter.Number x
+                                  -> GHC.Types.:
+                                       @ Interpreter.Value
+                                       (Interpreter.Number (GHC.Float.timesDouble x y))
+                                       xs } } } }) -}
+411f0b8f4ca1f6e5f807e380ad6041d3
+  primitives89 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "*"#) -}
+d550e3596a9fe597a6f57119a7d62b88
+  primitives9 :: [([GHC.Types.Char], Interpreter.WordP)]
+  {- Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], Interpreter.WordP)
+                   Primitives.primitives90
+                   Primitives.primitives10) -}
+542a6aecbb48ffa0fbf75bfb91e1442d
+  primitives90 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives93, Primitives.primitives91)) -}
+f43dec52bd8f143e951318e4b0da5ef5
+  primitives91 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives92) -}
+c104f185637cb035351e567d7a6cbeb6
+  primitives92 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives84
+                   : ds ds1
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives84
+                        Interpreter.Number y
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives84
+                             : ds2 xs
+                             -> case ds2 of wild3 {
+                                  DEFAULT -> Primitives.primitives84
+                                  Interpreter.Number x
+                                  -> GHC.Types.:
+                                       @ Interpreter.Value
+                                       (Interpreter.Number (GHC.Float.minusDouble x y))
+                                       xs } } } }) -}
+7f853aa62c5f998adcbe06ccbd6ad281
+  primitives93 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "-"#) -}
+dfeb2876871d646a3d476eb8e81ac37d
+  primitives94 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives97, Primitives.primitives95)) -}
+a87f2a328f7c4b889649793ff2096167
+  primitives95 :: Interpreter.WordP
+  {- Strictness: m2,
+     Unfolding: (Interpreter.Primitive Primitives.primitives96) -}
+5113731dad010afb88231904e4f32167
+  primitives96 :: [Interpreter.Value] -> [Interpreter.Value]
+  {- Arity: 1, Strictness: <S,1*U>m2, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [Interpreter.Value]) ->
+                 case w of wild {
+                   [] -> Primitives.primitives84
+                   : ds ds1
+                   -> case ds of wild1 {
+                        DEFAULT -> Primitives.primitives84
+                        Interpreter.Number y
+                        -> case ds1 of wild2 {
+                             [] -> Primitives.primitives84
+                             : ds2 xs
+                             -> case ds2 of wild3 {
+                                  DEFAULT -> Primitives.primitives84
+                                  Interpreter.Number x
+                                  -> GHC.Types.:
+                                       @ Interpreter.Value
+                                       (Interpreter.Number (GHC.Float.plusDouble x y))
+                                       xs } } } }) -}
+7384614946a0de7f20ccfeed1c873cc4
+  primitives97 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "+"#) -}
+6b7147fc281f5a7a7946cf78f388ac62
+  primitives98 :: ([GHC.Types.Char], Interpreter.WordP)
+  {- Strictness: m,
+     Unfolding: ((Primitives.primitives102, Primitives.primitives99)) -}
+b100a12f319b8fc06594c93c1a2dd64b
+  primitives99 :: Interpreter.WordP
+  {- Strictness: m3,
+     Unfolding: (Interpreter.EnvPrimitive
+                   Primitives.primitives100
+                     `cast`
+                   (<Interpreter.Vocabulary>_R
+                    ->_R <[Interpreter.Value]>_R
+                    ->_R Sym (GHC.Types.N:IO[0] <Interpreter.Stack>_R))) -}
+vectorised variables:
+vectorised tycons:
+vectorised reused tycons:
+parallel variables:
+parallel tycons:
+trusted: none
+require own pkg trusted: False
+

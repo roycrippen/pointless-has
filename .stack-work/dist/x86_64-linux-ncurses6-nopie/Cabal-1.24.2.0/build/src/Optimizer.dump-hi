@@ -1,0 +1,450 @@
+
+==================== FINAL INTERFACE ====================
+2017-10-26 13:18:31.595863944 UTC
+
+interface pointless-hs-0.1.0.0-GwVh2N5kUKWGOs2l6I0wCu:Optimizer 8002
+  interface hash: 74d21b8fe964e6d21c0b0c3fa2f586fa
+  ABI hash: d41277b9764e6e2fb5b3b0b7400730a3
+  export-list hash: 38caee2ea781c959e4366fe71e2d6e02
+  orphan hash: 1bcabc5292e33b5238baef4b4f24f20f
+  flag hash: 98b768f82b68e5d7609c08567665dc92
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  Optimizer.analyzeQuotation
+  Optimizer.getStackEffect
+  Optimizer.knownEffects
+  Optimizer.optimizeVocabulary
+  Optimizer.optimizeWord
+  Optimizer.EffectMap
+module dependencies: Interpreter StackManip
+package dependencies: array-0.5.1.1@array-0.5.1.1 base-4.9.1.0*
+                      containers-0.5.7.1@containers-0.5.7.1
+                      deepseq-1.4.2.0@deepseq-1.4.2.0 ghc-prim-0.5.0.0
+                      integer-gmp-1.0.0.1
+orphans: base-4.9.1.0:GHC.Base base-4.9.1.0:GHC.Float
+family instance modules: base-4.9.1.0:Control.Applicative
+                         base-4.9.1.0:Data.Complex base-4.9.1.0:Data.Either
+                         base-4.9.1.0:Data.Functor.Const base-4.9.1.0:Data.Functor.Identity
+                         base-4.9.1.0:Data.List.NonEmpty base-4.9.1.0:Data.Monoid
+                         base-4.9.1.0:Data.Semigroup base-4.9.1.0:Data.Type.Equality
+                         base-4.9.1.0:Data.Version base-4.9.1.0:Data.Void
+                         base-4.9.1.0:GHC.Exts base-4.9.1.0:GHC.Generics
+                         base-4.9.1.0:GHC.IO.Exception base-4.9.1.0:GHC.TypeLits
+                         containers-0.5.7.1@containers-0.5.7.1:Data.Map.Base
+                         containers-0.5.7.1@containers-0.5.7.1:Data.Set.Base
+import  -/  base-4.9.1.0:Data.Foldable 3e0b6967a1da89945d0e2d47266337a2
+import  -/  base-4.9.1.0:Data.Traversable 556020d7cf3c4a34a774600512918a37
+import  -/  base-4.9.1.0:GHC.Base c4231c43c07e46080a26bf94094c7aa1
+import  -/  base-4.9.1.0:Prelude 22dd289b8469a8fa8dc81cab7b237771
+import  -/  containers-0.5.7.1@containers-0.5.7.1:Data.Map 20d4ffbee41965d03d6a989425473dc4
+import  -/  containers-0.5.7.1@containers-0.5.7.1:Data.Map.Base a29df8c78ba14cbcd4d90f97bd8d22e9
+import  -/  Interpreter df20e2a78c0cc313b17847d5831fa842
+  exports: 9e51e7c901fb7af6b7c0f7bd0c19e3be
+  Quot 18560b3e9e4119b6d04f09a6cb0e3393
+  Quotation 4ae7287873a575fd49745c815c7e7c45
+  StackEffect a16536987cbbff283a20d2c8957b19fd
+  Symbol 7af97db4476141993cb5811501c24985
+  Value 908924035e9f8e057b8171bc104c84dc
+  WordP 0558c564ca89afb19ceeea4f5c3abf41
+import  -/  StackManip 9c8d696e74e567112753dcc78c9027a8
+  exports: 876e5922eb3064d002f48169ac3f35c2
+  Swizzle 9f112b3e8c926ccfa676f0d26c477d6d
+  cons 7772c9b837769f455cc42c3540de3f82
+  dip 64130ead54ab57821aa46c0289048d49
+  dup ef096a4ee522e9d97760d42de4f3543c
+  isWellDefined 68b64b809426f115499faa515d171d33
+  nil 32449d3bfa5af0edbb12dccfe27a9f46
+  pop 155c83c5c7463ce0f61509c3e8d27a0b
+  reduce 5959add9b5e98a84ba5a3b22971da415
+8abdae19710a7446a7f897f3a122be2b
+  $sconcat :: [[a]] -> [a]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>,
+     Inline: INLINE (sat-args=1),
+     Unfolding: InlineRule (1, False, False)
+                (\ @ a (xs :: [[a]]) ->
+                 GHC.Base.build
+                   @ a
+                   (\ @ b (c :: a -> b -> b)[OneShot] (n :: b)[OneShot] ->
+                    GHC.Base.foldr
+                      @ [a]
+                      @ b
+                      (\ (x :: [a]) (y :: b)[OneShot] -> GHC.Base.foldr @ a @ b c y x)
+                      n
+                      xs)) -}
+c82a45e7b82d9b3ca7a7683073c9aadc
+  $sfromList ::
+    [([GHC.Types.Char], a)] -> Data.Map.Base.Map [GHC.Types.Char] a
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: (\ @ a (ds :: [([GHC.Types.Char], a)]) ->
+                 case ds of wild {
+                   [] -> Data.Map.Base.Tip @ [GHC.Types.Char] @ a
+                   : ds1 ds2
+                   -> case ds1 of wild1 { (,) kx x ->
+                      case ds2 of wild2 {
+                        []
+                        -> case kx of dt { DEFAULT ->
+                           Data.Map.Base.Bin
+                             @ [GHC.Types.Char]
+                             @ a
+                             1#
+                             dt
+                             x
+                             (Data.Map.Base.Tip @ [GHC.Types.Char] @ a)
+                             (Data.Map.Base.Tip @ [GHC.Types.Char] @ a) }
+                        : ipv ipv1
+                        -> case ipv of wild3 { (,) ky ds3 ->
+                           case GHC.Classes.$fOrd[]_$s$ccompare1 kx ky of wild4 {
+                             DEFAULT
+                             -> case kx of dt { DEFAULT ->
+                                Optimizer.$sfromList1
+                                  @ a
+                                  (Data.Map.Base.Bin
+                                     @ [GHC.Types.Char]
+                                     @ a
+                                     1#
+                                     dt
+                                     x
+                                     (Data.Map.Base.Tip @ [GHC.Types.Char] @ a)
+                                     (Data.Map.Base.Tip @ [GHC.Types.Char] @ a))
+                                  wild2 }
+                             GHC.Types.LT
+                             -> case kx of dt { DEFAULT ->
+                                Optimizer.$wpoly_go10
+                                  @ a
+                                  1#
+                                  (Data.Map.Base.Bin
+                                     @ [GHC.Types.Char]
+                                     @ a
+                                     1#
+                                     dt
+                                     x
+                                     (Data.Map.Base.Tip @ [GHC.Types.Char] @ a)
+                                     (Data.Map.Base.Tip @ [GHC.Types.Char] @ a))
+                                  wild2 } } } } } }) -}
+4da8e0f612c76794b8a7e65a4ca7cc3d
+  $sfromList1 ::
+    Data.Map.Base.Map [GHC.Types.Char] a1
+    -> [([GHC.Types.Char], a1)]
+    -> Data.Map.Base.Map [GHC.Types.Char] a1
+  {- Arity: 2, Strictness: <S,1*U><S,1*U> -}
+1a653bbc070b03ff61a977ea2796efca
+  $sinsert_$sgo10 ::
+    GHC.Base.String
+    -> a1
+    -> Data.Map.Base.Map GHC.Base.String a1
+    -> Data.Map.Base.Map GHC.Base.String a1
+  {- Arity: 3, Strictness: <S,1*U><L,U><S,1*U> -}
+79b97e07a553f530a2c624abc7c8a39d
+  $slookup1 ::
+    GHC.Base.String
+    -> Data.Map.Base.Map GHC.Base.String a -> GHC.Base.Maybe a
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U> -}
+ff988c9c6334779c7be8fa5aae13aea0
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module
+                   Optimizer.$trModule2
+                   Optimizer.$trModule1) -}
+f973fc3cc27b87a221d29e44a2d968dc
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "Optimizer"#) -}
+0834d829380af361655072e8519ae8ff
+  $trModule2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS
+                   "pointless-hs-0.1.0.0-GwVh2N5kUKWGOs2l6I0wCu"#) -}
+1c12ab2db8edd41939da0c804fea885e
+  $woptimizeWord ::
+    GHC.Base.String
+    -> Interpreter.WordP
+    -> Optimizer.EffectMap
+    -> (# (GHC.Base.String, Interpreter.WordP), Optimizer.EffectMap #)
+  {- Arity: 3, Strictness: <L,U><S,U><L,U>, Inline: [0],
+     Unfolding: (\ (ww :: GHC.Base.String)
+                   (ww1 :: Interpreter.WordP)
+                   (w :: Optimizer.EffectMap) ->
+                 case ww1 of wild {
+                   DEFAULT -> (# (ww, wild), w #)
+                   Interpreter.Quotation q
+                   -> letrec {
+                        go :: [Interpreter.Value] -> GHC.Base.Maybe [[StackManip.Swizzle]]
+                          {- Arity: 1, Strictness: <S,1*U> -}
+                        = \ (ds :: [Interpreter.Value]) ->
+                          case ds of wild1 {
+                            [] -> Optimizer.optimizeWord_z
+                            : y ys
+                            -> case y of wild2 {
+                                 Interpreter.Symbol s
+                                 -> case Optimizer.$slookup1 @ [StackManip.Swizzle] s w of wild3 {
+                                      GHC.Base.Nothing -> GHC.Base.Nothing @ [[StackManip.Swizzle]]
+                                      GHC.Base.Just x
+                                      -> case go ys of wild4 {
+                                           GHC.Base.Nothing
+                                           -> GHC.Base.Nothing @ [[StackManip.Swizzle]]
+                                           GHC.Base.Just x1
+                                           -> GHC.Base.Just
+                                                @ [[StackManip.Swizzle]]
+                                                (GHC.Types.: @ [StackManip.Swizzle] x x1) } }
+                                 Interpreter.Number ipv -> GHC.Base.Nothing @ [[StackManip.Swizzle]]
+                                 Interpreter.Quot ds1
+                                 -> case ds1 of wild3 {
+                                      []
+                                      -> case go ys of wild4 {
+                                           GHC.Base.Nothing
+                                           -> GHC.Base.Nothing @ [[StackManip.Swizzle]]
+                                           GHC.Base.Just x
+                                           -> GHC.Base.Just
+                                                @ [[StackManip.Swizzle]]
+                                                (GHC.Types.:
+                                                   @ [StackManip.Swizzle]
+                                                   Optimizer.getStackEffect2
+                                                   x) }
+                                      : ipv ipv1 -> GHC.Base.Nothing @ [[StackManip.Swizzle]] } } }
+                      } in
+                      case go q of wild1 {
+                        GHC.Base.Nothing -> (# (ww, wild), w #)
+                        GHC.Base.Just x
+                        -> case StackManip.reduce
+                                  (Optimizer.$sconcat @ StackManip.Swizzle x) of wild2 {
+                             []
+                             -> (# (ww, wild),
+                                   Optimizer.$sinsert_$sgo10
+                                     @ [StackManip.Swizzle]
+                                     ww
+                                     (GHC.Types.[] @ StackManip.Swizzle)
+                                     w #)
+                             : swizzle ds
+                             -> case ds of wild3 {
+                                  []
+                                  -> case swizzle of wild4 { StackManip.Swizzle ds1 ds2 ds3 ->
+                                     case ds2 of wild5 {
+                                       GHC.Base.Nothing
+                                       -> (# (ww, wild),
+                                             Optimizer.$sinsert_$sgo10
+                                               @ [StackManip.Swizzle]
+                                               ww
+                                               wild2
+                                               w #)
+                                       GHC.Base.Just ds4
+                                       -> (# (ww, Interpreter.StackEffect wild4),
+                                             Optimizer.$sinsert_$sgo10
+                                               @ [StackManip.Swizzle]
+                                               ww
+                                               (GHC.Types.:
+                                                  @ StackManip.Swizzle
+                                                  wild4
+                                                  (GHC.Types.[] @ StackManip.Swizzle))
+                                               w #) } }
+                                  : ipv ipv1
+                                  -> (# (ww, wild),
+                                        Optimizer.$sinsert_$sgo10
+                                          @ [StackManip.Swizzle]
+                                          ww
+                                          wild2
+                                          w #) } } } }) -}
+f0cc83e841fd81437e14c8101fe30c94
+  $wpoly_go10 ::
+    GHC.Prim.Int#
+    -> Data.Map.Base.Map [GHC.Types.Char] a
+    -> [([GHC.Types.Char], a)]
+    -> Data.Map.Base.Map [GHC.Types.Char] a
+  {- Arity: 3, Strictness: <L,U><S,1*U><S,1*U>, Inline: [0] -}
+c39bb7b6a04c9b283bfdb76416445ffa
+  type EffectMap =
+    Data.Map.Base.Map GHC.Base.String [StackManip.Swizzle]
+0557f4f44fa8978a9a727918608b15ca
+  analyzeQuotation ::
+    Data.Traversable.Traversable t =>
+    Optimizer.EffectMap
+    -> t Interpreter.Value -> GHC.Base.Maybe [StackManip.Swizzle]
+  {- Arity: 2, Strictness: <L,U(A,1*U,A,A,1*C1(C1(U)),A)><L,U>,
+     Unfolding: (\ @ (t :: * -> *)
+                   ($dTraversable :: Data.Traversable.Traversable t)
+                   (eta :: Optimizer.EffectMap) ->
+                 let {
+                   g :: Data.Foldable.Foldable t
+                   = Data.Traversable.$p2Traversable @ t $dTraversable
+                 } in
+                 let {
+                   g1 :: t Interpreter.Value
+                         -> GHC.Base.Maybe (t [StackManip.Swizzle])
+                   = Data.Traversable.mapM
+                       @ t
+                       $dTraversable
+                       @ GHC.Base.Maybe
+                       @ Interpreter.Value
+                       @ [StackManip.Swizzle]
+                       GHC.Base.$fMonadMaybe
+                       (Optimizer.getStackEffect eta)
+                 } in
+                 \ (x :: t Interpreter.Value) ->
+                 case g1 x of wild {
+                   GHC.Base.Nothing -> GHC.Base.Nothing @ [StackManip.Swizzle]
+                   GHC.Base.Just x1
+                   -> GHC.Base.Just
+                        @ [StackManip.Swizzle]
+                        (StackManip.reduce
+                           (Data.Foldable.concat @ t @ StackManip.Swizzle g x1)) }) -}
+2b6b138bae8e00be44d679760c051ff4
+  getStackEffect ::
+    Optimizer.EffectMap
+    -> Interpreter.Value -> GHC.Base.Maybe [StackManip.Swizzle]
+  {- Arity: 2, HasNoCafRefs, Strictness: <L,1*U><S,1*U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (effects :: Optimizer.EffectMap) (word :: Interpreter.Value) ->
+                 case word of wild {
+                   Interpreter.Symbol s
+                   -> Optimizer.$slookup1 @ [StackManip.Swizzle] s effects
+                   Interpreter.Number ipv -> GHC.Base.Nothing @ [StackManip.Swizzle]
+                   Interpreter.Quot ds
+                   -> case ds of wild1 {
+                        [] -> Optimizer.getStackEffect1
+                        : ipv ipv1 -> GHC.Base.Nothing @ [StackManip.Swizzle] } }) -}
+24e7a32d8d114eaaf23c10c5d86c9e0b
+  getStackEffect1 :: GHC.Base.Maybe [StackManip.Swizzle]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Base.Just
+                   @ [StackManip.Swizzle]
+                   Optimizer.getStackEffect2) -}
+078383ced00c05960dabed106616b60e
+  getStackEffect2 :: [StackManip.Swizzle]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ StackManip.Swizzle
+                   StackManip.nil
+                   (GHC.Types.[] @ StackManip.Swizzle)) -}
+cee6738c87ef0e9e1b9f9c5fce278217
+  knownEffects :: Optimizer.EffectMap
+  {- Unfolding: (Optimizer.$sfromList
+                   @ [StackManip.Swizzle]
+                   Optimizer.knownEffects1) -}
+ac6f7fe682699c5cebfadd1a26c69453
+  knownEffects1 :: [([GHC.Types.Char], [StackManip.Swizzle])]
+  {- Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], [StackManip.Swizzle])
+                   Optimizer.knownEffects14
+                   Optimizer.knownEffects2) -}
+a0601d321df308a2b4cd72f20bad4778
+  knownEffects10 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "dip"#) -}
+7366bf3889a996ba9d51db903b17591c
+  knownEffects11 :: ([GHC.Types.Char], [StackManip.Swizzle])
+  {- Unfolding: ((Optimizer.knownEffects13,
+                  Optimizer.knownEffects12)) -}
+93cfdfde67d09af8d77e4fd4c8508ae6
+  knownEffects12 :: [StackManip.Swizzle]
+  {- HasNoCafRefs,
+     Unfolding: (GHC.Types.:
+                   @ StackManip.Swizzle
+                   StackManip.dup
+                   (GHC.Types.[] @ StackManip.Swizzle)) -}
+05dcb10ae5b65d5e93c3553ffba1f2f5
+  knownEffects13 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "dup"#) -}
+28df8b5c9dd1a5a6f7dad03f600d67df
+  knownEffects14 :: ([GHC.Types.Char], [StackManip.Swizzle])
+  {- Unfolding: ((Optimizer.knownEffects16,
+                  Optimizer.knownEffects15)) -}
+c59163ee2ac01e0bb496485b3035018d
+  knownEffects15 :: [StackManip.Swizzle]
+  {- HasNoCafRefs,
+     Unfolding: (GHC.Types.:
+                   @ StackManip.Swizzle
+                   StackManip.pop
+                   (GHC.Types.[] @ StackManip.Swizzle)) -}
+9790c2efa1f50aa289cb24aed272380b
+  knownEffects16 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "pop"#) -}
+7fd9d79fe17a8c29ec28198c0eae4a65
+  knownEffects2 :: [([GHC.Types.Char], [StackManip.Swizzle])]
+  {- Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], [StackManip.Swizzle])
+                   Optimizer.knownEffects11
+                   Optimizer.knownEffects3) -}
+8852b888dadf4ca79d5262a52df394a1
+  knownEffects3 :: [([GHC.Types.Char], [StackManip.Swizzle])]
+  {- Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], [StackManip.Swizzle])
+                   Optimizer.knownEffects8
+                   Optimizer.knownEffects4) -}
+e360cc09b02f9200ef64456935b1deb2
+  knownEffects4 :: [([GHC.Types.Char], [StackManip.Swizzle])]
+  {- Unfolding: (GHC.Types.:
+                   @ ([GHC.Types.Char], [StackManip.Swizzle])
+                   Optimizer.knownEffects5
+                   (GHC.Types.[] @ ([GHC.Types.Char], [StackManip.Swizzle]))) -}
+11646968d7a2a8a3cddc515a84e7a6f5
+  knownEffects5 :: ([GHC.Types.Char], [StackManip.Swizzle])
+  {- Unfolding: ((Optimizer.knownEffects7,
+                  Optimizer.knownEffects6)) -}
+969f217408cfdaa786b0d0baa2a80ed2
+  knownEffects6 :: [StackManip.Swizzle]
+  {- HasNoCafRefs,
+     Unfolding: (GHC.Types.:
+                   @ StackManip.Swizzle
+                   StackManip.cons
+                   (GHC.Types.[] @ StackManip.Swizzle)) -}
+f5c648276c27c66782c16b66af193067
+  knownEffects7 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "cons"#) -}
+ad4b22a881571d6ae90e6433fa2f24fa
+  knownEffects8 :: ([GHC.Types.Char], [StackManip.Swizzle])
+  {- Unfolding: ((Optimizer.knownEffects10,
+                  Optimizer.knownEffects9)) -}
+cf1cc853bf732fa788b53f71bcd9d97c
+  knownEffects9 :: [StackManip.Swizzle]
+  {- HasNoCafRefs,
+     Unfolding: (GHC.Types.:
+                   @ StackManip.Swizzle
+                   StackManip.dip
+                   (GHC.Types.[] @ StackManip.Swizzle)) -}
+86a9767856813109c36bc0f2bf32ba88
+  optimizeVocabulary ::
+    [(GHC.Base.String, Interpreter.WordP)]
+    -> [(GHC.Base.String, Interpreter.WordP)]
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (words :: [(GHC.Base.String, Interpreter.WordP)]) ->
+                 Optimizer.optimizeVocabulary_opt Optimizer.knownEffects words) -}
+2b0519c6a925923f9b13f4d28f5c8dd7
+  optimizeVocabulary_opt ::
+    Optimizer.EffectMap
+    -> [(GHC.Base.String, Interpreter.WordP)]
+    -> [(GHC.Base.String, Interpreter.WordP)]
+  {- Arity: 2, Strictness: <L,U><S,1*U> -}
+677f50874e7e3be97a4fcc1b280d6976
+  optimizeWord ::
+    (GHC.Base.String, Interpreter.WordP)
+    -> Optimizer.EffectMap
+    -> ((GHC.Base.String, Interpreter.WordP), Optimizer.EffectMap)
+  {- Arity: 2, Strictness: <S(LS),1*U(U,U)><L,U>m, Inline: INLINE[0],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: (GHC.Base.String, Interpreter.WordP))
+                   (w1 :: Optimizer.EffectMap) ->
+                 case w of ww { (,) ww1 ww2 ->
+                 case Optimizer.$woptimizeWord ww1 ww2 w1 of ww3 { (#,#) ww4 ww5 ->
+                 (ww4, ww5) } }) -}
+c823739318ed2fa54745e005424d1238
+  optimizeWord_z :: GHC.Base.Maybe [[StackManip.Swizzle]]
+  {- HasNoCafRefs,
+     Unfolding: (GHC.Base.Just
+                   @ [[StackManip.Swizzle]]
+                   (GHC.Types.[] @ [StackManip.Swizzle])) -}
+"SPEC/Optimizer concat @ [] _" [ALWAYS] forall @ a
+                                               ($dFoldable :: Data.Foldable.Foldable [])
+  Data.Foldable.concat @ [] @ a $dFoldable = Optimizer.$sconcat @ a
+"SPEC/Optimizer fromList @ [Char] _" [ALWAYS] forall @ a
+                                                     ($dOrd :: GHC.Classes.Ord [GHC.Types.Char])
+  Data.Map.Base.fromList @ [GHC.Types.Char] @ a $dOrd
+  = Optimizer.$sfromList @ a
+vectorised variables:
+vectorised tycons:
+vectorised reused tycons:
+parallel variables:
+parallel tycons:
+trusted: safe
+require own pkg trusted: False
+

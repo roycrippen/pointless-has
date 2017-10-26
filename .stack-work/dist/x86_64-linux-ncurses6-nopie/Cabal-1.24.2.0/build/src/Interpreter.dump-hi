@@ -1,0 +1,625 @@
+
+==================== FINAL INTERFACE ====================
+2017-10-26 13:18:31.279633975 UTC
+
+interface pointless-hs-0.1.0.0-GwVh2N5kUKWGOs2l6I0wCu:Interpreter 8002
+  interface hash: 5af78ba6534e3748e8a78337b745e71e
+  ABI hash: df20e2a78c0cc313b17847d5831fa842
+  export-list hash: 9e51e7c901fb7af6b7c0f7bd0c19e3be
+  orphan hash: 693e9af84d3dfcc71e640e005bdc5e2e
+  flag hash: 98b768f82b68e5d7609c08567665dc92
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  Interpreter.applySwizzle
+  Interpreter.computePosition
+  Interpreter.dumpStack
+  Interpreter.format
+  Interpreter.formatStack
+  Interpreter.getWord
+  Interpreter.isTrue
+  Interpreter.quotCons
+  Interpreter.runInstruction
+  Interpreter.runQuotation
+  Interpreter.runWord
+  Interpreter.toTruth
+  Interpreter.Stack
+  Interpreter.Value{Interpreter.Number Interpreter.Quot Interpreter.Symbol}
+  Interpreter.Vocabulary
+  Interpreter.WordP{Interpreter.EnvPrimitive Interpreter.Primitive Interpreter.Quotation Interpreter.StackEffect}
+module dependencies: StackManip
+package dependencies: array-0.5.1.1@array-0.5.1.1 base-4.9.1.0*
+                      containers-0.5.7.1@containers-0.5.7.1
+                      deepseq-1.4.2.0@deepseq-1.4.2.0 ghc-prim-0.5.0.0
+                      integer-gmp-1.0.0.1
+orphans: base-4.9.1.0:GHC.Base base-4.9.1.0:GHC.Float
+family instance modules: base-4.9.1.0:Control.Applicative
+                         base-4.9.1.0:Data.Complex base-4.9.1.0:Data.Either
+                         base-4.9.1.0:Data.Functor.Const base-4.9.1.0:Data.Functor.Identity
+                         base-4.9.1.0:Data.List.NonEmpty base-4.9.1.0:Data.Monoid
+                         base-4.9.1.0:Data.Semigroup base-4.9.1.0:Data.Type.Equality
+                         base-4.9.1.0:Data.Version base-4.9.1.0:Data.Void
+                         base-4.9.1.0:GHC.Exts base-4.9.1.0:GHC.Generics
+                         base-4.9.1.0:GHC.IO.Exception base-4.9.1.0:GHC.TypeLits
+                         containers-0.5.7.1@containers-0.5.7.1:Data.Map.Base
+                         containers-0.5.7.1@containers-0.5.7.1:Data.Set.Base
+import  -/  base-4.9.1.0:Data.Foldable 3e0b6967a1da89945d0e2d47266337a2
+import  -/  base-4.9.1.0:Data.Maybe d876c4ffe4b3c43755a781e8ad860d88
+import  -/  base-4.9.1.0:Data.OldList 27987919d8da2f92e3f472ca81f730f8
+import  -/  base-4.9.1.0:Data.Tuple 7dc4bbb45d2e69c991ffac438beeca11
+import  -/  base-4.9.1.0:GHC.Base c4231c43c07e46080a26bf94094c7aa1
+import  -/  base-4.9.1.0:GHC.Err 3bba35a16538d33d424682ce66876cdd
+import  -/  base-4.9.1.0:GHC.List ab8c4e523e6c479c549d3bcd5fc4a439
+import  -/  base-4.9.1.0:GHC.Real 82e4e59051a13dba1da63e1e970a69e6
+import  -/  base-4.9.1.0:GHC.Show a027f5ac24879eaba752f44aa90fe511
+import  -/  base-4.9.1.0:Prelude 22dd289b8469a8fa8dc81cab7b237771
+import  -/  base-4.9.1.0:System.IO e4a64a8e3dce8616da54f0ee7104f7db
+import  -/  containers-0.5.7.1@containers-0.5.7.1:Data.Map 20d4ffbee41965d03d6a989425473dc4
+import  -/  containers-0.5.7.1@containers-0.5.7.1:Data.Map.Base a29df8c78ba14cbcd4d90f97bd8d22e9
+import  -/  ghc-prim-0.5.0.0:GHC.Classes 0bdf3d057a415ec1b84a7b1994efbe47
+import  -/  ghc-prim-0.5.0.0:GHC.Types 89f8de4f08018c9177c98d979eae0e45
+import  -/  StackManip 9c8d696e74e567112753dcc78c9027a8
+  exports: 876e5922eb3064d002f48169ac3f35c2
+  Cons 3f9d41d87f670958038f4b00fa453471
+  From 681324e1bacccba372487ce34cd8b326
+  Nil a35d7d0423647a6a70097dba79042e82
+  StackPos 60b6ec8c95f133f140273910a55222eb
+  Swizzle 8f4b16a35c1d265412fc278ba52493a9
+  Swizzle 9f112b3e8c926ccfa676f0d26c477d6d
+908924035e9f8e057b8171bc104c84dc
+  $fEqValue :: GHC.Classes.Eq Interpreter.Value
+  DFunId
+  {- HasNoCafRefs, Strictness: m, Inline: [ALWAYS] CONLIKE,
+     Unfolding: DFun:.
+                  @ Interpreter.Value
+                  Interpreter.$fEqValue_$c==
+                  Interpreter.$fEqValue_$c/= -}
+908924035e9f8e057b8171bc104c84dc
+  $fEqValue_$c/= ::
+    Interpreter.Value -> Interpreter.Value -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (a :: Interpreter.Value) (b :: Interpreter.Value) ->
+                 case Interpreter.$fEqValue_$c== a b of wild {
+                   GHC.Types.False -> GHC.Types.True
+                   GHC.Types.True -> GHC.Types.False }) -}
+908924035e9f8e057b8171bc104c84dc
+  $fEqValue_$c== ::
+    Interpreter.Value -> Interpreter.Value -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U> -}
+908924035e9f8e057b8171bc104c84dc
+  $fShowValue :: GHC.Show.Show Interpreter.Value
+  DFunId
+  {- Strictness: m, Inline: [ALWAYS] CONLIKE,
+     Unfolding: DFun:.
+                  @ Interpreter.Value
+                  Interpreter.$fShowValue_$cshowsPrec
+                  Interpreter.$fShowValue_$cshow
+                  Interpreter.$fShowValue_$cshowList -}
+908924035e9f8e057b8171bc104c84dc
+  $fShowValue1 :: Interpreter.Value -> GHC.Show.ShowS
+  {- Arity: 1,
+     Unfolding: (\ (w :: Interpreter.Value) ->
+                 Interpreter.$w$cshowsPrec 0# w) -}
+4254ff2a009b5138fede816d87a80781
+  $fShowValue2 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "Quot "#) -}
+c94eedbe682ab7cd8ec7b7f385e8ccbc
+  $fShowValue3 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 11#) -}
+23bc779eb3f9ec8f662957adde26f0a6
+  $fShowValue4 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "Number "#) -}
+28a3fc5d685062f5112673a6811ebe04
+  $fShowValue5 :: [GHC.Types.Char]
+  {- HasNoCafRefs,
+     Unfolding: (GHC.Types.:
+                   @ GHC.Types.Char
+                   GHC.Show.shows6
+                   (GHC.Types.[] @ GHC.Types.Char)) -}
+e0e964f894527546510b9ac7155ec305
+  $fShowValue6 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "Symbol "#) -}
+908924035e9f8e057b8171bc104c84dc
+  $fShowValue_$cshow :: Interpreter.Value -> GHC.Base.String
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: (\ (x :: Interpreter.Value) ->
+                 case x of wild {
+                   Interpreter.Symbol b1
+                   -> GHC.Base.++
+                        @ GHC.Types.Char
+                        Interpreter.$fShowValue6
+                        (GHC.Types.:
+                           @ GHC.Types.Char
+                           GHC.Show.shows6
+                           (GHC.Show.showLitString b1 Interpreter.$fShowValue5))
+                   Interpreter.Number b1
+                   -> GHC.Base.++
+                        @ GHC.Types.Char
+                        Interpreter.$fShowValue4
+                        (case b1 of ww { GHC.Types.D# ww1 ->
+                         GHC.Float.$w$sshowSignedFloat
+                           GHC.Float.$fShowDouble_$sshowFloat
+                           Interpreter.$fShowValue3
+                           ww1
+                           (GHC.Types.[] @ GHC.Types.Char) })
+                   Interpreter.Quot b1
+                   -> GHC.Base.++
+                        @ GHC.Types.Char
+                        Interpreter.$fShowValue2
+                        (GHC.Show.showList__
+                           @ Interpreter.Value
+                           Interpreter.$fShowValue1
+                           b1
+                           (GHC.Types.[] @ GHC.Types.Char)) }) -}
+908924035e9f8e057b8171bc104c84dc
+  $fShowValue_$cshowList :: [Interpreter.Value] -> GHC.Show.ShowS
+  {- Arity: 2,
+     Unfolding: (GHC.Show.showList__
+                   @ Interpreter.Value
+                   Interpreter.$fShowValue1) -}
+908924035e9f8e057b8171bc104c84dc
+  $fShowValue_$cshowsPrec ::
+    GHC.Types.Int -> Interpreter.Value -> GHC.Show.ShowS
+  {- Arity: 2, Strictness: <S(S),1*U(U)><S,1*U>, Inline: INLINE[0],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: GHC.Types.Int) (w1 :: Interpreter.Value) ->
+                 case w of ww { GHC.Types.I# ww1 ->
+                 Interpreter.$w$cshowsPrec ww1 w1 }) -}
+05bcd64cfdac94cb14c8a489f943956d
+  $slookup1 ::
+    GHC.Base.String
+    -> Data.Map.Base.Map GHC.Base.String a -> GHC.Base.Maybe a
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U> -}
+90c4ff1c5cf61e8185b4ac91e569eae0
+  $tc'EnvPrimitive :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   14818594097316026270##
+                   10956733558421071151##
+                   Interpreter.$trModule
+                   Interpreter.$tc'EnvPrimitive1) -}
+52983c23f041bece5951c1cd57cf8f38
+  $tc'EnvPrimitive1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'EnvPrimitive"#) -}
+6bcb92002de19df7cadde32acee05211
+  $tc'Number :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   14974502025391848496##
+                   3591227041613220002##
+                   Interpreter.$trModule
+                   Interpreter.$tc'Number1) -}
+e36c37c4f97c7b7a35988ee8459291d9
+  $tc'Number1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'Number"#) -}
+bed6bb5ba5d7868e320338640c7fbfca
+  $tc'Primitive :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   7684186717674364067##
+                   11647428717975239354##
+                   Interpreter.$trModule
+                   Interpreter.$tc'Primitive1) -}
+5a4be0539b28814082b52213fb6e61be
+  $tc'Primitive1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'Primitive"#) -}
+88be3e3336b6432cc44c02a7c7b4ebc6
+  $tc'Quot :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   8683582432113086451##
+                   12990847768824856172##
+                   Interpreter.$trModule
+                   Interpreter.$tc'Quot1) -}
+1c7e764178773abc56490cdcb9629c3b
+  $tc'Quot1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'Quot"#) -}
+16ca2f7b44d8c56dd3c2619397b61829
+  $tc'Quotation :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   12147870041435354338##
+                   10043563259328980300##
+                   Interpreter.$trModule
+                   Interpreter.$tc'Quotation1) -}
+a7cd50033b825ec138d3fb824044652f
+  $tc'Quotation1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'Quotation"#) -}
+4e9309e7044e4ca232052143cfcce35b
+  $tc'StackEffect :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   13716810922038713154##
+                   9991629198962339389##
+                   Interpreter.$trModule
+                   Interpreter.$tc'StackEffect1) -}
+3738074cfa04b77a9b3d7d61b94849fa
+  $tc'StackEffect1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'StackEffect"#) -}
+15d328ac465f3cf72ebe275ee0e575f7
+  $tc'Symbol :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   1782685028032618332##
+                   4948764597297529002##
+                   Interpreter.$trModule
+                   Interpreter.$tc'Symbol1) -}
+f0dc578bb079ae5d529599956978ff4f
+  $tc'Symbol1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'Symbol"#) -}
+f304a548cfc1f3d932435292deac0ae9
+  $tcValue :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   14502990664375177823##
+                   11470789974024147461##
+                   Interpreter.$trModule
+                   Interpreter.$tcValue1) -}
+bfe7ddf0afebaa10620c5f1e9b723f76
+  $tcValue1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "Value"#) -}
+453c21979678c2c0ae4f88c85b985f24
+  $tcWordP :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   17587647530203945091##
+                   1044666827204932911##
+                   Interpreter.$trModule
+                   Interpreter.$tcWordP1) -}
+e04ae00da38a646b3ba341763f571163
+  $tcWordP1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "WordP"#) -}
+9cc3a5497512bfc949a64b643081aba2
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module
+                   Interpreter.$trModule2
+                   Interpreter.$trModule1) -}
+c50291ff86926436e300c64f9867d382
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "Interpreter"#) -}
+5583b035ffd705990e467bc8778b91d0
+  $trModule2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS
+                   "pointless-hs-0.1.0.0-GwVh2N5kUKWGOs2l6I0wCu"#) -}
+908924035e9f8e057b8171bc104c84dc
+  $w$cshowsPrec ::
+    GHC.Prim.Int# -> Interpreter.Value -> GHC.Show.ShowS
+  {- Arity: 2, Strictness: <S,U><S,1*U>, Inline: [0] -}
+7faab3c5deb85c8715c0ead71aca97a4
+  $wapplySwizzle ::
+    GHC.Types.Int
+    -> GHC.Base.Maybe GHC.Types.Int
+    -> [StackManip.StackPos]
+    -> Interpreter.Stack
+    -> Interpreter.Stack
+  {- Arity: 4, Strictness: <L,1*U(U)><S,1*U><S,1*U><L,U>,
+     Inline: [0],
+     Unfolding: (\ (ww :: GHC.Types.Int)
+                   (ww1 :: GHC.Base.Maybe GHC.Types.Int)
+                   (ww2 :: [StackManip.StackPos])
+                   (w :: Interpreter.Stack) ->
+                 case ww1 of wild {
+                   GHC.Base.Nothing -> Interpreter.applySwizzle2
+                   GHC.Base.Just o
+                   -> let {
+                        ds :: ([Interpreter.Value], [Interpreter.Value])
+                        = case ww of wild1 { GHC.Types.I# x ->
+                          case GHC.Prim.tagToEnum#
+                                 @ GHC.Types.Bool
+                                 (GHC.Prim.<=# x 0#) of wild2 {
+                            GHC.Types.False
+                            -> case w of wild3 {
+                                 [] -> Interpreter.applySwizzle1
+                                 : ipv ipv1
+                                 -> case x of ds1 {
+                                      DEFAULT
+                                      -> let {
+                                           ds2 :: ([Interpreter.Value], [Interpreter.Value])
+                                           = case GHC.List.splitAt_$s$wsplitAt'
+                                                    @ Interpreter.Value
+                                                    ipv1
+                                                    (GHC.Prim.-# ds1 1#) of ww3 { (#,#) ww4 ww5 ->
+                                             (ww4, ww5) }
+                                         } in
+                                         (GHC.Types.:
+                                            @ Interpreter.Value
+                                            ipv
+                                            (case ds2 of wild4 { (,) xs' xs'' -> xs' }),
+                                          case ds2 of wild4 { (,) xs' xs'' -> xs'' })
+                                      1#
+                                      -> (GHC.Types.:
+                                            @ Interpreter.Value
+                                            ipv
+                                            (GHC.Types.[] @ Interpreter.Value),
+                                          ipv1) } }
+                            GHC.Types.True -> (GHC.Types.[] @ Interpreter.Value, w) } }
+                      } in
+                      let {
+                        f :: Interpreter.Stack = case ds of wild1 { (,) top bottom -> top }
+                      } in
+                      let {
+                        z :: [Interpreter.Value]
+                        = case ds of wild1 { (,) top bottom -> bottom }
+                      } in
+                      letrec {
+                        go1 :: [StackManip.StackPos] -> [Interpreter.Value]
+                          {- Arity: 1, Strictness: <S,1*U> -}
+                        = \ (ds1 :: [StackManip.StackPos]) ->
+                          case ds1 of wild1 {
+                            [] -> z
+                            : y ys
+                            -> GHC.Types.:
+                                 @ Interpreter.Value
+                                 (Interpreter.computePosition f y)
+                                 (go1 ys) }
+                      } in
+                      go1 ww2 }) -}
+2f0ff0b7aa50fbcc62a6b7ced8750e1a
+  type Stack = [Interpreter.Value]
+908924035e9f8e057b8171bc104c84dc
+  data Value
+    = Symbol GHC.Base.String
+    | Number GHC.Types.Double
+    | Quot [Interpreter.Value]
+0558c564ca89afb19ceeea4f5c3abf41
+  type Vocabulary =
+    Data.Map.Base.Map GHC.Base.String Interpreter.WordP
+0558c564ca89afb19ceeea4f5c3abf41
+  data WordP
+    = Quotation [Interpreter.Value]
+    | Primitive (Interpreter.Stack -> Interpreter.Stack)
+    | EnvPrimitive (Interpreter.Vocabulary
+                    -> Interpreter.Stack -> GHC.Types.IO Interpreter.Stack)
+    | StackEffect StackManip.Swizzle
+695ecc73ce2a60a09de0b27abb2b8965
+  applySwizzle ::
+    StackManip.Swizzle -> Interpreter.Stack -> Interpreter.Stack
+  {- Arity: 2, Strictness: <S(LSS),1*U(1*U(U),1*U,1*U)><L,U>,
+     Inline: INLINE[0],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: StackManip.Swizzle) (w1 :: Interpreter.Stack) ->
+                 case w of ww { StackManip.Swizzle ww1 ww2 ww3 ->
+                 Interpreter.$wapplySwizzle ww1 ww2 ww3 w1 }) -}
+c655800443db622873ea2618bc24ba7b
+  applySwizzle1 :: ([Interpreter.Value], [Interpreter.Value])
+  {- HasNoCafRefs,
+     Unfolding: ((GHC.Types.[] @ Interpreter.Value,
+                  GHC.Types.[] @ Interpreter.Value)) -}
+f6adb6529ada4c5e417a8a7dd81052dc
+  applySwizzle2 :: Interpreter.Stack
+  {- Strictness: x -}
+45f6f88d5d3587594e550423c5e3b188
+  computePosition ::
+    Interpreter.Stack -> StackManip.StackPos -> Interpreter.Value
+  {- Arity: 2, Strictness: <L,U><S,1*U> -}
+b8dbd72e155ef9d36870b9e09d2f3079
+  dumpStack :: [Interpreter.Value] -> GHC.Types.IO ()
+  {- Arity: 2, Strictness: <L,1*U><S,U>,
+     Unfolding: InlineRule (0, True, True)
+                Interpreter.dumpStack1
+                  `cast`
+                (<[Interpreter.Value]>_R ->_R Sym (GHC.Types.N:IO[0] <()>_R)) -}
+931e4b836c63b1f9d0b7c4ced41aaf66
+  dumpStack1 ::
+    [Interpreter.Value]
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, () #)
+  {- Arity: 2, Strictness: <L,1*U><S,U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (s :: [Interpreter.Value])
+                   (eta :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 GHC.IO.Handle.Text.hPutStr2
+                   GHC.IO.Handle.FD.stdout
+                   (Interpreter.formatStack s)
+                   GHC.Types.True
+                   eta) -}
+89de6bea98c2db6ba098839e25eaa8e1
+  format :: Interpreter.Value -> GHC.Base.String
+  {- Arity: 1, Strictness: <S,1*U> -}
+e297568b140e748e876b44ebaeaa114c
+  formatStack :: [Interpreter.Value] -> GHC.Base.String
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (x :: [Interpreter.Value]) ->
+                 Data.OldList.unlines
+                   (GHC.Base.build
+                      @ [GHC.Types.Char]
+                      (\ @ b1
+                         (c :: [GHC.Types.Char] -> b1 -> b1)[OneShot]
+                         (n :: b1)[OneShot] ->
+                       GHC.Base.foldr
+                         @ Interpreter.Value
+                         @ b1
+                         (GHC.Base.mapFB
+                            @ [GHC.Types.Char]
+                            @ b1
+                            @ Interpreter.Value
+                            c
+                            Interpreter.format)
+                         n
+                         x))) -}
+2ecaf030eee183967384e14460ee5d8c
+  getWord ::
+    GHC.Base.String -> Interpreter.Vocabulary -> Interpreter.WordP
+  {- Arity: 2, Strictness: <S,U><S,1*U>,
+     Unfolding: (\ (w :: GHC.Base.String)
+                   (vocab :: Interpreter.Vocabulary) ->
+                 case Interpreter.$slookup1 @ Interpreter.WordP w vocab of wild {
+                   GHC.Base.Nothing -> Interpreter.getWord1 w
+                   GHC.Base.Just x -> x }) -}
+fc8d95113c5fac78a847fe26c8611bf7
+  getWord1 :: GHC.Base.String -> Interpreter.WordP
+  {- Arity: 1, Strictness: <L,U>x -}
+f2ea3de8fdfa315f1be499d427000888
+  isTrue :: Interpreter.Value -> GHC.Types.Bool
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: (\ (ds :: Interpreter.Value) ->
+                 case ds of wild {
+                   Interpreter.Symbol ipv -> Interpreter.isTrue1
+                   Interpreter.Number x
+                   -> case x of wild1 { GHC.Types.D# x1 ->
+                      case GHC.Prim.tagToEnum#
+                             @ GHC.Types.Bool
+                             (GHC.Prim.==## x1 0.0##) of wild2 {
+                        GHC.Types.False -> GHC.Types.True
+                        GHC.Types.True -> GHC.Types.False } }
+                   Interpreter.Quot q
+                   -> case q of wild1 {
+                        [] -> GHC.Types.False : ds1 ds2 -> GHC.Types.True } }) -}
+b13c3faa35157283ef2f861e646bcf9a
+  isTrue1 :: GHC.Types.Bool
+  {- Strictness: x -}
+0d9c4311eccce42b5a7ff366066ce912
+  quotCons ::
+    Interpreter.Value -> Interpreter.Value -> Interpreter.Value
+  {- Arity: 2, Strictness: <L,U><S,1*U>m3,
+     Unfolding: InlineRule (2, True, False)
+                (\ (x :: Interpreter.Value) (ds :: Interpreter.Value) ->
+                 case ds of wild {
+                   DEFAULT -> Interpreter.quotCons1
+                   Interpreter.Quot q
+                   -> Interpreter.Quot (GHC.Types.: @ Interpreter.Value x q) }) -}
+12b59b0d62e729b627cb64892042c971
+  quotCons1 :: Interpreter.Value
+  {- Strictness: x -}
+f6887c994352764b2c8153af0d958991
+  runInstruction ::
+    Interpreter.Value
+    -> Interpreter.Vocabulary
+    -> Interpreter.Stack
+    -> GHC.Types.IO Interpreter.Stack
+  {- Arity: 4, Strictness: <S,1*U><L,U><L,U><S,U>,
+     Unfolding: InlineRule (0, True, True)
+                Interpreter.runInstruction1
+                  `cast`
+                (<Interpreter.Value>_R
+                 ->_R <Interpreter.Vocabulary>_R
+                 ->_R <Interpreter.Stack>_R
+                 ->_R Sym (GHC.Types.N:IO[0] <Interpreter.Stack>_R)) -}
+4ca6e949e5e1bd8499a329e2bede8168
+  runInstruction1 ::
+    Interpreter.Value
+    -> Interpreter.Vocabulary
+    -> Interpreter.Stack
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, Interpreter.Stack #)
+  {- Arity: 4, Strictness: <S,1*U><L,U><L,U><S,U>,
+     Unfolding: (\ (ins :: Interpreter.Value)
+                   (env :: Interpreter.Vocabulary)
+                   (stack :: Interpreter.Stack)
+                   (eta :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case ins of wild {
+                   DEFAULT -> (# eta, GHC.Types.: @ Interpreter.Value wild stack #)
+                   Interpreter.Symbol w
+                   -> case Interpreter.$slookup1 @ Interpreter.WordP w env of wild1 {
+                        GHC.Base.Nothing
+                        -> case Interpreter.getWord1 w
+                           ret_ty (# GHC.Prim.State# GHC.Prim.RealWorld, Interpreter.Stack #)
+                           of {}
+                        GHC.Base.Just x
+                        -> Interpreter.runInstruction2 x env stack eta } }) -}
+6fb47529518ac0940e45582550ca62d0
+  runInstruction2 ::
+    Interpreter.WordP
+    -> Interpreter.Vocabulary
+    -> Interpreter.Stack
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, Interpreter.Stack #)
+  {- Arity: 4, Strictness: <S,1*U><L,U><L,U><S,U>,
+     Unfolding: (\ (w :: Interpreter.WordP)
+                   (env :: Interpreter.Vocabulary)
+                   (stack :: Interpreter.Stack)
+                   (eta :: GHC.Prim.State# GHC.Prim.RealWorld)[OneShot] ->
+                 case w of wild {
+                   Interpreter.Quotation q
+                   -> Interpreter.runInstruction3 q env stack eta
+                   Interpreter.Primitive f -> (# eta, f stack #)
+                   Interpreter.EnvPrimitive f
+                   -> (f env stack) `cast` (GHC.Types.N:IO[0] <Interpreter.Stack>_R)
+                        eta
+                   Interpreter.StackEffect s
+                   -> (# eta, Interpreter.applySwizzle s stack #) }) -}
+ee1a61de016789df1ec37a56bc316c2a
+  runInstruction3 ::
+    [Interpreter.Value]
+    -> Interpreter.Vocabulary
+    -> Interpreter.Stack
+    -> GHC.Prim.State# GHC.Prim.RealWorld
+    -> (# GHC.Prim.State# GHC.Prim.RealWorld, Interpreter.Stack #)
+  {- Arity: 4, Strictness: <S,1*U><L,U><L,U><S,U> -}
+9f42f292128b14a8ccede1aeda3bb975
+  runQuotation ::
+    [Interpreter.Value]
+    -> Interpreter.Vocabulary
+    -> Interpreter.Stack
+    -> GHC.Types.IO Interpreter.Stack
+  {- Arity: 4, Strictness: <S,1*U><L,U><L,U><S,U>,
+     Unfolding: InlineRule (0, True, True)
+                Interpreter.runInstruction3
+                  `cast`
+                (<[Interpreter.Value]>_R
+                 ->_R <Interpreter.Vocabulary>_R
+                 ->_R <Interpreter.Stack>_R
+                 ->_R Sym (GHC.Types.N:IO[0] <Interpreter.Stack>_R)) -}
+907ab8a49398ce40c5896f8e4171ca90
+  runWord ::
+    Interpreter.WordP
+    -> Interpreter.Vocabulary
+    -> Interpreter.Stack
+    -> GHC.Types.IO Interpreter.Stack
+  {- Arity: 4, Strictness: <S,1*U><L,U><L,U><S,U>,
+     Unfolding: InlineRule (0, True, True)
+                Interpreter.runInstruction2
+                  `cast`
+                (<Interpreter.WordP>_R
+                 ->_R <Interpreter.Vocabulary>_R
+                 ->_R <Interpreter.Stack>_R
+                 ->_R Sym (GHC.Types.N:IO[0] <Interpreter.Stack>_R)) -}
+b512aeb2826f53c0a38e82af39bf3af4
+  toTruth :: GHC.Types.Bool -> Interpreter.Value
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>m2,
+     Unfolding: InlineRule (1, True, False)
+                (\ (b :: GHC.Types.Bool) ->
+                 case b of wild {
+                   GHC.Types.False -> Interpreter.toTruth3
+                   GHC.Types.True -> Interpreter.toTruth1 }) -}
+94618f01368b6a8000d2221fb2797286
+  toTruth1 :: Interpreter.Value
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (Interpreter.Number Interpreter.toTruth2) -}
+9d6c4c96eba38ee390144372cf50bec6
+  toTruth2 :: GHC.Types.Double
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.D# 1.0##) -}
+3468ee6bb5f218d60428bd44750e0641
+  toTruth3 :: Interpreter.Value
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (Interpreter.Number Interpreter.toTruth4) -}
+e8a445f79ea0e79f2a479df29bae7184
+  toTruth4 :: GHC.Types.Double
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.D# 0.0##) -}
+instance [safe] GHC.Classes.Eq [Interpreter.Value]
+  = Interpreter.$fEqValue
+instance [safe] GHC.Show.Show [Interpreter.Value]
+  = Interpreter.$fShowValue
+vectorised variables:
+vectorised tycons:
+vectorised reused tycons:
+parallel variables:
+parallel tycons:
+trusted: safe
+require own pkg trusted: False
+

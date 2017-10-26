@@ -1,0 +1,718 @@
+
+==================== FINAL INTERFACE ====================
+2017-10-26 13:18:30.861685334 UTC
+
+interface pointless-hs-0.1.0.0-GwVh2N5kUKWGOs2l6I0wCu:StackManip 8002
+  interface hash: 38f6568d21952c367a21ac005d30880c
+  ABI hash: 9c8d696e74e567112753dcc78c9027a8
+  export-list hash: 876e5922eb3064d002f48169ac3f35c2
+  orphan hash: ffc12e6ebb6e273560678f4d82b8df49
+  flag hash: 98b768f82b68e5d7609c08567665dc92
+  sig of: Nothing
+  used TH splices: False
+  where
+exports:
+  StackManip.compose
+  StackManip.composeStack
+  StackManip.cons
+  StackManip.dip
+  StackManip.dup
+  StackManip.eval
+  StackManip.isSimple
+  StackManip.isWellDefined
+  StackManip.maxIndex
+  StackManip.maxIndexFromList
+  StackManip.nil
+  StackManip.normalize
+  StackManip.pop
+  StackManip.reduce
+  StackManip.simplify
+  StackManip.toFunction
+  StackManip.toSimpleList
+  StackManip.trySimplify
+  StackManip.StackPos{StackManip.Cons StackManip.From StackManip.Nil StackManip.Unquote}
+  StackManip.Swizzle{StackManip.Swizzle}
+module dependencies:
+package dependencies: base-4.9.1.0* ghc-prim-0.5.0.0
+                      integer-gmp-1.0.0.1
+orphans: base-4.9.1.0:GHC.Base base-4.9.1.0:GHC.Float
+family instance modules: base-4.9.1.0:Control.Applicative
+                         base-4.9.1.0:Data.Either base-4.9.1.0:Data.Functor.Const
+                         base-4.9.1.0:Data.Monoid base-4.9.1.0:Data.Type.Equality
+                         base-4.9.1.0:GHC.Generics base-4.9.1.0:GHC.IO.Exception
+                         base-4.9.1.0:GHC.TypeLits
+import  -/  base-4.9.1.0:Control.Applicative 32430a90492e727f4bd80db71c28600c
+import  -/  base-4.9.1.0:Data.Foldable 3e0b6967a1da89945d0e2d47266337a2
+import  -/  base-4.9.1.0:Data.Functor 5ab1dc703df5b482e77efb697833ca3c
+import  -/  base-4.9.1.0:Data.List 07ae2acca6538aa0800bd0a993ac6ac1
+import  -/  base-4.9.1.0:Data.Traversable 556020d7cf3c4a34a774600512918a37
+import  -/  base-4.9.1.0:GHC.Base c4231c43c07e46080a26bf94094c7aa1
+import  -/  base-4.9.1.0:GHC.Err 3bba35a16538d33d424682ce66876cdd
+import  -/  base-4.9.1.0:GHC.List ab8c4e523e6c479c549d3bcd5fc4a439
+import  -/  base-4.9.1.0:GHC.Num 00bfaa7b2f9d6084913c0697a8a49ec8
+import  -/  base-4.9.1.0:GHC.Show a027f5ac24879eaba752f44aa90fe511
+import  -/  base-4.9.1.0:Prelude 22dd289b8469a8fa8dc81cab7b237771
+import  -/  ghc-prim-0.5.0.0:GHC.Classes 0bdf3d057a415ec1b84a7b1994efbe47
+60b6ec8c95f133f140273910a55222eb
+  $fEqStackPos :: GHC.Classes.Eq StackManip.StackPos
+  DFunId
+  {- HasNoCafRefs, Strictness: m, Inline: [ALWAYS] CONLIKE,
+     Unfolding: DFun:.
+                  @ StackManip.StackPos
+                  StackManip.$fEqStackPos_$c==
+                  StackManip.$fEqStackPos_$c/= -}
+60b6ec8c95f133f140273910a55222eb
+  $fEqStackPos_$c/= ::
+    StackManip.StackPos -> StackManip.StackPos -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (a :: StackManip.StackPos) (b :: StackManip.StackPos) ->
+                 case StackManip.$fEqStackPos_$c== a b of wild {
+                   GHC.Types.False -> GHC.Types.True
+                   GHC.Types.True -> GHC.Types.False }) -}
+60b6ec8c95f133f140273910a55222eb
+  $fEqStackPos_$c== ::
+    StackManip.StackPos -> StackManip.StackPos -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><S,1*U> -}
+9f112b3e8c926ccfa676f0d26c477d6d
+  $fEqSwizzle :: GHC.Classes.Eq StackManip.Swizzle
+  DFunId
+  {- HasNoCafRefs, Strictness: m, Inline: [ALWAYS] CONLIKE,
+     Unfolding: DFun:.
+                  @ StackManip.Swizzle
+                  StackManip.$fEqSwizzle_$c==
+                  StackManip.$fEqSwizzle_$c/= -}
+9f112b3e8c926ccfa676f0d26c477d6d
+  $fEqSwizzle_$c/= ::
+    StackManip.Swizzle -> StackManip.Swizzle -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs,
+     Strictness: <S(S(S)LL),1*U(1*U(U),1*U,1*U)><S(S(S)LL),1*U(1*U(U),1*U,1*U)>,
+     Unfolding: InlineRule (2, True, False)
+                (\ (a :: StackManip.Swizzle) (b :: StackManip.Swizzle) ->
+                 case StackManip.$fEqSwizzle_$c== a b of wild {
+                   GHC.Types.False -> GHC.Types.True
+                   GHC.Types.True -> GHC.Types.False }) -}
+9f112b3e8c926ccfa676f0d26c477d6d
+  $fEqSwizzle_$c== ::
+    StackManip.Swizzle -> StackManip.Swizzle -> GHC.Types.Bool
+  {- Arity: 2, HasNoCafRefs,
+     Strictness: <S(S(S)LL),1*U(1*U(U),1*U,1*U)><S(S(S)LL),1*U(1*U(U),1*U,1*U)>,
+     Inline: INLINE[0],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: StackManip.Swizzle) (w1 :: StackManip.Swizzle) ->
+                 case w of ww { StackManip.Swizzle ww1 ww2 ww3 ->
+                 case ww1 of ww4 { GHC.Types.I# ww5 ->
+                 case w1 of ww6 { StackManip.Swizzle ww7 ww8 ww9 ->
+                 case ww7 of ww10 { GHC.Types.I# ww11 ->
+                 StackManip.$w$c== ww5 ww2 ww3 ww11 ww8 ww9 } } } }) -}
+60b6ec8c95f133f140273910a55222eb
+  $fShowStackPos :: GHC.Show.Show StackManip.StackPos
+  DFunId
+  {- Strictness: m, Inline: [ALWAYS] CONLIKE,
+     Unfolding: DFun:.
+                  @ StackManip.StackPos
+                  StackManip.$fShowStackPos_$cshowsPrec
+                  StackManip.$fShowStackPos_$cshow
+                  StackManip.$fShowStackPos_$cshowList -}
+60b6ec8c95f133f140273910a55222eb
+  $fShowStackPos1 :: StackManip.StackPos -> GHC.Show.ShowS
+  {- Arity: 2,
+     Unfolding: (StackManip.$fShowStackPos_$cshowsPrec
+                   StackManip.$fShowStackPos2) -}
+1cc8065a72a7547c0bafdd3aba80ee47
+  $fShowStackPos2 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 0#) -}
+60b6ec8c95f133f140273910a55222eb
+  $fShowStackPos_$cshow :: StackManip.StackPos -> GHC.Base.String
+  {- Arity: 1, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (x :: StackManip.StackPos) ->
+                 StackManip.$fShowStackPos_$cshowsPrec
+                   GHC.Show.shows22
+                   x
+                   (GHC.Types.[] @ GHC.Types.Char)) -}
+60b6ec8c95f133f140273910a55222eb
+  $fShowStackPos_$cshowList ::
+    [StackManip.StackPos] -> GHC.Show.ShowS
+  {- Arity: 2,
+     Unfolding: (GHC.Show.showList__
+                   @ StackManip.StackPos
+                   StackManip.$fShowStackPos1) -}
+60b6ec8c95f133f140273910a55222eb
+  $fShowStackPos_$cshowsPrec ::
+    GHC.Types.Int -> StackManip.StackPos -> GHC.Show.ShowS
+  {- Arity: 3, Strictness: <L,1*U(U)><S,1*U><L,U> -}
+9f112b3e8c926ccfa676f0d26c477d6d
+  $fShowSwizzle :: GHC.Show.Show StackManip.Swizzle
+  DFunId
+  {- Strictness: m, Inline: [ALWAYS] CONLIKE,
+     Unfolding: DFun:.
+                  @ StackManip.Swizzle
+                  StackManip.$fShowSwizzle_$cshowsPrec
+                  StackManip.$fShowSwizzle_$cshow
+                  StackManip.$fShowSwizzle_$cshowList -}
+9f112b3e8c926ccfa676f0d26c477d6d
+  $fShowSwizzle1 :: StackManip.Swizzle -> GHC.Show.ShowS
+  {- Arity: 1,
+     Unfolding: (\ (w :: StackManip.Swizzle) ->
+                 case w of ww { StackManip.Swizzle ww1 ww2 ww3 ->
+                 StackManip.$w$cshowsPrec 0# ww1 ww2 ww3 }) -}
+793403ab3fea7af0c2f0f76cf40c6de0
+  $fShowSwizzle2 :: [GHC.Types.Char]
+  {- Unfolding: (GHC.CString.unpackCString# "Swizzle "#) -}
+eb803c683ca44d82559d71fd80b263ef
+  $fShowSwizzle3 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 11#) -}
+9f112b3e8c926ccfa676f0d26c477d6d
+  $fShowSwizzle_$cshow :: StackManip.Swizzle -> GHC.Base.String
+  {- Arity: 1, Strictness: <S,1*U(U(U),1*U,U)>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (x :: StackManip.Swizzle) ->
+                 StackManip.$fShowSwizzle_$cshowsPrec
+                   GHC.Show.shows22
+                   x
+                   (GHC.Types.[] @ GHC.Types.Char)) -}
+9f112b3e8c926ccfa676f0d26c477d6d
+  $fShowSwizzle_$cshowList :: [StackManip.Swizzle] -> GHC.Show.ShowS
+  {- Arity: 2,
+     Unfolding: (GHC.Show.showList__
+                   @ StackManip.Swizzle
+                   StackManip.$fShowSwizzle1) -}
+9f112b3e8c926ccfa676f0d26c477d6d
+  $fShowSwizzle_$cshowsPrec ::
+    GHC.Types.Int -> StackManip.Swizzle -> GHC.Show.ShowS
+  {- Arity: 2, Strictness: <S(S),1*U(U)><S,1*U(U(U),1*U,U)>,
+     Inline: INLINE[0],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: GHC.Types.Int) (w1 :: StackManip.Swizzle) ->
+                 case w of ww { GHC.Types.I# ww1 ->
+                 case w1 of ww2 { StackManip.Swizzle ww3 ww4 ww5 ->
+                 StackManip.$w$cshowsPrec ww1 ww3 ww4 ww5 } }) -}
+726d4ba4cdb72edca9ad83c3e202a846
+  $sconcat :: [[a]] -> [a]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>,
+     Inline: INLINE (sat-args=1),
+     Unfolding: InlineRule (1, False, False)
+                (\ @ a (xs :: [[a]]) ->
+                 GHC.Base.build
+                   @ a
+                   (\ @ b (c :: a -> b -> b)[OneShot] (n :: b)[OneShot] ->
+                    GHC.Base.foldr
+                      @ [a]
+                      @ b
+                      (\ (x :: [a]) (y :: b)[OneShot] -> GHC.Base.foldr @ a @ b c y x)
+                      n
+                      xs)) -}
+678a96eb355cfd628b11475337aa9ab1
+  $tc'Cons :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   17608871759915975777##
+                   701352386811191268##
+                   StackManip.$trModule
+                   StackManip.$tc'Cons1) -}
+49e36cd1b8aba1c01f14a28660f97aa5
+  $tc'Cons1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'Cons"#) -}
+f9927f721744ff6b7294383f6b9c4661
+  $tc'From :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   8558108581241644686##
+                   5132590921031050432##
+                   StackManip.$trModule
+                   StackManip.$tc'From1) -}
+716e005cdf9008bed5c277c8d8e0cd49
+  $tc'From1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'From"#) -}
+3f12576c0781a34421a921557d124616
+  $tc'Nil :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   12858474135482198762##
+                   8905175843950776707##
+                   StackManip.$trModule
+                   StackManip.$tc'Nil1) -}
+34e2d3505cd36fb7e8285edbb5b192e9
+  $tc'Nil1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'Nil"#) -}
+97a8973f0439f2c9f9dc572f5120db99
+  $tc'Swizzle :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   14379449306910654290##
+                   5358926784168342884##
+                   StackManip.$trModule
+                   StackManip.$tc'Swizzle1) -}
+7dfbb8f420487ffed5dc59d63378a9a4
+  $tc'Swizzle1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'Swizzle"#) -}
+7f1e512e602742995d346228401eea60
+  $tc'Unquote :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   14365051362954606494##
+                   10378284501754822895##
+                   StackManip.$trModule
+                   StackManip.$tc'Unquote1) -}
+dad71eb40352097813f97c78e4721907
+  $tc'Unquote1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "'Unquote"#) -}
+8605485be84c3b3e94a108aabc04ce81
+  $tcStackPos :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   12055144808572991891##
+                   7785520552771649009##
+                   StackManip.$trModule
+                   StackManip.$tcStackPos1) -}
+390655994c423317031e425efad6036c
+  $tcStackPos1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "StackPos"#) -}
+06d4fe7916fed63c45ff63d90b53bb77
+  $tcSwizzle :: GHC.Types.TyCon
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.TyCon
+                   12744089890113445978##
+                   12522580867950801178##
+                   StackManip.$trModule
+                   StackManip.$tcSwizzle1) -}
+6c0d34d9d3bc699f8b08c5c708fe056f
+  $tcSwizzle1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "Swizzle"#) -}
+96553f877a450c52cacb457e229e2c4f
+  $trModule :: GHC.Types.Module
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (GHC.Types.Module
+                   StackManip.$trModule2
+                   StackManip.$trModule1) -}
+76f59be6ceac3f481227b144d0b6d373
+  $trModule1 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS "StackManip"#) -}
+f468764f55b969d9f075ae1eb4b7f84b
+  $trModule2 :: GHC.Types.TrName
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (GHC.Types.TrNameS
+                   "pointless-hs-0.1.0.0-GwVh2N5kUKWGOs2l6I0wCu"#) -}
+92f1ea5f9cf41e16004b310c84602f1f
+  $w$c== ::
+    GHC.Prim.Int#
+    -> GHC.Base.Maybe GHC.Types.Int
+    -> [StackManip.StackPos]
+    -> GHC.Prim.Int#
+    -> GHC.Base.Maybe GHC.Types.Int
+    -> [StackManip.StackPos]
+    -> GHC.Types.Bool
+  {- Arity: 6, HasNoCafRefs,
+     Strictness: <S,U><L,1*U><L,1*U><S,U><L,1*U><L,1*U>, Inline: [0],
+     Unfolding: (\ (ww :: GHC.Prim.Int#)
+                   (ww1 :: GHC.Base.Maybe GHC.Types.Int)
+                   (ww2 :: [StackManip.StackPos])
+                   (ww3 :: GHC.Prim.Int#)
+                   (ww4 :: GHC.Base.Maybe GHC.Types.Int)
+                   (ww5 :: [StackManip.StackPos]) ->
+                 case GHC.Prim.tagToEnum#
+                        @ GHC.Types.Bool
+                        (GHC.Prim.==# ww ww3) of wild {
+                   GHC.Types.False -> GHC.Types.False
+                   GHC.Types.True
+                   -> case ww1 of wild1 {
+                        GHC.Base.Nothing
+                        -> case ww4 of wild2 {
+                             GHC.Base.Nothing
+                             -> GHC.Classes.$fEq[]_$c==
+                                  @ StackManip.StackPos
+                                  StackManip.$fEqStackPos
+                                  ww2
+                                  ww5
+                             GHC.Base.Just ipv -> GHC.Types.False }
+                        GHC.Base.Just a1
+                        -> case ww4 of wild2 {
+                             GHC.Base.Nothing -> GHC.Types.False
+                             GHC.Base.Just b1
+                             -> case a1 of wild3 { GHC.Types.I# x ->
+                                case b1 of wild4 { GHC.Types.I# y ->
+                                case GHC.Prim.tagToEnum#
+                                       @ GHC.Types.Bool
+                                       (GHC.Prim.==# x y) of wild5 {
+                                  GHC.Types.False -> GHC.Types.False
+                                  GHC.Types.True
+                                  -> GHC.Classes.$fEq[]_$c==
+                                       @ StackManip.StackPos
+                                       StackManip.$fEqStackPos
+                                       ww2
+                                       ww5 } } } } } }) -}
+c841d44ec8a7670ad36a7f14ac46e1a1
+  $w$cshowsPrec ::
+    GHC.Prim.Int#
+    -> GHC.Types.Int
+    -> GHC.Base.Maybe GHC.Types.Int
+    -> [StackManip.StackPos]
+    -> GHC.Show.ShowS
+  {- Arity: 4, Strictness: <S,U><L,U(U)><L,1*U><L,U>, Inline: [0],
+     Unfolding: (\ (ww :: GHC.Prim.Int#)
+                   (ww1 :: GHC.Types.Int)
+                   (ww2 :: GHC.Base.Maybe GHC.Types.Int)
+                   (ww3 :: [StackManip.StackPos]) ->
+                 let {
+                   f :: GHC.Base.String -> GHC.Base.String
+                   = GHC.Show.$fShowMaybe_$cshowsPrec
+                       @ GHC.Types.Int
+                       GHC.Show.$fShowInt
+                       StackManip.$fShowSwizzle3
+                       ww2
+                 } in
+                 let {
+                   g :: GHC.Base.String -> GHC.Base.String
+                     {- Arity: 1, Strictness: <L,U> -}
+                   = \ (x :: GHC.Base.String) ->
+                     case ww1 of ww4 { GHC.Types.I# ww5 ->
+                     case GHC.Show.$wshowSignedInt
+                            11#
+                            ww5
+                            (GHC.Types.:
+                               @ GHC.Types.Char
+                               GHC.Show.showSpace1
+                               (f (GHC.Types.:
+                                     @ GHC.Types.Char
+                                     GHC.Show.showSpace1
+                                     (GHC.Show.showList__
+                                        @ StackManip.StackPos
+                                        StackManip.$fShowStackPos1
+                                        ww3
+                                        x)))) of ww6 { (#,#) ww7 ww8 ->
+                     GHC.Types.: @ GHC.Types.Char ww7 ww8 } }
+                 } in
+                 case GHC.Prim.tagToEnum#
+                        @ GHC.Types.Bool
+                        (GHC.Prim.>=# ww 11#) of wild {
+                   GHC.Types.False
+                   -> \ (x :: GHC.Base.String) ->
+                      GHC.Base.++ @ GHC.Types.Char StackManip.$fShowSwizzle2 (g x)
+                   GHC.Types.True
+                   -> \ (x :: GHC.Base.String) ->
+                      GHC.Types.:
+                        @ GHC.Types.Char
+                        GHC.Show.shows7
+                        (GHC.Base.++
+                           @ GHC.Types.Char
+                           StackManip.$fShowSwizzle2
+                           (g (GHC.Types.: @ GHC.Types.Char GHC.Show.shows4 x))) }) -}
+6f4cf2272589240ea67f94d4a2654865
+  $wcompose ::
+    GHC.Types.Int
+    -> GHC.Base.Maybe GHC.Types.Int
+    -> [StackManip.StackPos]
+    -> StackManip.Swizzle
+    -> GHC.Base.Maybe StackManip.Swizzle
+  {- Arity: 4, Strictness: <L,U(U)><S,U><L,U><L,1*U(U(U),1*U,U)>,
+     Inline: [0] -}
+c66fd3c99aea97ff936ce794c7f210fd
+  $wgo :: [StackManip.StackPos] -> GHC.Prim.Int# -> GHC.Prim.Int#
+  {- Arity: 2, HasNoCafRefs, Strictness: <S,1*U><L,U>, Inline: [0] -}
+898c39a822284a21ee613adee02287f0
+  $wnormalize ::
+    GHC.Types.Int
+    -> GHC.Base.Maybe GHC.Types.Int
+    -> [StackManip.StackPos]
+    -> (# GHC.Types.Int, GHC.Base.Maybe GHC.Types.Int,
+          [StackManip.StackPos] #)
+  {- Arity: 3, Strictness: <L,U(U)><S,U><L,U>, Inline: [0] -}
+b361dd6171157ee05443759e6e486996
+  $wtoFunction ::
+    GHC.Types.Int
+    -> GHC.Base.Maybe GHC.Types.Int
+    -> [StackManip.StackPos]
+    -> GHC.Prim.Int#
+    -> StackManip.StackPos
+  {- Arity: 4, Strictness: <L,1*U(U)><S,1*U><L,1*U><S,U>,
+     Inline: [0],
+     Unfolding: (\ (ww :: GHC.Types.Int)
+                   (ww1 :: GHC.Base.Maybe GHC.Types.Int)
+                   (ww2 :: [StackManip.StackPos])
+                   (ww3 :: GHC.Prim.Int#) ->
+                 case ww1 of wild {
+                   GHC.Base.Nothing -> StackManip.toFunction1
+                   GHC.Base.Just o
+                   -> case o of wild1 { GHC.Types.I# y ->
+                      case GHC.Prim.tagToEnum#
+                             @ GHC.Types.Bool
+                             (GHC.Prim.<# ww3 y) of wild2 {
+                        GHC.Types.False
+                        -> StackManip.From
+                             (case ww of wild3 { GHC.Types.I# y1 ->
+                              GHC.Types.I# (GHC.Prim.-# (GHC.Prim.+# ww3 y1) y) })
+                        GHC.Types.True
+                        -> GHC.List.$w!! @ StackManip.StackPos ww2 ww3 } } }) -}
+60b6ec8c95f133f140273910a55222eb
+  data StackPos
+    = Cons StackManip.StackPos StackManip.StackPos
+    | Nil
+    | Unquote StackManip.StackPos
+    | From GHC.Types.Int
+9f112b3e8c926ccfa676f0d26c477d6d
+  data Swizzle
+    = Swizzle GHC.Types.Int
+              (GHC.Base.Maybe GHC.Types.Int)
+              [StackManip.StackPos]
+aa9c9f47dfa603c62e7999b2bc38ced0
+  compose ::
+    StackManip.Swizzle
+    -> StackManip.Swizzle -> GHC.Base.Maybe StackManip.Swizzle
+  {- Arity: 2, Strictness: <S(LSL),1*U(U(U),U,U)><L,1*U(U(U),1*U,U)>,
+     Inline: INLINE[0],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: StackManip.Swizzle) (w1 :: StackManip.Swizzle) ->
+                 case w of ww { StackManip.Swizzle ww1 ww2 ww3 ->
+                 StackManip.$wcompose ww1 ww2 ww3 w1 }) -}
+a17b517b33f2ae9db524f2a05e62ebee
+  composeStack ::
+    (GHC.Types.Int -> StackManip.StackPos)
+    -> StackManip.StackPos -> StackManip.StackPos
+  {- Arity: 2, HasNoCafRefs, Strictness: <L,C(U)><S,1*U> -}
+7772c9b837769f455cc42c3540de3f82
+  cons :: StackManip.Swizzle
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (StackManip.Swizzle
+                   StackManip.cons7
+                   StackManip.cons6
+                   StackManip.cons1) -}
+8212bf5dae9b9bd61a54aaa008d4771d
+  cons1 :: [StackManip.StackPos]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ StackManip.StackPos
+                   StackManip.cons2
+                   (GHC.Types.[] @ StackManip.StackPos)) -}
+63be335756c60f0197c78adb774e6220
+  cons2 :: StackManip.StackPos
+  {- HasNoCafRefs, Strictness: m1,
+     Unfolding: (StackManip.Cons StackManip.cons4 StackManip.cons3) -}
+6705629b92b75d29fb8ce2a3ea8719f4
+  cons3 :: StackManip.StackPos
+  {- HasNoCafRefs, Strictness: m4,
+     Unfolding: (StackManip.From StackManip.$fShowStackPos2) -}
+86bfb20c384035e5f85a8175f78a98a3
+  cons4 :: StackManip.StackPos
+  {- HasNoCafRefs, Strictness: m4,
+     Unfolding: (StackManip.From StackManip.cons5) -}
+2503c20f65839b829907acc02bc98c0f
+  cons5 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 1#) -}
+747ca45cd742a37601d578d45d3e7f22
+  cons6 :: GHC.Base.Maybe GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Base.Just @ GHC.Types.Int StackManip.cons5) -}
+ed0587a4978cc29ac89a4de92811ac98
+  cons7 :: GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m, Unfolding: (GHC.Types.I# 2#) -}
+64130ead54ab57821aa46c0289048d49
+  dip :: StackManip.Swizzle
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (StackManip.Swizzle
+                   StackManip.cons7
+                   (GHC.Base.Nothing @ GHC.Types.Int)
+                   StackManip.dip1) -}
+90c07a1ba85139e4742ff031910aa750
+  dip1 :: [StackManip.StackPos]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ StackManip.StackPos
+                   StackManip.cons4
+                   StackManip.dip2) -}
+16e710ba9dd197c9e75fd0d72a34c3d4
+  dip2 :: [StackManip.StackPos]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ StackManip.StackPos
+                   StackManip.dip3
+                   (GHC.Types.[] @ StackManip.StackPos)) -}
+0e64bab842084747db653e08d629316a
+  dip3 :: StackManip.StackPos
+  {- HasNoCafRefs, Strictness: m3,
+     Unfolding: (StackManip.Unquote StackManip.cons3) -}
+ef096a4ee522e9d97760d42de4f3543c
+  dup :: StackManip.Swizzle
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (StackManip.Swizzle
+                   StackManip.cons5
+                   StackManip.dup3
+                   StackManip.dup1) -}
+334b5cf05432828c073855887bea7670
+  dup1 :: [StackManip.StackPos]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ StackManip.StackPos
+                   StackManip.cons3
+                   StackManip.dup2) -}
+9a80df0a3f16708909b967c0c766e66e
+  dup2 :: [StackManip.StackPos]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ StackManip.StackPos
+                   StackManip.cons3
+                   (GHC.Types.[] @ StackManip.StackPos)) -}
+58c0619e6a2dbe57ec29e111d3f4a65a
+  dup3 :: GHC.Base.Maybe GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Base.Just @ GHC.Types.Int StackManip.cons7) -}
+abfcd2fb0390e4c0cc97de62daf41f27
+  eval :: StackManip.Swizzle
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (StackManip.Swizzle
+                   StackManip.cons5
+                   (GHC.Base.Nothing @ GHC.Types.Int)
+                   StackManip.dip2) -}
+b5e59de3ed0a94947a7cd463b65afc73
+  isSimple :: StackManip.StackPos -> GHC.Types.Bool
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: StackManip.StackPos) ->
+                 case ds of wild {
+                   DEFAULT -> GHC.Types.True
+                   StackManip.Unquote ds1 -> GHC.Types.False }) -}
+68b64b809426f115499faa515d171d33
+  isWellDefined :: StackManip.Swizzle -> GHC.Types.Bool
+  {- Arity: 1, HasNoCafRefs, Strictness: <S(LSL),1*U(A,1*U,A)>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (ds :: StackManip.Swizzle) ->
+                 case ds of wild { StackManip.Swizzle ds1 ds2 ds3 ->
+                 case ds2 of wild1 {
+                   GHC.Base.Nothing -> GHC.Types.False
+                   GHC.Base.Just ds4 -> GHC.Types.True } }) -}
+00d98a2bd5022f7260ab7d750f9d1625
+  maxIndex :: StackManip.StackPos -> GHC.Types.Int
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
+3178306c205ba2bc30a4510be96787af
+  maxIndexFromList :: [StackManip.StackPos] -> GHC.Types.Int
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>m, Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: [StackManip.StackPos]) ->
+                 case StackManip.$wgo w -1# of ww { DEFAULT -> GHC.Types.I# ww }) -}
+32449d3bfa5af0edbb12dccfe27a9f46
+  nil :: StackManip.Swizzle
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (StackManip.Swizzle
+                   StackManip.$fShowStackPos2
+                   StackManip.cons6
+                   StackManip.nil1) -}
+1111e9f7f8415cf0460a301ca1f17014
+  nil1 :: [StackManip.StackPos]
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Types.:
+                   @ StackManip.StackPos
+                   StackManip.Nil
+                   (GHC.Types.[] @ StackManip.StackPos)) -}
+313597186158f69f193d811e37ea30dc
+  normalize :: StackManip.Swizzle -> StackManip.Swizzle
+  {- Arity: 1, Strictness: <S(LSL),1*U(U(U),U,U)>m,
+     Inline: INLINE[0],
+     Unfolding: InlineRule (1, True, False)
+                (\ (w :: StackManip.Swizzle) ->
+                 case w of ww { StackManip.Swizzle ww1 ww2 ww3 ->
+                 case StackManip.$wnormalize
+                        ww1
+                        ww2
+                        ww3 of ww4 { (#,,#) ww5 ww6 ww7 ->
+                 StackManip.Swizzle ww5 ww6 ww7 } }) -}
+155c83c5c7463ce0f61509c3e8d27a0b
+  pop :: StackManip.Swizzle
+  {- HasNoCafRefs, Strictness: m,
+     Unfolding: (StackManip.Swizzle
+                   StackManip.cons5
+                   StackManip.pop1
+                   (GHC.Types.[] @ StackManip.StackPos)) -}
+50ccd04c5d1700c2c357be69167f3022
+  pop1 :: GHC.Base.Maybe GHC.Types.Int
+  {- HasNoCafRefs, Strictness: m2,
+     Unfolding: (GHC.Base.Just
+                   @ GHC.Types.Int
+                   StackManip.$fShowStackPos2) -}
+5959add9b5e98a84ba5a3b22971da415
+  reduce :: [StackManip.Swizzle] -> [StackManip.Swizzle]
+  {- Arity: 1, Strictness: <S,1*U> -}
+2b12e40f702d04729c6a89e5ddbab8ab
+  simplify ::
+    StackManip.StackPos -> GHC.Base.Maybe [StackManip.StackPos]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U>,
+     Unfolding: (\ (ds :: StackManip.StackPos) ->
+                 case ds of wild {
+                   DEFAULT
+                   -> GHC.Base.Just
+                        @ [StackManip.StackPos]
+                        (GHC.Types.:
+                           @ StackManip.StackPos
+                           wild
+                           (GHC.Types.[] @ StackManip.StackPos))
+                   StackManip.Unquote l
+                   -> case StackManip.toSimpleList l of wild1 {
+                        GHC.Base.Nothing -> GHC.Base.Nothing @ [StackManip.StackPos]
+                        GHC.Base.Just x
+                        -> GHC.Base.Just
+                             @ [StackManip.StackPos]
+                             (GHC.List.reverse @ StackManip.StackPos x) } }) -}
+dc277588c323ca1194be7c1d5b9ded3b
+  toFunction ::
+    StackManip.Swizzle -> GHC.Types.Int -> StackManip.StackPos
+  {- Arity: 2, Strictness: <S(LSL),1*U(1*U(U),1*U,1*U)><S(S),1*U(U)>,
+     Inline: INLINE[0],
+     Unfolding: InlineRule (2, True, False)
+                (\ (w :: StackManip.Swizzle) (w1 :: GHC.Types.Int) ->
+                 case w of ww { StackManip.Swizzle ww1 ww2 ww3 ->
+                 case w1 of ww4 { GHC.Types.I# ww5 ->
+                 StackManip.$wtoFunction ww1 ww2 ww3 ww5 } }) -}
+def21bae3eea202fdeba9cc01cd4a125
+  toFunction1 :: StackManip.StackPos
+  {- Strictness: x -}
+695e9be6df61ad36043ec83b0f556fec
+  toSimpleList ::
+    StackManip.StackPos -> GHC.Base.Maybe [StackManip.StackPos]
+  {- Arity: 1, HasNoCafRefs, Strictness: <S,1*U> -}
+c7b6e797c78b28d880f237451c59e5a1
+  trySimplify ::
+    [StackManip.StackPos] -> GHC.Base.Maybe [StackManip.StackPos]
+  {- Arity: 1, Strictness: <L,U>,
+     Unfolding: InlineRule (1, True, False)
+                (\ (x :: [StackManip.StackPos]) ->
+                 case StackManip.trySimplify1 x of wild {
+                   GHC.Base.Nothing -> GHC.Base.Nothing @ [StackManip.StackPos]
+                   GHC.Base.Just x1
+                   -> GHC.Base.Just
+                        @ [StackManip.StackPos]
+                        (StackManip.$sconcat @ StackManip.StackPos x1) }) -}
+f02fc7f66b98d76f097d52b6d7817450
+  trySimplify1 ::
+    [StackManip.StackPos] -> GHC.Base.Maybe [[StackManip.StackPos]]
+  {- Unfolding: (Data.Traversable.$fTraversable[]_$cmapM
+                   @ GHC.Base.Maybe
+                   @ StackManip.StackPos
+                   @ [StackManip.StackPos]
+                   GHC.Base.$fMonadMaybe
+                   StackManip.simplify) -}
+instance [safe] GHC.Classes.Eq [StackManip.StackPos]
+  = StackManip.$fEqStackPos
+instance [safe] GHC.Classes.Eq [StackManip.Swizzle]
+  = StackManip.$fEqSwizzle
+instance [safe] GHC.Show.Show [StackManip.StackPos]
+  = StackManip.$fShowStackPos
+instance [safe] GHC.Show.Show [StackManip.Swizzle]
+  = StackManip.$fShowSwizzle
+"SPEC/StackManip concat @ [] _" [ALWAYS] forall @ a
+                                                ($dFoldable :: Data.Foldable.Foldable [])
+  Data.Foldable.concat @ [] @ a $dFoldable = StackManip.$sconcat @ a
+vectorised variables:
+vectorised tycons:
+vectorised reused tycons:
+parallel variables:
+parallel tycons:
+trusted: safe
+require own pkg trusted: False
+
