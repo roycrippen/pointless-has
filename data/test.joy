@@ -3,9 +3,9 @@ DEFINE false == 0 ;
 DEFINE not == null ;
 
 DEFINE unit == [] cons ;
+DEFINE swap == unit dip ;
 DEFINE x    == dup dip ;
 DEFINE i    == x pop ;
-DEFINE swap == unit dip ;
 
 DEFINE pop2 == pop pop ;
 DEFINE pop3 == pop pop pop ;
@@ -79,11 +79,22 @@ DEFINE nub == [] swap [[has] [pop] [swons] ifte] step ;
 DEFINE nub2 == [] [[has] [pop] [swons] ifte] fold ;
 
 DEFINE fact == [dup 1 - fact *] [pop 1] branch ;
-DEFINE fib == [0 <=] [pop 1] [[1 - fib] [2 - fib] cleave +] ifte ;
+DEFINE fib-recursive == [0 <=] [pop 1] [[1 - fib-recursive] [2 - fib-recursive] cleave +] ifte ;
+DEFINE fib == [1 0] dip [swap [+] unary] times popd;
 
 DEFINE even == 2 % 0 = ;
 DEFINE odd == even not ;
 
 DEFINE measure == time [i] dip time swap - ;
 
-[ 28 fib . ] measure
+DEFINE concat == [reverse] dip [swons] fold ;
+DEFINE swoncat == swap concat ;
+DEFINE tailrec == dup3 [tailrec] cons cons cons concat ifte ;
+DEFINE t-last == [rest null] [first] [rest] tailrec ;
+
+1 100000 [1 +] times .
+
+[1 2] [3] concat .
+[1 2 3] t-last .
+
+1 2 3 [5 +] x .
