@@ -111,5 +111,4 @@ DEFINE go-pf == [dup2 >=]
 [1 2 3] t-last .
 1 2 3 [4 5 +] x stack .
 newstack 600851475143 prime-facts .
-newstack 100 fib .
-[2 3] unstack stack . 
+newstack 10000 fib .

@@ -2,28 +2,39 @@ module Main where
 
 import qualified Data.Map        as Map
 import           Interpreter
-import           Optimizer
 import           Parser
 import           PointlessParser
 import           Primitives
 
-runJoy :: String -> IO (Stack)
+runJoy :: String -> IO Stack
 runJoy fname = do
     source <- readFile fname
+    let ((definitions, quotations), _) = head $ parse program source
+        combinedFunctions = primitives ++ definitions
+    runQuotation quotations (Map.fromList combinedFunctions) []
+
+programT :: IO ([(String, WordP)], Stack)
+programT = do
+    source <- readFile "data/debug.joy"
     let ((ds, qs), _) = head $ parse program source
-        combined = primitives ++ ds
-        optimized = optimizeVocabulary combined
-    mapM_ print combined
-    mapM_ print optimized
-    runQuotation qs (Map.fromList optimized) []
-    -- runQuotation qs (Map.fromList combined) []
+    return  (primitives ++ ds, qs)
+
+stackT :: Stack
+stackT = [Quot [Number 1.0,Number 2.0],Number 3.0]
 
 main :: IO ()
 main = do
+    -- (vs, qs) <- programT
+    -- mapM_ print qs
+    -- mapM_ print vs
+    -- print stackT
+
     s <- runJoy "data/test.joy"
     if null s
-      then return ()
-      else do putStrLn "Residual stack (top to bottom):"
-              dumpStack s
+    then return ()
+    else do
+        putStrLn "Residual stack (top to bottom):"
+        dumpStack s
+
 
 

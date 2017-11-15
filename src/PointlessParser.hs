@@ -1,27 +1,26 @@
 module PointlessParser where
 
-import           Interpreter (Value (..), WordP (..))
+import           Interpreter (Stack, Value (..), WordP (..))
 import           Parser      (Parser, char, firstLetter, many, numberDouble,
                               spaces, string, wordLetter, (<|>))
 
 numberP :: Parser Value
 numberP = do
-  d <- numberDouble
-  return (Number d)
-
+    d <- numberDouble
+    return (Number d)
 
 word :: Parser Value
 word = do
-  spaces
-  c <- firstLetter
-  cs <- many wordLetter
-  spaces
-  return (Symbol (c:cs))
+    spaces
+    c <- firstLetter
+    cs <- many wordLetter
+    spaces
+    return (Symbol (c:cs))
 
 instruction :: Parser Value
 instruction = quotation <|> word <|> numberP
 
-nakedQuotations :: Parser [Value]
+nakedQuotations :: Parser Stack
 nakedQuotations = many instruction
 
 quotation :: Parser Value
@@ -56,10 +55,9 @@ definition = do
     spaces
     return (name, Quotation q)
 
-program :: Parser ([(String, WordP)], [Value])
+program :: Parser ([(String, WordP)], Stack)
 program = do
     spaces
     ds <- many definition
     qs <- nakedQuotations
-    -- eof
     return (ds, qs)

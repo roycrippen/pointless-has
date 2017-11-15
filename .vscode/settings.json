@@ -1,8 +1,8 @@
 {
-  "cSpell.enabled": false,
-  "search.exclude": {
-    ".stack-work": true,
-    "data": true
-  },
-  "editor.tabSize": 2
+    "cSpell.enabled": false,
+    "search.exclude": {
+        ".stack-work": true,
+        "data": true
+    },
+    "editor.tabSize": 4
 }

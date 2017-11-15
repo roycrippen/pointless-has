@@ -1,7 +1,7 @@
 module Interpreter where
 
-import qualified Data.Map   as Map
-import           StackManip
+import qualified Data.Map   as M (Map, lookup)
+import           Data.Maybe (fromMaybe)
 
 
 data Value = Symbol String | Number Double | Quot [Value]
@@ -9,68 +9,49 @@ data Value = Symbol String | Number Double | Quot [Value]
 
 type Stack = [Value]
 
-data WordP = Quotation [Value]                 -- composite word
-            | Primitive (Stack -> Stack)      -- simple, pure stack effect
-            | EnvPrimitive (Vocabulary -> Stack -> IO(Stack))
-            | StackEffect Swizzle
+data WordP = Quotation [Value]                                  -- composite word
+            | Primitive (Stack -> Stack)                        -- simple, pure stack effect
+            | EnvPrimitive (Vocabulary -> Stack -> IO Stack)    -- function needing the vocabulary
 
 instance Show WordP where
-  show = formatWordP
+    show = formatWordP
 
 --type Vocabulary = [(String, WordP)]
-type Vocabulary = Map.Map String WordP
+type Vocabulary = M.Map String WordP
 
 getWord :: String -> Vocabulary -> WordP
-getWord w vocab =
-    maybe (error $ "undefined word " ++ w) id (Map.lookup w vocab)
+getWord w vocab = fromMaybe (error $ "undefined word " ++ w) (M.lookup w vocab)
 
+isTrue :: Value -> Bool
 isTrue (Number x) = x /= 0.0
 isTrue (Quot q)   = not (null q)
 
 toTruth :: Bool -> Value
-toTruth b = if b then Number 1.0 else Number 0.0
+toTruth b = if b
+                then Number 1.0
+                else Number 0.0
 
 -- run the given word, whether given as a quotation or a primitive
+runWord :: WordP -> Vocabulary -> Stack -> IO Stack
 runWord w env stack = case w of
     Quotation q    -> runQuotation q env stack
     Primitive f    -> return $ f stack
     EnvPrimitive f -> f env stack
-    StackEffect s  -> return $ applySwizzle s stack
 
+runInstruction :: Value -> Vocabulary -> Stack -> IO Stack
 runInstruction ins env stack = case ins of
     Symbol w -> runWord (getWord w env) env stack
     x        -> return (x:stack)
 
-runQuotation :: [Value] -> Vocabulary -> Stack -> IO(Stack)
+runQuotation :: [Value] -> Vocabulary -> Stack -> IO Stack
 runQuotation [] _ s = return s
-runQuotation (i:is) env s =
-    do s' <- runInstruction i env s
-       runQuotation is env s'
+runQuotation (i:is) env s = do
+    s' <- runInstruction i env s
+    runQuotation is env s'
 
 quotCons :: Value -> Value -> Value
 quotCons x (Quot q) = Quot (x:q)
 quotCons _ _        = error "Error in cons, second argument not a quotation"
-
-
--- stack swizzling
-
-computePosition :: Stack -> StackPos -> Value
-computePosition stack (Nil)        = Quot []
-computePosition stack (From i)     = stack !! i
-computePosition stack (Cons s1 ss) =
-    quotCons (computePosition stack s1) (computePosition stack ss)
-computePosition stack _ =
-    error "Attempt to apply ill-defined stack effect."
-
-applySwizzle :: Swizzle -> Stack -> Stack
-applySwizzle s@(Swizzle i (Just o) ef) stack =
-    newtop ++ bottom where
-        (top,bottom) = splitAt i stack
-        newtop = map (computePosition top) ef
-applySwizzle _ _ =
-    error "Attempt to apply ill-defined stack effect."
-
-
 
 -- pretty-print stack
 formatStack :: [Value] -> String
@@ -82,13 +63,18 @@ dumpStack s = putStrLn (formatStack s)
 -- pretty-print values
 formatV :: Value -> String
 formatV (Symbol s) = s
-formatV (Number x) = if (isInteger x) then show (truncate x) else show x where
-                        isInteger x = snd (properFraction x) == 0
+formatV (Number n) = if isInteger
+    then show (truncate n :: Integer)
+    else show n
+    where
+      properFraction' :: Double -> (Integer, Double)
+      properFraction' = properFraction
+      (_, realFrac) = properFraction' n
+      isInteger = realFrac < 0.00000001
 formatV (Quot [])  = "[]"
 formatV (Quot q)   = concat ["[ ", unwords $ map formatV q, " ]"]
 
 formatWordP :: WordP -> String
 formatWordP (Quotation xs)   = formatV (Quot xs)
-formatWordP (Primitive _)    = "Stack -> Stack"
-formatWordP (EnvPrimitive _) = "Vocabulary -> Stack -> IO(Stack)"
-formatWordP _                = "not printable"
+formatWordP (Primitive _)    = "function: Stack -> Stack"
+formatWordP (EnvPrimitive _) = "function: Vocabulary -> Stack -> IO Stack"
