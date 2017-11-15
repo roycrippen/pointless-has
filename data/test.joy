@@ -80,7 +80,7 @@ DEFINE nub2 == [] [[has] [pop] [swons] ifte] fold ;
 
 DEFINE fact == [dup 1 - fact *] [pop 1] branch ;
 DEFINE fib-recursive == [0 <=] [pop 1] [[1 - fib-recursive] [2 - fib-recursive] cleave +] ifte ;
-DEFINE fib == [1 0] dip [swap [+] unary] times popd;
+DEFINE fib == [1 0] dip [swap [+] unary] times popd ;
 
 DEFINE even == 2 % 0 = ;
 DEFINE odd == even not ;
@@ -92,9 +92,29 @@ DEFINE swoncat == swap concat ;
 DEFINE tailrec == dup3 [tailrec] cons cons cons concat ifte ;
 DEFINE t-last == [rest null] [first] [rest] tailrec ;
 
-1 100000 [1 +] times .
+DEFINE rolldown ==  swapd swap ;
+DEFINE rollup == rolldown rolldown ;
+DEFINE succ == 1 + ;
+DEFINE pred == 1 - ;
+DEFINE newstack == [] unstack ;
+
+DEFINE go-pf == [dup2 >=] 
+                       [ 
+                         [dup2 % 0 =] 
+                         [rolldown dup2 cons swap pop rollup / 2 go-pf] 
+                         [succ go-pf]
+                         ifte 
+                       ]    
+                       [pop pop reverse]
+                       ifte ;
+
+DEFINE prime-facts == 2 [] rollup go-pf stack ;
+
+
+
 
 [1 2] [3] concat .
 [1 2 3] t-last .
-
-1 2 3 [5 +] x .
+1 2 3 [5 +] x stack .
+newstack 600851475143 prime-facts .
+newstack 10000 fib .

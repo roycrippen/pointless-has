@@ -1,67 +1,158 @@
--- {-# LANGUAGE FlexibleInstances    #-}
--- {-# LANGUAGE TypeSynonymInstances #-}
-
 module Parser where
 
-import           Control.Applicative           hiding (many, (<|>))
-import           Control.Monad
-import           Interpreter
-import           Text.ParserCombinators.Parsec
+import           Control.Applicative ()
+import           Control.Monad       (ap, liftM)
+import           Data.List           (find)
 
--- instance Applicative (GenParser s a) where
---     pure  = return
---     (<*>) = ap
+newtype Parser a = Parser (String -> [(a, String)])
+
+parse :: Parser t -> String -> [(t, String)]
+parse (Parser p) = p
+
+instance Functor Parser where
+  fmap = liftM
+
+instance Applicative Parser where
+  pure  = return
+  (<*>) = ap
+
+instance Monad Parser where
+   return a = Parser (\s -> [(a,s)])
+   p >>= f = Parser (concatMap (\ (a, s') -> parse (f a) s') . parse p)
+
+item :: Parser Char
+item = Parser item' where
+  item' s = case s of
+              ""     -> []
+              -- (' ':cs) -> item' cs
+              (c:cs) -> [(c,cs)]
+
+class Monad m => MonadPlus m where
+      mzero :: m a
+      mplus :: m a -> m a -> m a
 
 
-p `cat` q = do v <- p; w <- q; return (v ++ w)
-p `cat` q = (++) <$> p <*> q
+-- mplus for the Parser is like an choice operator.
+instance MonadPlus Parser where
+         mzero = Parser (const [])
+         mplus p q = Parser (\s -> parse p s ++ parse q s)
 
-number = do
-    str <- option "" (string "-") `cat` many1 digit
-           `cat` option "" (string "." `cat` many1 digit)
+option :: Parser a -> Parser a -> Parser a
+option  p q = Parser (\s -> case parse (mplus p q) s of
+                                []    -> []
+                                (x:_) -> [x])
+
+(<|>) :: Parser a -> Parser a -> Parser a
+(<|>) = option
+
+satisfies :: (Char -> Bool) -> Parser Char
+satisfies p = item >>= \c ->
+              if p c then return c else mzero
+
+char :: Char -> Parser Char
+char c = satisfies (c ==)
+
+string :: String -> Parser String
+string ""     = return ""
+string (c:cs) = do { char c; string cs; return (c:cs)}
+
+many :: Parser a -> Parser [a]
+many p = many1 p `option` return []
+
+many1 :: Parser a -> Parser [a]
+many1 p = do { a <- p; as <- many p; return (a:as)}
+
+sepBy :: Parser a -> Parser b -> Parser [a]
+p `sepBy` sep = (p `sepBy1` sep) `option` return []
+
+sepBy1 :: Parser a -> Parser b -> Parser [a]
+p `sepBy1` sep = do a <- p
+                    as <- many (do {sep; p})
+                    return (a:as)
+
+chainl :: Parser a -> Parser (a -> a -> a) -> a -> Parser a
+chainl p op a = (p `chainl1` op) `option` return a
+
+chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
+p `chainl1` op = do {a <- p; rest a}
+                 where rest a = (do f <- op
+                                    b <- p
+                                    rest (f a b))
+                                `option` return a
+
+oneOf :: [Parser a] -> Parser a
+oneOf = foldl1 option
+
+manyN :: Parser a -> Int -> Parser [a]
+manyN p 1 = do {c <- p; return [c]}
+manyN p n = do {c <- p; rest <- manyN p (n-1); return (c:rest)}
+
+
+manyTill :: Parser a -> Parser b -> Parser [a]
+manyTill p end = manyTill1 p end `option` return []
+
+manyTill1 :: Parser a -> Parser b -> Parser [a]
+manyTill1 p end = do a <- p
+                     b <- lookAhead end
+                     if b then return [a] else
+                        do as <- manyTill p end
+                           return (a:as)
+
+
+lookAhead :: Parser a -> Parser Bool
+lookAhead p = Parser (\s ->
+                         case parse p s of
+                         [] -> [(False, s)]
+                         _  -> [(True, s)])
+
+quotedString :: Parser String
+quotedString = do { char '"'; s <- manyTill item (char '"'); char '"'; return s}
+-- Lexical combinators
+
+spaces :: Parser String
+spaces = many (satisfies isSpace)
+       where isSpace ' '  = True
+             isSpace '\n' = True
+             isSpace '\t' = True
+             isSpace _    = False
+
+token :: Parser a -> Parser a
+token p = do spaces
+             a <- p
+             spaces
+             return a
+
+symb :: String -> Parser String
+symb s = token $ string s
+
+digit :: Parser Char
+digit = satisfies isDigit
+  where isDigit c = find (== c) ['0'..'9'] /= Nothing
+
+numberInt :: Parser Int
+numberInt = do
+    sign <- (string "-" <|> string "")
+    digits <- many1 digit
+    return (read (sign ++ digits) :: Int)
+
+numberDouble :: Parser Double
+numberDouble = do
+    sign <- (string "-" <|> string "")
+    digits <- many1 digit
+    _ <- (string "." <|> string "")
+    mantissa <- many digit
     spaces
-    return $ Number (read str :: Double)
-  <?> "number"
+    let mantissa' = if mantissa == "" then "0" else mantissa
+        double = sign ++ digits ++ "." ++ mantissa'
+    return (read   double :: Double)
 
-wordLetter = letter <|> digit <|> oneOf "+-*/<>=!?§$%&@~#´`',:."
+letter :: Parser Char
+letter = satisfies isAlpha
+  where isAlpha c = find (== c) letters /= Nothing
+        letters = ['a'..'z'] ++ ['A'..'Z']
 
-word = do
-    w <- many1 wordLetter
-    spaces
-    if w == "DEFINE" then
-        fail "invalid occurrence of DEFINE"
-      else
-        return (Symbol w)
-  <?> "word"
+firstLetter :: Parser Char
+firstLetter = letter <|> oneOf (map char "+-*/<>=!?§$%&@~#´`',:.")
 
-instruction = quotation <|> try number <|> word
-
-nakedQuotation = many instruction
-
-quotation = do
-    char '['; spaces
-    quot <- nakedQuotation
-    char ']'; spaces
-    return (Quot quot)
-  <?> "quotation"
-
-definitionHeader = do
-    name <- word
-    string "=="; space; spaces
-    case name of
-        Symbol x -> return x
-        _        -> fail "invalid name for definition"
-
-definition = do
-    string "DEFINE"; space; spaces
-    name <- definitionHeader
-    quot <- nakedQuotation
-    char ';' ; spaces
-    return (name, Quotation quot)
-
-program = do
-    spaces
-    vocab <- many definition
-    quot <- nakedQuotation
-    eof
-    return (vocab,quot)
+wordLetter :: Parser Char
+wordLetter = firstLetter <|> digit

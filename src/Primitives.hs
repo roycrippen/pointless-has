@@ -1,10 +1,10 @@
 module Primitives(primitives) where
 
-import Interpreter
+import           Interpreter
 import qualified StackManip
 
-import Data.Time.Clock.POSIX
-import Debug.Trace
+import           Data.Time.Clock.POSIX
+import           Debug.Trace
 
 
 -- Primitives
@@ -25,10 +25,10 @@ uncons ((Quot (x:is)):xs) = (Quot is):x:xs
 uncons _ = error "uncons: quotation with at least one element expected"
 
 append ((Quot r):(Quot q):xs) = (Quot (q ++ r)):xs
-append _ = error "append: two quotations expected"
+append _                      = error "append: two quotations expected"
 
-printVal _ (x:xs) = do putStrLn (format x); return xs
-printVal _ _      = error "print: stack empty"
+printVal _ (x:xs) = do putStrLn (formatV x); return xs
+printVal _ _      = error "printVal: stack empty"
 
 ifThenElse vocab ((Quot qelse):(Quot qthen):(Quot qif):xs) =
     do (result:_) <- runQuotation qif vocab xs
@@ -45,7 +45,7 @@ comparison op ((Number y):(Number x):xs) = toTruth(op x y):xs
 comparison _ _ = error "comparison operation: two numbers expected"
 
 logic op (y:x:xs) = toTruth (op (isTrue x) (isTrue y)) : xs
-logic _ _ = error "logic operation: two values expected"
+logic _ _         = error "logic operation: two values expected"
 
 lnot (x:xs) = toTruth (not (isTrue x)) : xs
 lnot _      = error "null: value expected"
@@ -54,7 +54,7 @@ debugDumpStack _ s = do dumpStack s ; return s
 
 stack xs = (Quot xs):xs
 unstack ((Quot ys):xs) = ys
-unstack _ = error "unstack: quotation expected"
+unstack _              = error "unstack: quotation expected"
 
 truncMod x y = fromInteger ((truncate x) `mod` (truncate y)) :: Double
 

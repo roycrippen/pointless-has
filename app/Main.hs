@@ -1,25 +1,27 @@
 module Main where
 
-import Parser
-import Text.ParserCombinators.Parsec(parseFromFile)
-import Interpreter
-import Primitives
-import Optimizer
-import qualified Data.Map as Map
+import qualified Data.Map        as Map
+import           Interpreter
+import           Optimizer
+import           Parser
+import           PointlessParser
+import           Primitives
 
-
-must :: (Show a) => Either a b -> b
-must = either (error . show) id
-
-runJoy :: String -> IO(Stack)
+runJoy :: String -> IO (Stack)
 runJoy fname = do
-    (vocab,quot) <- fmap must $ parseFromFile program fname
-    runQuotation quot (Map.fromList $ optimizeVocabulary $ primitives ++ vocab) []
+    source <- readFile fname
+    let ((ds, qs), _) = head $ parse program source
+    mapM_ print primitives
+    mapM_ print ds
+    mapM_ print qs
+    runQuotation qs (Map.fromList $ optimizeVocabulary $ primitives ++ ds) []
 
+main :: IO ()
 main = do
     s <- runJoy "data/test.joy"
-    if null s then 
-        return ()
-      else
-        do putStrLn "Residual stack (top to bottom):"
-           dumpStack s
+    if null s
+      then return ()
+      else do putStrLn "Residual stack (top to bottom):"
+              dumpStack s
+
+

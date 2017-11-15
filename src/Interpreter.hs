@@ -14,13 +14,15 @@ data WordP = Quotation [Value]                 -- composite word
             | EnvPrimitive (Vocabulary -> Stack -> IO(Stack))
             | StackEffect Swizzle
 
+instance Show WordP where
+  show = formatWordP
+
 --type Vocabulary = [(String, WordP)]
 type Vocabulary = Map.Map String WordP
 
 getWord :: String -> Vocabulary -> WordP
 getWord w vocab =
     maybe (error $ "undefined word " ++ w) id (Map.lookup w vocab)
-
 
 isTrue (Number x) = x /= 0.0
 isTrue (Quot q)   = not (null q)
@@ -71,14 +73,22 @@ applySwizzle _ _ =
 
 
 -- pretty-print stack
-formatStack = unlines . map format
+formatStack :: [Value] -> String
+formatStack = unlines . map formatV
 
+dumpStack :: [Value] -> IO ()
 dumpStack s = putStrLn (formatStack s)
 
 -- pretty-print values
-format (Symbol s) = s
-format (Number x) = if (isInteger x) then show (truncate x) else show x where
+formatV :: Value -> String
+formatV (Symbol s) = s
+formatV (Number x) = if (isInteger x) then show (truncate x) else show x where
                         isInteger x = snd (properFraction x) == 0
-format (Quot [])  = "[]"
-format (Quot q)   = concat ["[ ", unwords $ map format q, " ]"]
+formatV (Quot [])  = "[]"
+formatV (Quot q)   = concat ["[ ", unwords $ map formatV q, " ]"]
 
+formatWordP :: WordP -> String
+formatWordP (Quotation xs)   = formatV (Quot xs)
+formatWordP (Primitive _)    = "Stack -> Stack"
+formatWordP (EnvPrimitive _) = "Vocabulary -> Stack -> IO(Stack)"
+formatWordP _                = "not printable"
