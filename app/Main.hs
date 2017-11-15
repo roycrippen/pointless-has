@@ -15,7 +15,7 @@ runJoy fname = do
 
 programT :: IO ([(String, WordP)], Stack)
 programT = do
-    source <- readFile "data/debug.joy"
+    source <- readFile "data/test.joy"
     let ((ds, qs), _) = head $ parse program source
     return  (primitives ++ ds, qs)
 
@@ -27,6 +27,7 @@ main = do
     -- (vs, qs) <- programT
     -- mapM_ print qs
     -- mapM_ print vs
+    -- mapM_ (\(s, w) -> putStrLn $ s ++ " == " ++ formatWordAST w ) vs
     -- print stackT
 
     s <- runJoy "data/test.joy"

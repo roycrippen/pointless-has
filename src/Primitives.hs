@@ -1,7 +1,7 @@
 module Primitives where
 
 import           Interpreter (Stack, Value (..), Vocabulary, WordP (..),
-                              dumpStack, formatV, isTrue, runQuotation, toTruth)
+                              formatV, isTrue, runQuotation, toTruth)
 
 -- import           Debug.Trace
 
@@ -72,11 +72,6 @@ lnot :: Stack -> Stack
 lnot (c:cs) = toTruth (not (isTrue c)) : cs
 lnot _      = error "null: value expected"
 
-debugDumpStack :: t -> Stack -> IO Stack
-debugDumpStack _ s = do
-    dumpStack s
-    return s
-
 stack :: Stack -> Stack
 stack cs = Quot cs : cs
 
@@ -114,5 +109,4 @@ primitives =
     , ("null",     Primitive lnot)
     , ("stack",    Primitive stack)
     , ("unstack",  Primitive unstack)
-    , ("???",      EnvPrimitive debugDumpStack)
     ]

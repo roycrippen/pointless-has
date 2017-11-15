@@ -61,7 +61,7 @@ string (c:cs) = do
     return (c:cs)
 
 many :: Parser a -> Parser [a]
-many p = many1 p `option` return []
+many p = many1 p <|> return []
 
 many1 :: Parser a -> Parser [a]
 many1 p = do
@@ -70,7 +70,7 @@ many1 p = do
     return (a:as)
 
 sepBy :: Parser a -> Parser b -> Parser [a]
-p `sepBy` sep = (p `sepBy1` sep) `option` return []
+p `sepBy` sep = (p `sepBy1` sep) <|> return []
 
 sepBy1 :: Parser a -> Parser b -> Parser [a]
 p `sepBy1` sep = do
@@ -79,7 +79,7 @@ p `sepBy1` sep = do
     return (a:as)
 
 chainl :: Parser a -> Parser (a -> a -> a) -> a -> Parser a
-chainl p op a = (p `chainl1` op) `option` return a
+chainl p op a = (p `chainl1` op) <|> return a
 
 chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
 p `chainl1` op = do
@@ -89,7 +89,7 @@ p `chainl1` op = do
       rest a = (do
           f <- op
           b <- p
-          rest (f a b)) `option` return a
+          rest (f a b)) <|> return a
 
 oneOf :: [Parser a] -> Parser a
 oneOf = foldl1 option
@@ -104,7 +104,7 @@ manyN p n = do
     return (c:rest)
 
 manyTill :: Parser a -> Parser b -> Parser [a]
-manyTill p end = manyTill1 p end `option` return []
+manyTill p end = manyTill1 p end <|> return []
 
 manyTill1 :: Parser a -> Parser b -> Parser [a]
 manyTill1 p end = do

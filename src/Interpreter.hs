@@ -4,19 +4,18 @@ import qualified Data.Map   as M (Map, lookup)
 import           Data.Maybe (fromMaybe)
 
 
-data Value = Symbol String | Number Double | Quot [Value]
+data Value = Symbol String | Number Double | Quot Stack
     deriving (Eq,Show)
 
 type Stack = [Value]
 
-data WordP = Quotation [Value]                                  -- composite word
-            | Primitive (Stack -> Stack)                        -- simple, pure stack effect
-            | EnvPrimitive (Vocabulary -> Stack -> IO Stack)    -- function needing the vocabulary
+data WordP = Quotation Stack                                  -- composite word
+            | Primitive (Stack -> Stack)                      -- simple, pure stack effect
+            | EnvPrimitive (Vocabulary -> Stack -> IO Stack)  -- function needing the vocabulary
 
 instance Show WordP where
     show = formatWordP
 
---type Vocabulary = [(String, WordP)]
 type Vocabulary = M.Map String WordP
 
 getWord :: String -> Vocabulary -> WordP
@@ -43,7 +42,7 @@ runInstruction ins env stack = case ins of
     Symbol w -> runWord (getWord w env) env stack
     x        -> return (x:stack)
 
-runQuotation :: [Value] -> Vocabulary -> Stack -> IO Stack
+runQuotation :: Stack -> Vocabulary -> Stack -> IO Stack
 runQuotation [] _ s = return s
 runQuotation (i:is) env s = do
     s' <- runInstruction i env s
@@ -54,10 +53,10 @@ quotCons x (Quot q) = Quot (x:q)
 quotCons _ _        = error "Error in cons, second argument not a quotation"
 
 -- pretty-print stack
-formatStack :: [Value] -> String
+formatStack :: Stack -> String
 formatStack = unlines . map formatV
 
-dumpStack :: [Value] -> IO ()
+dumpStack :: Stack -> IO ()
 dumpStack s = putStrLn (formatStack s)
 
 -- pretty-print values
@@ -78,3 +77,8 @@ formatWordP :: WordP -> String
 formatWordP (Quotation xs)   = formatV (Quot xs)
 formatWordP (Primitive _)    = "function: Stack -> Stack"
 formatWordP (EnvPrimitive _) = "function: Vocabulary -> Stack -> IO Stack"
+
+formatWordAST :: WordP -> String
+formatWordAST (Quotation xs)   = show xs
+formatWordAST (Primitive _)    = "function: Stack -> Stack"
+formatWordAST (EnvPrimitive _) = "function: Vocabulary -> Stack -> IO Stack"
