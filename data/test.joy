@@ -98,6 +98,7 @@ DEFINE succ == 1 + ;
 DEFINE pred == 1 - ;
 DEFINE newstack == [] unstack ;
 
+DEFINE prime-facts == 2 [] rollup go-pf stack ;
 DEFINE go-pf == [dup2 >=] 
                        [ 
                          [dup2 % 0 =] 
@@ -107,11 +108,6 @@ DEFINE go-pf == [dup2 >=]
                        ]    
                        [pop pop reverse]
                        ifte ;
-
-DEFINE prime-facts == 2 [] rollup go-pf stack ;
-
-
-
 
 [1 2] [3] concat .
 [1 2 3] t-last .

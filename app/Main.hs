@@ -11,10 +11,12 @@ runJoy :: String -> IO (Stack)
 runJoy fname = do
     source <- readFile fname
     let ((ds, qs), _) = head $ parse program source
-    mapM_ print primitives
-    mapM_ print ds
-    mapM_ print qs
-    runQuotation qs (Map.fromList $ optimizeVocabulary $ primitives ++ ds) []
+        combined = primitives ++ ds
+        optimized = optimizeVocabulary combined
+    mapM_ print combined
+    mapM_ print optimized
+    runQuotation qs (Map.fromList optimized) []
+    -- runQuotation qs (Map.fromList combined) []
 
 main :: IO ()
 main = do
