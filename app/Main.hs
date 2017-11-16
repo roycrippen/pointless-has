@@ -1,10 +1,11 @@
 module Main where
 
 import qualified Data.Map        as Map
-import           Interpreter
+import           Interpreter     (Stack, Value (..), WordP (..), formatStack,
+                                  runQuotation)
 import           Parser
-import           PointlessParser
-import           Primitives
+import           PointlessParser (program)
+import           Primitives      (primitives)
 
 getProgram :: IO ([(String, WordP)], Stack)
 getProgram = do
@@ -21,33 +22,13 @@ sourceT = " (*start*)  DEFINE dup' == dup ; DEFINE pop' == pop ; # aaa \n  # bbb
 
 main :: IO ()
 main = do
-    -- let a@(_, a') = head $ parse (many definition) sourceT
-    --     b@(_, b') = head $ parse (comments) a'
-    --     -- c@(_, _) = head $ parse comment b'
-
-    -- print a
-    -- print b
-    -- -- print c
-
-
-
-
     (definitions, quotations) <- getProgram
-    -- mapM_ (\(s, w) -> putStrLn $ s ++ " == " ++ formatWordAST w ) definitions
-    -- mapM_ print definitions
-    putStrLn "\n"
-    mapM_ print quotations
-    putStrLn "\n"
-
-
     let s = runQuotation quotations (Map.fromList definitions) []
     if null s
     then return ()
     else do
         putStrLn "Residual stack (top to bottom):\n"
         putStrLn $ formatStack s
-
-
 
 
 

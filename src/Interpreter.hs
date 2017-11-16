@@ -13,10 +13,6 @@ data WordP = Quotation Stack                           -- composite word
            | Primitive (Stack -> Stack)                -- pure stack effect function
            | Function (Vocabulary -> Stack -> Stack)   -- function requiring vocabulary
 
--- data WordP = Quotation Stack                                  -- composite word
---             | Primitive (Stack -> Stack)                      -- simple, pure stack effect
---             | EnvPrimitive (Vocabulary -> Stack -> IO Stack)  -- function needing the vocabulary
-
 instance Show WordP where
     show = formatWordP
 
@@ -50,24 +46,6 @@ runInstruction :: Value -> Vocabulary -> Stack -> Stack
 runInstruction ins vocab stack = case ins of
     Symbol w -> runWord (getWord w vocab) vocab stack
     x        -> x:stack
-
--- -- run the given word, whether given as a quotation or a primitive
--- runWord :: WordP -> Vocabulary -> Stack -> IO Stack
--- runWord w env stack = case w of
---     Quotation q    -> runQuotation q env stack
---     Primitive f    -> return $ f stack
---     EnvPrimitive f -> f env stack
-
--- runInstruction :: Value -> Vocabulary -> Stack -> IO Stack
--- runInstruction ins env stack = case ins of
---     Symbol w -> runWord (getWord w env) env stack
---     x        -> return (x:stack)
-
--- runQuotation :: Stack -> Vocabulary -> Stack -> IO Stack
--- runQuotation [] _ s = return s
--- runQuotation (i:is) env s = do
---     s' <- runInstruction i env s
---     runQuotation is env s'
 
 quotCons :: Value -> Value -> Value
 quotCons x (Quot q) = Quot (x:q)

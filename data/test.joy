@@ -119,9 +119,13 @@ DEFINE go-pf == [dup2 >=]
 # [1 2 3] t-last dup .
 # 1 2 3 [4 5 +] x dup .
 # 600851475143 prime-facts .
-# 100 fib dup .
 
-newstack [2 2 +] [true] [1 1 +] [] ifte stack dup .
+100 fib dup .
+
+[2 2 +] [true] [1 1 +] [] ifte dup .
+
+5304 prime-facts .
+
 
 
 

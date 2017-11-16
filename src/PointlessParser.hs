@@ -1,9 +1,9 @@
 module PointlessParser where
 
 import           Interpreter (Stack, Value (..), WordP (..))
-import           Parser      (Parser, anyChar, char, endOfLine, firstLetter,
-                              lookAhead, many, manyTill, mzero, newline,
-                              numberDouble, spaces, string, wordLetter, (<|>))
+import           Parser      (Parser, anyChar, char, firstLetter, many,
+                              manyTill, newline, numberDouble, spaces, string,
+                              wordLetter, (<|>))
 
 numberP :: Parser Value
 numberP = do
@@ -72,7 +72,7 @@ program = do
 comment :: Parser ()
 comment =
     (string "#" >> manyTill anyChar newline >> spaces >> return ()) <|>
-    (string "(*" >> manyTill anyChar (string "*)") >> (string "*)") >> spaces >> return ())
+    (string "(*" >> manyTill anyChar (string "*)") >> string "*)" >> spaces >> return ())
 
 comments :: Parser [()]
 comments = many comment

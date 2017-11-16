@@ -15,11 +15,11 @@ dup (c:cs) = c:c:cs
 dup _      = error "dup: stack empty"
 
 dip :: Vocabulary -> Stack -> Stack
-dip vocab (Quot q : (c : cs)) = c:(runQuotation q vocab cs)
+dip vocab (Quot q : (c : cs)) = c : runQuotation q vocab cs
 dip _ _                       = error "dip: value and quotation expected"
 
 x :: Vocabulary -> Stack -> Stack
-x vocab (Quot q : cs) = (runQuotation q vocab []) ++ [Quot q] ++ cs
+x vocab (Quot q : cs) = runQuotation q vocab [] ++ [Quot q] ++ cs
 x _ _                 = error "x: quotation must be executable without a stack"
 
 i :: Vocabulary -> Stack -> Stack
@@ -43,13 +43,12 @@ printVal (_:cs) = cs
 printVal _      = error "printVal: stack empty"
 
 ifThenElse :: Vocabulary -> Stack -> Stack
-ifThenElse vocab (Quot qelse : (Quot qthen : (Quot qif : cs))) = do
+ifThenElse vocab (Quot qelse : (Quot qthen : (Quot qif : cs))) =
     if isTrue result
         then runQuotation qthen vocab cs
         else runQuotation qelse vocab cs
       where
         (result:_) = runQuotation qif vocab cs
-
 ifThenElse _ _ = error "ifte: three quotations expected"
 
 arith :: (Double -> Double -> Double) -> Stack -> Stack
@@ -107,32 +106,3 @@ primitives =
     , ("ifte",     Function ifThenElse)
     ]
 
-
---     primitives :: [(String, WordP)]
--- primitives =
---     [ ("pop",      Primitive pop)
---     , ("dup",      Primitive dup)
---     , ("dip",      EnvPrimitive dip)
---     , ("x",        EnvPrimitive x)
---     , ("i",        EnvPrimitive i)
---     , ("cons",     Primitive cons)
---     , ("uncons",   Primitive uncons)
---     , ("concat",   Primitive concatP)
---     , (".",        EnvPrimitive printVal)
---     , ("ifte",     EnvPrimitive ifThenElse)
---     , ("+",        Primitive $ arith (+))
---     , ("-",        Primitive $ arith (-))
---     , ("*",        Primitive $ arith (*))
---     , ("/",        Primitive $ arith (/))
---     , ("%",        Primitive $ arith truncMod)
---     , ("=",        Primitive $ comparison (==))
---     , ("<=",       Primitive $ comparison (<=))
---     , (">=",       Primitive $ comparison (>=))
---     , ("<",        Primitive $ comparison (<))
---     , (">",        Primitive $ comparison (>))
---     , ("and",      Primitive $ logic (&&))
---     , ("or",       Primitive $ logic (||))
---     , ("null",     Primitive lnot)
---     , ("stack",    Primitive stack)
---     , ("unstack",  Primitive unstack)
---     ]
