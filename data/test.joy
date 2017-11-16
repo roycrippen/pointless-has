@@ -114,9 +114,14 @@ DEFINE go-pf == [dup2 >=]
                        [pop pop reverse]
                        ifte ;
 
-# [1 2] [3] concat .
-# [1 2 3] t-last .
-1 2 3 [4 5 +] x stack .
-newstack 600851475143 prime-facts .
-newstack 100 fib .
+
+# [1 2] [3] concat dup .
+# [1 2 3] t-last dup .
+# 1 2 3 [4 5 +] x dup .
+# 600851475143 prime-facts .
+# 100 fib dup .
+
+newstack [2 2 +] [true] [1 1 +] [] ifte stack dup .
+
+
 

@@ -132,11 +132,12 @@ quotedString = do
 
 spaces :: Parser String
 spaces = many (satisfies isSpace)
-    where
-      isSpace ' '  = True
-      isSpace '\n' = True
-      isSpace '\t' = True
-      isSpace _    = False
+  where
+    isSpace ' '  = True
+    isSpace '\n' = True
+    isSpace '\r' = True
+    isSpace '\t' = True
+    isSpace _    = False
 
 token :: Parser a -> Parser a
 token p = do
@@ -173,17 +174,24 @@ numberDouble = do
 
 letter :: Parser Char
 letter = satisfies isAlpha
-  where isAlpha c = isJust (find (== c) letters)
-        letters = ['a'..'z'] ++ ['A'..'Z']
+  where
+    isAlpha c = isJust (find (== c) letters)
+    letters = ['a'..'z'] ++ ['A'..'Z']
 
 firstLetter :: Parser Char
-firstLetter = letter <|> oneOf (map char "+-*/<>=!?§$%&@~#´`',:.")
+firstLetter = letter <|> oneOf (map char "+-*/<>=!?§$%&@~´`',:.")
 
 wordLetter :: Parser Char
 wordLetter = firstLetter <|> digit
 
 newline :: Parser Char
 newline = char '\n'
+
+crlf :: Parser Char
+crlf = char '\r' *> char '\n'
+
+endOfLine :: Parser Char
+endOfLine = newline <|> crlf
 
 anyChar :: Parser Char
 anyChar = satisfies (const True)

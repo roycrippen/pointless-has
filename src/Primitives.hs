@@ -1,7 +1,7 @@
 module Primitives where
 
-import           Interpreter (Stack, Value (..), Vocabulary, WordP (..),
-                              formatV, isTrue, runQuotation, toTruth)
+import           Interpreter (Stack, Value (..), Vocabulary, WordP (..), isTrue,
+                              runQuotation, toTruth)
 
 -- import           Debug.Trace
 
@@ -14,19 +14,15 @@ dup :: Stack -> Stack
 dup (c:cs) = c:c:cs
 dup _      = error "dup: stack empty"
 
-dip :: Vocabulary -> Stack -> IO Stack
-dip vocab (Quot q : (c : cs)) = do
-    s' <- runQuotation q vocab cs
-    return (c:s')
-dip _ _                   = error "dip: value and quotation expected"
+dip :: Vocabulary -> Stack -> Stack
+dip vocab (Quot q : (c : cs)) = c:(runQuotation q vocab cs)
+dip _ _                       = error "dip: value and quotation expected"
 
-x :: Vocabulary -> Stack -> IO Stack
-x vocab (Quot q : cs) = do
-    s' <- runQuotation q vocab []
-    return (s' ++ [Quot q] ++ cs)
+x :: Vocabulary -> Stack -> Stack
+x vocab (Quot q : cs) = (runQuotation q vocab []) ++ [Quot q] ++ cs
 x _ _                 = error "x: quotation must be executable without a stack"
 
-i :: Vocabulary -> Stack -> IO Stack
+i :: Vocabulary -> Stack -> Stack
 i vocab (Quot q : cs) = runQuotation q vocab cs
 i _ _                 = error "x: quotation must be executable without a stack"
 
@@ -42,18 +38,18 @@ concatP :: Stack -> Stack
 concatP (Quot s : (Quot t : cs)) = Quot (t ++ s) : cs
 concatP _                        = error "concatP: two quotations expected"
 
-printVal :: t -> Stack -> IO Stack
-printVal _ (c:cs) = do
-    putStrLn (formatV c)
-    return cs
-printVal _ _      = error "printVal: stack empty"
+printVal :: Stack -> Stack
+printVal (_:cs) = cs
+printVal _      = error "printVal: stack empty"
 
-ifThenElse :: Vocabulary -> Stack -> IO Stack
+ifThenElse :: Vocabulary -> Stack -> Stack
 ifThenElse vocab (Quot qelse : (Quot qthen : (Quot qif : cs))) = do
-    (result:_) <- runQuotation qif vocab cs
     if isTrue result
         then runQuotation qthen vocab cs
-         else runQuotation qelse vocab cs
+        else runQuotation qelse vocab cs
+      where
+        (result:_) = runQuotation qif vocab cs
+
 ifThenElse _ _ = error "ifte: three quotations expected"
 
 arith :: (Double -> Double -> Double) -> Stack -> Stack
@@ -86,14 +82,9 @@ primitives :: [(String, WordP)]
 primitives =
     [ ("pop",      Primitive pop)
     , ("dup",      Primitive dup)
-    , ("dip",      EnvPrimitive dip)
-    , ("x",        EnvPrimitive x)
-    , ("i",        EnvPrimitive i)
     , ("cons",     Primitive cons)
     , ("uncons",   Primitive uncons)
     , ("concat",   Primitive concatP)
-    , (".",        EnvPrimitive printVal)
-    , ("ifte",     EnvPrimitive ifThenElse)
     , ("+",        Primitive $ arith (+))
     , ("-",        Primitive $ arith (-))
     , ("*",        Primitive $ arith (*))
@@ -109,4 +100,39 @@ primitives =
     , ("null",     Primitive lnot)
     , ("stack",    Primitive stack)
     , ("unstack",  Primitive unstack)
+    , (".",        Primitive printVal)
+    , ("dip",      Function dip)
+    , ("x",        Function x)
+    , ("i",        Function i)
+    , ("ifte",     Function ifThenElse)
     ]
+
+
+--     primitives :: [(String, WordP)]
+-- primitives =
+--     [ ("pop",      Primitive pop)
+--     , ("dup",      Primitive dup)
+--     , ("dip",      EnvPrimitive dip)
+--     , ("x",        EnvPrimitive x)
+--     , ("i",        EnvPrimitive i)
+--     , ("cons",     Primitive cons)
+--     , ("uncons",   Primitive uncons)
+--     , ("concat",   Primitive concatP)
+--     , (".",        EnvPrimitive printVal)
+--     , ("ifte",     EnvPrimitive ifThenElse)
+--     , ("+",        Primitive $ arith (+))
+--     , ("-",        Primitive $ arith (-))
+--     , ("*",        Primitive $ arith (*))
+--     , ("/",        Primitive $ arith (/))
+--     , ("%",        Primitive $ arith truncMod)
+--     , ("=",        Primitive $ comparison (==))
+--     , ("<=",       Primitive $ comparison (<=))
+--     , (">=",       Primitive $ comparison (>=))
+--     , ("<",        Primitive $ comparison (<))
+--     , (">",        Primitive $ comparison (>))
+--     , ("and",      Primitive $ logic (&&))
+--     , ("or",       Primitive $ logic (||))
+--     , ("null",     Primitive lnot)
+--     , ("stack",    Primitive stack)
+--     , ("unstack",  Primitive unstack)
+--     ]

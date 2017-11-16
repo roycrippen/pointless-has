@@ -1,51 +1,42 @@
 module PointlessParser where
 
 import           Interpreter (Stack, Value (..), WordP (..))
-import           Parser      (Parser, anyChar, char, firstLetter, lookAhead,
-                              many, manyTill, newline, numberDouble, spaces,
-                              string, wordLetter, (<|>))
+import           Parser      (Parser, anyChar, char, endOfLine, firstLetter,
+                              lookAhead, many, manyTill, mzero, newline,
+                              numberDouble, spaces, string, wordLetter, (<|>))
 
 numberP :: Parser Value
 numberP = do
-    spaces
-    comment
     d <- numberDouble
-    spaces
-    comment
     return (Number d)
 
 word :: Parser Value
 word = do
-    spaces
-    comment
     c <- firstLetter
     cs <- many wordLetter
-    spaces
-    comment
     return (Symbol (c:cs))
 
 instruction :: Parser Value
-instruction = quotation <|> word <|> numberP
+instruction = do
+    spaces
+    result <- quotation <|> word <|> numberP
+    spaces
+    return result
 
 nakedQuotations :: Parser Stack
 nakedQuotations = many instruction
 
 quotation :: Parser Value
 quotation = do
-    spaces
-    comment
     char '['
-    spaces
     q <- nakedQuotations
-    spaces
     char ']'
-    spaces
-    comment
     return (Quot q)
 
 definitionHeader :: Parser String
 definitionHeader = do
     name <- word
+    spaces
     string "=="
     spaces
     case name of
@@ -55,7 +46,7 @@ definitionHeader = do
 definition :: Parser (String, WordP)
 definition = do
     spaces
-    comment
+    comments
     string "DEFINE"
     spaces
     name <- definitionHeader
@@ -63,47 +54,26 @@ definition = do
     spaces
     char ';'
     spaces
-    comment
+    comments
     return (name, Quotation q)
 
 program :: Parser ([(String, WordP)], Stack)
 program = do
     spaces
-    comment
+    comments
     ds <- many definition
+    spaces
+    comments
     qs <- nakedQuotations
+    spaces
+    comments
     return (ds, qs)
 
--- comment :: Parser ()
--- comment =
---     (char '#' >> manyTill anyChar newline >> spaces >> return ()) <|>
---     (string "(*" >> manyTill anyChar (string "*)") >> return () >> spaces >> return ())
+comment :: Parser ()
+comment =
+    (string "#" >> manyTill anyChar newline >> spaces >> return ()) <|>
+    (string "(*" >> manyTill anyChar (string "*)") >> (string "*)") >> spaces >> return ())
 
-
-comment :: Parser String
-comment = commentMulti >> commentHash
-
-commentMulti :: Parser String
-commentMulti = do
-    b <- lookAhead $ string "(*"
-    if b
-        then do
-            string "(*"
-            manyTill anyChar (string "*)")
-            string "*)"
-            spaces
-            return "multi comment, ignored"
-        else return "!multi comment, ignored"
-
-commentHash :: Parser String
-commentHash = do
-    b <- lookAhead $ char '#'
-    if b
-        then do
-            char '#'
-            manyTill anyChar newline
-            newline
-            spaces
-            return "hash comment, ignored"
-        else return "!hash comment, ignored"
+comments :: Parser [()]
+comments = many comment
 
