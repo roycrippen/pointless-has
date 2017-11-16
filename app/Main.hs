@@ -1,7 +1,8 @@
 module Main where
 
-import qualified Data.Map        as Map
-import           Interpreter     (Stack, WordP (..), formatStack, runQuotation)
+import qualified Data.Map        as M
+import           Interpreter     (Lang (..), Stack, WordP (..), formatStack,
+                                  runQuotation)
 import           Parser
 import           PointlessParser (program)
 import           Primitives      (primitives)
@@ -9,14 +10,13 @@ import           Primitives      (primitives)
 getProgram :: IO ([(String, WordP)], Stack)
 getProgram = do
     source <- readFile "data/test.joy"
-    let ((definitions, quotations), _) = head $ parse program source
-    return  (primitives ++ definitions, quotations)
-
+    let ((defs, quots), _) = head $ parse program source
+    return  (primitives ++ defs, quots)
 
 main :: IO ()
 main = do
-    (definitions, quotations) <- getProgram
-    let s = runQuotation quotations (Map.fromList definitions) []
+    (vocabulary, quots) <- getProgram
+    let s = runQuotation quots (M.fromList vocabulary) []
     if null s
     then return ()
     else do

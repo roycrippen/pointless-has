@@ -1,6 +1,6 @@
 module Interpreter where
 
-import qualified Data.Map   as M (Map, lookup)
+import qualified Data.Map   as M (Map, lookup, toList)
 import           Data.Maybe (fromMaybe)
 
 
@@ -8,6 +8,13 @@ data Value = Symbol String | Number Double | Quot Stack
     deriving (Eq,Show)
 
 type Stack = [Value]
+
+data Lang = Lang { vocab   :: Vocabulary
+                 , stack   :: Stack
+                 , display :: [String]
+                 , errors  :: [String]
+                 }
+                 deriving (Show)
 
 data WordP = Quotation Stack                           -- composite word
            | Primitive (Stack -> Stack)                -- pure stack effect function
@@ -77,3 +84,20 @@ formatWordAST :: WordP -> String
 formatWordAST (Quotation xs) = show xs
 formatWordAST (Primitive _)  = "function: Stack -> Stack"
 formatWordAST (Function _)   = "function: Vocabulary -> Stack -> Stack"
+
+jsonLangShow :: Lang -> String
+jsonLangShow lang =
+    "{\n" ++ vsStr ++ ",\n" ++ ssStr ++ ",\n" ++ dsStr ++ ",\n" ++ esStr ++ "\n}"
+  where
+    vocab' = map (\(k, v) -> k ++ " == " ++ (formatWordP v)) $ M.toList $ vocab lang
+    vsStr = jsonArrayShow "display" vocab'
+    stack' =  map (\c -> if c == '\n' then ',' else c) $ formatStack (stack lang)
+    ssStr =  "\"stack\": [" ++  stack' ++ "]"
+    dsStr = jsonArrayShow "display" $ display lang
+    esStr = jsonArrayShow "errors" $ errors lang
+
+jsonArrayShow :: String -> [String] -> String
+jsonArrayShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
+  where
+    body = (foldl (\acc v -> acc ++ (show v) ++ ", ") "" xs)
+    bodyTrimmed = take (length body - 2)  body

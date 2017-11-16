@@ -1,7 +1,9 @@
 -- module Main where
 
 -- import           Interpreter     (WordP)
-import           Interpreter     (formatWordAST)
+import           Data.Map        as M (fromList)
+import           Interpreter     (Lang (..), Value (..), formatWordAST,
+                                  jsonLangShow)
 import           Parser          (parse)
 import           PointlessParser (program)
 
@@ -18,14 +20,19 @@ sourceT =
 
 main :: IO ()
 main = do
-  let ((defs, quots), _) = head $ parse program sourceT
+    let ((vocabulary, quots), _) = head $ parse program sourceT
+        aStack = [ Number 1.0, Number 2.0, Symbol "+", Quot [ Symbol "dup", Number 1.0, Symbol "+" ] ]
+        lang = Lang (M.fromList vocabulary) aStack ["display 1", "display 2"] ["error 1", "error 2"]
 
-  putStrLn "\n"
-  mapM_ (\(s, w) -> putStrLn $ s ++ " == " ++ formatWordAST w ) defs
-  putStrLn "\n"
+    putStrLn "\n"
+    putStrLn $ jsonLangShow lang
 
-  mapM_ print defs
-  putStrLn "\n"
+    putStrLn "\n"
+    mapM_ (\(s, w) -> putStrLn $ s ++ " == " ++ formatWordAST w ) vocabulary
 
-  mapM_ print quots
-  putStrLn "\n"
+    putStrLn "\n"
+    mapM_ print vocabulary
+
+    putStrLn "\n"
+    mapM_ print quots
+
