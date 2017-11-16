@@ -1,3 +1,10 @@
+(* eliminated library functions 
+DEFINE x    == dup dip ;
+DEFINE i    == x pop ;
+DEFINE concat == [reverse] dip [swons] fold ;
+*)
+
+(* core library functions *)
 DEFINE true == 1 ;
 DEFINE false == 0 ;
 DEFINE not == null ;
@@ -107,8 +114,8 @@ DEFINE go-pf == [dup2 >=]
                        [pop pop reverse]
                        ifte ;
 
-[1 2] [3] concat .
-[1 2 3] t-last .
+# [1 2] [3] concat .
+# [1 2 3] t-last .
 1 2 3 [4 5 +] x stack .
 newstack 600851475143 prime-facts .
 newstack 100 fib .

@@ -69,6 +69,7 @@ definition = do
 program :: Parser ([(String, WordP)], Stack)
 program = do
     spaces
+    comment
     ds <- many definition
     qs <- nakedQuotations
     return (ds, qs)

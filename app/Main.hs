@@ -42,7 +42,7 @@ main = do
     -- print c
 
     -- s <- runJoy "data/test.joy"
-    s <- runJoy "data/debug.joy"
+    s <- runJoy "data/test.joy"
     if null s
     then return ()
     else do

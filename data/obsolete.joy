@@ -1,3 +1,0 @@
-DEFINE x    == dup dip ;
-DEFINE i    == x pop ;
-DEFINE concat == [reverse] dip [swons] fold ;
