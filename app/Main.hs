@@ -22,6 +22,9 @@ programT = do
 stackT :: Stack
 stackT = [Quot [Number 1.0,Number 2.0],Number 3.0]
 
+sourceT :: String
+sourceT = "  DEFINE pop' == pop ; DEFINE dup' == dup ; \n\n   (* aksldjkasjdkl \n\n *) \n\n 2 3 pop stack . "
+
 main :: IO ()
 main = do
     -- (vs, qs) <- programT
@@ -30,12 +33,22 @@ main = do
     -- mapM_ (\(s, w) -> putStrLn $ s ++ " == " ++ formatWordAST w ) vs
     -- print stackT
 
-    s <- runJoy "data/test.joy"
+    -- let a@(_, a') = head $ parse (many definition) sourceT
+    --     b@(_, b') = head $ parse comment a'
+    --     c@(_, _) = head $ parse nakedQuotations b'
+
+    -- print a
+    -- print b
+    -- print c
+
+    -- s <- runJoy "data/test.joy"
+    s <- runJoy "data/debug.joy"
     if null s
     then return ()
     else do
         putStrLn "Residual stack (top to bottom):"
         dumpStack s
+
 
 
 

@@ -128,7 +128,7 @@ quotedString = do
     char '"'
     return s
 
-    -- Lexical combinators
+-- Lexical combinators
 
 spaces :: Parser String
 spaces = many (satisfies isSpace)
@@ -181,3 +181,13 @@ firstLetter = letter <|> oneOf (map char "+-*/<>=!?§$%&@~#´`',:.")
 
 wordLetter :: Parser Char
 wordLetter = firstLetter <|> digit
+
+newline :: Parser Char
+newline = char '\n'
+
+anyChar :: Parser Char
+anyChar = satisfies (const True)
+
+
+
+
