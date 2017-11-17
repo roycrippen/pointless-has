@@ -111,17 +111,35 @@ jsonArrayShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
 
 
 split :: Char -> String -> [String]
-split d = _split d []
- where
-  _split _ cs "" = cs
-  _split _ cs s =
-      _split d (cs ++ [token d s]) (drop (length (token d s) + 1) s)
+split _ "" = []
+split c s  = l : case s' of
+    []      -> []
+    (_:s'') -> split c s''
+    where (l, s') = break (==c) s
 
-token :: Char -> String -> String
-token d = _token d ""
- where
-  _token _ t ""     = t
-  _token _ t (x:xs) = if x == d then t else _token d (t ++ [x]) xs
+-- split :: Char -> String -> [String]
+-- split d = _split d []
+--  where
+--   _split _ cs "" = cs
+
+--   _split _ cs s =
+--       _split d (cs ++ [token d s]) (drop (length (token d s) + 1) s)
+
+-- token :: Char -> String -> String
+-- token d = _token d ""
+--  where
+--   _token _ t ""     = t
+--   _token _ t (x:xs) = if x == d then t else _token d (t ++ [x]) xs
+
+
+
+
+
+
+
+
+
+
 
 
 
