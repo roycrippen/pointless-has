@@ -118,7 +118,7 @@ DEFINE go-pf == [dup2 >=]
 # [1 2] [3] concat dup .
 # [1 2 3] t-last dup .
 # 1 2 3 [4 5 +] x dup .
-# 600851475143 prime-facts .
+600851475143 prime-facts .
 
 100 fib dup .
 

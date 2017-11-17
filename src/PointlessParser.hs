@@ -1,8 +1,7 @@
 module PointlessParser where
 
 import           Interpreter (Stack, Value (..), WordP (..))
-import           Parser      (Parser, anyChar, char, firstLetter, many,
-                              manyTill, newline, numberDouble, spaces, string,
+import           Parser      (Parser, anyChar, char, firstLetter, many, manyTill, newline, numberDouble, spaces, string,
                               wordLetter, (<|>))
 
 numberP :: Parser Value
@@ -12,15 +11,15 @@ numberP = do
 
 word :: Parser Value
 word = do
-    c <- firstLetter
+    c  <- firstLetter
     cs <- many wordLetter
-    return (Symbol (c:cs))
+    return (Symbol (c : cs))
 
 instruction :: Parser Value
 instruction = do
-    spaces
+    _      <- spaces
     result <- quotation <|> word <|> numberP
-    spaces
+    _      <- spaces
     return result
 
 nakedQuotations :: Parser Stack
@@ -28,52 +27,57 @@ nakedQuotations = many instruction
 
 quotation :: Parser Value
 quotation = do
-    char '['
+    _ <- char '['
     q <- nakedQuotations
-    char ']'
+    _ <- char ']'
     return (Quot q)
 
 definitionHeader :: Parser String
 definitionHeader = do
     name <- word
-    spaces
-    string "=="
-    spaces
+    _    <- spaces
+    _    <- string "=="
+    _    <- spaces
     case name of
         Symbol x -> return x
         _        -> return "INVALID_DEFINITION_NAME"
 
 definition :: Parser (String, WordP)
 definition = do
-    spaces
-    comments
-    string "DEFINE"
-    spaces
+    _    <- spacesAndComments
+    _    <- string "DEFINE"
+    _    <- spaces
     name <- definitionHeader
-    q <- nakedQuotations
-    spaces
-    char ';'
-    spaces
-    comments
+    q    <- nakedQuotations
+    _    <- spaces
+    _    <- char ';'
+    _    <- spacesAndComments
     return (name, Quotation q)
 
 program :: Parser ([(String, WordP)], Stack)
 program = do
-    spaces
-    comments
+    _  <- spacesAndComments
     ds <- many definition
-    spaces
-    comments
+    _  <- spaces
+    _  <- comments
     qs <- nakedQuotations
-    spaces
-    comments
+    _  <- spacesAndComments
     return (ds, qs)
 
 comment :: Parser ()
 comment =
-    (string "#" >> manyTill anyChar newline >> spaces >> return ()) <|>
-    (string "(*" >> manyTill anyChar (string "*)") >> string "*)" >> spaces >> return ())
+    (string "#" >> manyTill anyChar newline >> spaces >> return ())
+        <|> (  string "(*"
+            >> manyTill anyChar (string "*)")
+            >> string "*)"
+            >> spaces
+            >> return ()
+            )
 
 comments :: Parser [()]
 comments = many comment
+
+spacesAndComments :: Parser ()
+spacesAndComments = spaces >> comments >> return ()
+
 
