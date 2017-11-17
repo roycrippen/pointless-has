@@ -1,7 +1,7 @@
 module Parser where
 
-import           Control.Applicative ()
-import           Control.Monad       (ap, liftM)
+import           Control.Applicative (pure)
+import           Control.Monad       (ap, liftM, void)
 import           Data.List           (find)
 import           Data.Maybe          (isJust)
 
@@ -140,7 +140,7 @@ quotedString = do
 -- Lexical combinators
 
 spaces :: Parser ()
-spaces = many (satisfies isSpace) >> return ()
+spaces = void (many (satisfies isSpace))
  where
   isSpace ' '  = True
   isSpace '\n' = True
@@ -201,6 +201,9 @@ endOfLine = newline <|> crlf
 
 anyChar :: Parser Char
 anyChar = satisfies (const True)
+
+
+
 
 
 
