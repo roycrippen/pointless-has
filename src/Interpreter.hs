@@ -95,9 +95,11 @@ jsonLangShow lang =
  where
   vocab' =
       map (\(k, v) -> k ++ " == " ++ formatWordP v) $ M.toList $ vocab lang
-  vsStr  = jsonArrayShow "display" vocab'
+  vsStr  = jsonArrayShow "vocab" vocab'
   stack' = map (\c -> if c == '\n' then ',' else c) $ formatStack (stack lang)
-  ssStr  = "\"stack\": [" ++ stack' ++ "]"
+--   ssStr  = "\"stack\": [" ++ stack' ++ "]"
+--   stack' = split ',' (show (stack lang))
+  ssStr  = jsonArrayShow "stack" (split ',' stack')
   dsStr  = jsonArrayShow "display" $ display lang
   esStr  = jsonArrayShow "errors" $ errors lang
 
@@ -106,6 +108,58 @@ jsonArrayShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
  where
   body        = foldl (\acc v -> acc ++ show v ++ ", ") "" xs
   bodyTrimmed = take (length body - 2) body
+
+
+split :: Char -> String -> [String]
+split d = _split d []
+ where
+  _split _ cs "" = cs
+  _split _ cs s =
+      _split d (cs ++ [token d s]) (drop (length (token d s) + 1) s)
+
+token :: Char -> String -> String
+token d = _token d ""
+ where
+  _token _ t ""     = t
+  _token _ t (x:xs) = if x == d then t else _token d (t ++ [x]) xs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
