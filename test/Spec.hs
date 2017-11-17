@@ -1,12 +1,11 @@
 -- module Main where
 
 -- import           Interpreter     (WordP)
-import           Data.Map        as M (fromList)
-import           Interpreter     (Lang (..), Value (..), formatWordAST,
-                                  jsonLangShow)
-import           Parser          (parse)
-import           PointlessParser (program)
-
+import           CoreLibrary
+import           Data.Map        as M
+import           Interpreter
+import           Parser
+import           PointlessParser
 
 -- stack ghci pointless-hs:pointless-hs-test
 
@@ -36,3 +35,8 @@ main = do
     putStrLn "\n"
     mapM_ print quots
 
+    let quotS = parse nakedQuotations "[dup 1 - fact *] [pop 1] branch"
+    print quotS
+
+    let aaa = getQuotations coreDefinitions
+    print aaa

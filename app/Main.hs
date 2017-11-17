@@ -1,5 +1,6 @@
 module Main where
 
+import           CoreLibrary     (coreDefinitions, getQuotations)
 import qualified Data.Map        as M
 import           Interpreter     (Stack, WordP (..), formatStack, runQuotation)
 import           Parser
@@ -10,7 +11,8 @@ getProgram :: IO ([(String, WordP)], Stack)
 getProgram = do
     source <- readFile "data/test.joy"
     let ((defs, quots), _) = head $ parse program source
-    return (primitives ++ defs, quots)
+        coreLibrary = getQuotations coreDefinitions
+    return (primitives ++ coreLibrary ++ defs, quots)
 
 main :: IO ()
 main = do
