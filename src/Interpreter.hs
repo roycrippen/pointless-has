@@ -16,9 +16,8 @@ data Lang = Lang { vocab   :: Vocabulary
                  }
                  deriving (Show)
 
-data WordP = Quotation Stack                           -- composite word
-           | Primitive (Stack -> Stack)                -- pure stack effect function
-           | Function (Vocabulary -> Stack -> Stack)   -- function requiring vocabulary
+data WordP = Quotation Stack          -- composite word
+           | Function (Lang -> Lang)  -- function to execute
 
 instance Show WordP where
     show = formatWordP
@@ -36,21 +35,21 @@ isTrue _          = False
 toTruth :: Bool -> Value
 toTruth b = if b then Number 1.0 else Number 0.0
 
-runWord :: WordP -> Vocabulary -> Stack -> Stack
-runWord w vcab stck = case w of
-    Quotation q -> runQuotation q vcab stck
-    Primitive f -> f stck
-    Function  f -> f vcab stck
+runWord :: WordP -> Lang -> Lang
+runWord w lang = case w of
+    Quotation q -> runQuotation q lang
+    Function  f -> f lang
 
-runQuotation :: Stack -> Vocabulary -> Stack -> Stack
-runQuotation []     _    s = s
-runQuotation (i:is) vcab s = runQuotation is vcab s'
-    where s' = runInstruction i vcab s
+runQuotation :: Stack -> Lang -> Lang
+runQuotation quotation lang = case quotation of
+    [] -> lang
+    (i:is) -> runQuotation is lang'
+        where lang' = runInstruction i lang
 
-runInstruction :: Value -> Vocabulary -> Stack -> Stack
-runInstruction ins vcab stck = case ins of
-    Symbol w -> runWord (getWord w vcab) vcab stck
-    x        -> x : stck
+runInstruction :: Value -> Lang -> Lang
+runInstruction ins lang = case ins of
+    Symbol w -> runWord (getWord w (vocab lang)) lang
+    x        -> lang { stack = x : stack lang }
 
 quotCons :: Value -> Value -> Value
 quotCons x (Quot q) = Quot (x : q)
@@ -73,12 +72,10 @@ formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
 
 formatWordP :: WordP -> String
 formatWordP (Quotation xs) = formatV (Quot xs)
-formatWordP (Primitive _ ) = "function: Stack -> Stack"
 formatWordP (Function  _ ) = "function: Vocabulary -> Stack -> Stack"
 
 formatWordAST :: WordP -> String
 formatWordAST (Quotation xs) = show xs
-formatWordAST (Primitive _ ) = "function: Stack -> Stack"
 formatWordAST (Function  _ ) = "function: Vocabulary -> Stack -> Stack"
 
 jsonLangShow :: Lang -> String
@@ -97,8 +94,6 @@ jsonLangShow lang =
       map (\(k, v) -> k ++ " == " ++ formatWordP v) $ M.toList $ vocab lang
   vsStr  = jsonArrayShow "vocab" vocab'
   stack' = map (\c -> if c == '\n' then ',' else c) $ formatStack (stack lang)
---   ssStr  = "\"stack\": [" ++ stack' ++ "]"
---   stack' = split ',' (show (stack lang))
   ssStr  = jsonArrayShow "stack" (split ',' stack')
   dsStr  = jsonArrayShow "display" $ display lang
   esStr  = jsonArrayShow "errors" $ errors lang
@@ -116,20 +111,6 @@ split c s  = l : case s' of
     []      -> []
     (_:s'') -> split c s''
     where (l, s') = break (==c) s
-
--- split :: Char -> String -> [String]
--- split d = _split d []
---  where
---   _split _ cs "" = cs
-
---   _split _ cs s =
---       _split d (cs ++ [token d s]) (drop (length (token d s) + 1) s)
-
--- token :: Char -> String -> String
--- token d = _token d ""
---  where
---   _token _ t ""     = t
---   _token _ t (x:xs) = if x == d then t else _token d (t ++ [x]) xs
 
 
 

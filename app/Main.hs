@@ -2,7 +2,8 @@ module Main where
 
 import           CoreLibrary     (coreDefinitions, getQuotations)
 import qualified Data.Map        as M
-import           Interpreter     (Stack, WordP (..), formatStack, runQuotation)
+import           Interpreter     (Lang (..), Stack, WordP (..), formatStack,
+                                  jsonLangShow, runQuotation)
 import           Parser
 import           PointlessParser (program)
 import           Primitives      (primitives)
@@ -17,12 +18,16 @@ getProgram = do
 main :: IO ()
 main = do
     (vocabulary, quots) <- getProgram
-    let s = runQuotation quots (M.fromList vocabulary) []
+    let lang = runQuotation quots (Lang (M.fromList vocabulary) [] [] [])
+        s = stack lang
     if null s
         then return ()
         else do
             putStrLn "Residual stack (top to bottom):\n"
             putStrLn $ formatStack s
+
+    putStrLn $ jsonLangShow lang
+
 
 
 
