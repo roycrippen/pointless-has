@@ -1,11 +1,5 @@
 (* user library functions *)
 
-DEFINE fact == [dup 1 - fact *] [pop 1] branch ;
-
-DEFINE fib-recursive == [0 <=] [pop 1] [[1 - fib-recursive] [2 - fib-recursive] cleave +] ifte ;
-DEFINE fib == [1 0] dip [swap [+] unary] times popd ;
-
-DEFINE t-last == [rest null] [first] [rest] tailrec ;
 
 DEFINE prime-facts == 2 [] rollup go-pf stack ;
 DEFINE go-pf == [dup2 >=] 
@@ -19,9 +13,6 @@ DEFINE go-pf == [dup2 >=]
                        ifte ;
 
 
-# [1 2] [3] concat dup .
-# [1 2 3] t-last dup .
-# 1 2 3 [4 5 +] x dup .
 # 600851475143 prime-facts .
 # 100 fib dup .
 

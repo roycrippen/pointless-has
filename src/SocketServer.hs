@@ -3,84 +3,23 @@
 module SocketServer where
 
 import           Control.Monad      (forever)
+import           CoreLibrary
+import           Data.Map           as M
+import           Data.Maybe
 import           Data.Monoid        (mappend)
 import           Data.Text          (Text)
 import qualified Data.Text          as T
 import qualified Data.Text.IO       as T
+import           Interpreter
 import qualified Network.WebSockets as WS
-
--- type Client = (Text, WS.Connection)
--- type ServerState = [Client]
-
--- newServerState :: ServerState
--- newServerState = []
-
--- numClients :: ServerState -> Int
--- numClients = length
-
--- clientExists :: Client -> ServerState -> Bool
--- clientExists client = any ((== fst client) . fst)
-
--- addClient :: Client -> ServerState -> ServerState
--- addClient client clients = client : clients
-
--- removeClient :: Client -> ServerState -> ServerState
--- removeClient client = filter ((/= fst client) . fst)
-
--- broadcast :: Text -> ServerState -> IO ()
--- broadcast message clients = do
---     T.putStrLn message
---     forM_ clients $ \(_, conn) -> WS.sendTextData conn message
-
--- main :: IO ()
--- main = do
---     state <- newMVar newServerState
---     WS.runServer "127.0.0.1" 9160 $ application state
-
--- application :: MVar ServerState -> WS.ServerApp
--- application state pending = do
---     conn <- WS.acceptRequest pending
---     WS.forkPingThread conn 30
---     msg <- WS.receiveData conn
---     clients <- readMVar state
---     case msg of
---         _   | not (prefix `T.isPrefixOf` msg) ->
---                 WS.sendTextData conn ("Wrong announcement" :: Text)
---             | any ($ fst client)
---                 [T.null, T.any isPunctuation, T.any isSpace] ->
---                     WS.sendTextData conn ("Name cannot " `mappend`
---                         "contain punctuation or whitespace, and " `mappend`
---                         "cannot be empty" :: Text)
---             | clientExists client clients ->
---                 WS.sendTextData conn ("User already exists" :: Text)
---             | otherwise -> flip finally disconnect $ do
---                modifyMVar_ state $ \s -> do
---                    let s' = addClient client s
---                    WS.sendTextData conn $
---                        "Welcome! Users: " `mappend`
---                        T.intercalate ", " (map fst s)
---                    broadcast (fst client `mappend` " joined") s'
---                    return s'
---                talk conn state client
---           where
---             prefix     = "Hi! I am "
---             client     = (T.drop (T.length prefix) msg, conn)
---             disconnect = do
---                 -- Remove client and return new state
---                 s <- modifyMVar state $ \s ->
---                     let s' = removeClient client s in return (s', s')
---                 broadcast (fst client `mappend` " disconnected") s
-
--- talk :: WS.Connection -> MVar ServerState -> Client -> IO ()
--- talk conn state (user, _) = forever $ do
---     msg <- WS.receiveData conn
---     readMVar state >>= broadcast
---         (user `mappend` ": " `mappend` msg)
-
+import           Parser
+import           PointlessParser
+import           Primitives
 
 main :: IO ()
 main = do
-    WS.runServer "127.0.0.1" 9160 $ application
+    WS.runServer "127.0.0.1" 9160 application
+    T.putStrLn "pointless websocket server started"
 
 application :: WS.ServerApp
 application pending = do
@@ -88,19 +27,75 @@ application pending = do
     WS.forkPingThread conn 30
     msg <- WS.receiveData conn
     case msg of
-        _   | T.isPrefixOf "pointless_connection" msg -> do
-                  WS.sendTextData conn ("pointless" :: Text)
-                  T.putStrLn "connected"
-                  talk conn
-            | otherwise  -> WS.sendTextData conn ("incorrect connection topic: '" `mappend`
-                            msg `mappend` "'" :: Text)
+        _
+            | T.isPrefixOf "pointless_connection" msg -> do
+                WS.sendTextData conn ("pointless" :: Text)
+                T.putStrLn "editor connected"
 
-talk :: WS.Connection -> IO ()
-talk conn = forever $ do
+                -- setup and send vocabulary of functions
+                let coreLibrary = getQuotations coreDefinitions
+                    vcab        = M.fromList $ primitives ++ coreLibrary
+                WS.sendTextData conn (T.pack $ jsonVocabShow vcab :: Text)
+
+                talk            vcab conn
+            | otherwise -> WS.sendTextData
+                conn
+                ( "incorrect connection topic: '" `mappend` msg `mappend` "'" :: Text
+                )
+
+talk :: Vocabulary -> WS.Connection -> IO ()
+talk vcab conn = forever $ do
     msg <- WS.receiveData conn
     case msg of
-        _   | T.isPrefixOf "compile:" msg -> do
-                WS.sendTextData conn (msg :: Text)
-                T.putStrLn "compile msg recieved"
-            | otherwise  -> WS.sendTextData conn ("unknown topic" :: Text)
+        _
+            | T.isPrefixOf "run:" msg -> do
+                let qStr       = T.unpack $ fromJust $ T.stripPrefix "run:" msg
+                    (quots, _) = head $ parse nakedQuotations qStr
+                    lang       = runQuotation quots (Lang vcab [] [] [])
+                    results    = T.pack $ jsonResultsShow lang
+                WS.sendTextData conn (results :: Text)
+                T.putStrLn $ T.pack "run message recieved: " `mappend` msg
+            | otherwise -> WS.sendTextData conn ("unknown topic" :: Text)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

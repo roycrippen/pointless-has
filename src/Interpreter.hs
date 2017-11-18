@@ -42,9 +42,8 @@ runWord w lang = case w of
 
 runQuotation :: Stack -> Lang -> Lang
 runQuotation quotation lang = case quotation of
-    [] -> lang
-    (i:is) -> runQuotation is lang'
-        where lang' = runInstruction i lang
+    []     -> lang
+    (i:is) -> runQuotation is lang' where lang' = runInstruction i lang
 
 runInstruction :: Value -> Lang -> Lang
 runInstruction ins lang = case ins of
@@ -72,38 +71,45 @@ formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
 
 formatWordP :: WordP -> String
 formatWordP (Quotation xs) = formatV (Quot xs)
-formatWordP (Function  _ ) = "function: Vocabulary -> Stack -> Stack"
+formatWordP (Function  _ ) = "Primitive function"
 
 formatWordAST :: WordP -> String
 formatWordAST (Quotation xs) = show xs
 formatWordAST (Function  _ ) = "function: Vocabulary -> Stack -> Stack"
 
-jsonLangShow :: Lang -> String
-jsonLangShow lang =
-    "{\n"
-        ++ vsStr
-        ++ ",\n"
-        ++ ssStr
-        ++ ",\n"
-        ++ dsStr
-        ++ ",\n"
-        ++ esStr
-        ++ "\n}"
+jsonResultsShow :: Lang -> String
+jsonResultsShow lang = "{\n" ++ ssStr ++ dsStr ++ esStr ++ "\n}"
  where
-  vocab' =
-      map (\(k, v) -> k ++ " == " ++ formatWordP v) $ M.toList $ vocab lang
-  vsStr  = jsonArrayShow "vocab" vocab'
-  stack' = map (\c -> if c == '\n' then ',' else c) $ formatStack (stack lang)
-  ssStr  = jsonArrayShow "stack" (split ',' stack')
-  dsStr  = jsonArrayShow "display" $ display lang
-  esStr  = jsonArrayShow "errors" $ errors lang
+  ssStr = jsonStackElementShow (stack lang) ++ ",\n"
+  dsStr = jsonArrayElementShow "display" (display lang) ++ ",\n"
+  esStr = jsonArrayElementShow "errors" (errors lang)
 
-jsonArrayShow :: String -> [String] -> String
-jsonArrayShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
+jsonStackElementShow :: Stack -> String
+jsonStackElementShow stck = jsonArrayElementShow "stack" (split ',' stack')
+    where stack' = map (\c -> if c == '\n' then ',' else c) $ formatStack stck
+
+jsonStackShow :: Stack -> String
+jsonStackShow = jsonWrapElement . jsonStackElementShow
+
+jsonVocabElementShow :: Vocabulary -> String
+jsonVocabElementShow vcab = jsonArrayElementShow "vocab" vocab'
+ where
+  vocab' = map (\(k, v) -> k ++ " == " ++ formatWordP v) $ M.toList vcab
+
+jsonVocabShow :: Vocabulary -> String
+jsonVocabShow = jsonWrapElement . jsonVocabElementShow
+
+jsonArrayElementShow :: String -> [String] -> String
+jsonArrayElementShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
  where
   body        = foldl (\acc v -> acc ++ show v ++ ", ") "" xs
   bodyTrimmed = take (length body - 2) body
 
+jsonArrayShow :: String -> [String] -> String
+jsonArrayShow name xs = jsonWrapElement $ jsonArrayElementShow name xs
+
+jsonWrapElement :: String -> String
+jsonWrapElement s = "{\n" ++ s ++ "\n}"
 
 split :: Char -> String -> [String]
 split _ "" = []
@@ -111,6 +117,52 @@ split c s  = l : case s' of
     []      -> []
     (_:s'') -> split c s''
     where (l, s') = break (==c) s
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

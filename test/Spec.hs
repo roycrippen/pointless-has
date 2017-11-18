@@ -24,7 +24,7 @@ main = do
         lang = Lang (M.fromList vocabulary) aStack ["display 1", "display 2"] ["error 1", "error 2"]
 
     putStrLn "\n"
-    putStrLn $ jsonLangShow lang
+    putStrLn $ jsonResultsShow lang
 
     putStrLn "\n"
     mapM_ (\(s, w) -> putStrLn $ s ++ " == " ++ formatWordAST w ) vocabulary

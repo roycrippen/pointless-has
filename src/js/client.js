@@ -12,7 +12,7 @@ function createChatSocket() {
 function onMessage(event) {
     var p = $(document.createElement('p')).text(event.data);
 
-    $('#messages').append(p);
+    $('#messages').append("<br /> message: <br />").append(p);
     $('#messages').animate({
         scrollTop: $('#messages')[0].scrollHeight
     });
