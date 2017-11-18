@@ -25,9 +25,10 @@ DEFINE go-pf == [dup2 >=]
 # 600851475143 prime-facts .
 # 100 fib dup .
 
-10 10 * .
-pop .
+# 10 10 * .
+# pop .
 
+newstack [ 2 2 + ] [ true ] [ 1 1 + ] [] ifte stack .
 
 
 
