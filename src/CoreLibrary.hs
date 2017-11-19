@@ -50,7 +50,7 @@ coreDefinitions =
     , ("infra"  , "swons [stack] dip cons unstack [i stack] dip cons unstack")
     , ("cleave" , "[dup] dip2 swap dip2 i")
     , ("branch" , "[] bury2 ifte")
-    , ("in", "[uncons [pop =] [pop3 1] [swap pop in] ifte] [pop2 0] branch")
+    , ("in", "swap [=] cons filter size [1 >=] [true] [false] ifte swap pop")
     , ("has"    , "swap in")
     , ("at"     , "[[rest] dip 1 - at] [pop first] branch")
     , ("of"     , "swap at")
@@ -107,6 +107,11 @@ coreDefinitions =
 -- original definitions
 -- , ("reverse" , "[] swap reverse'")
 -- , ("reverse'", "[uncons [swons] dip reverse'] [pop] branch")
+
+
+
+
+
 
 
 

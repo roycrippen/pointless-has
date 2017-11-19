@@ -202,6 +202,11 @@ endOfLine = newline <|> crlf
 anyChar :: Parser Char
 anyChar = satisfies (const True)
 
+emptyQuot :: Parser String
+emptyQuot = string "[]"
+
+
+
 
 
 

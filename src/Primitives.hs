@@ -21,13 +21,10 @@ dip lang = case stack lang of
 
 x :: Lang -> Lang
 x lang = case stack lang of
-    (Quot q:cs) -> returnedLang { stack = stack returnedLang ++ [Quot q] ++ cs
-                                }
-        where returnedLang = runQuotation q (lang { stack = [] })
-    _ -> lang
-        { errors = "x: quotation must be executable without a stack"
-            : errors lang
-        }
+    (Quot q:cs) -> rLang { stack = stack rLang ++ [Quot q] ++ cs }
+        where rLang = runQuotation q (lang { stack = [] })
+    _ -> lang { errors = msg : errors lang }
+        where msg = "x: quotation must be executable without a stack"
 
 i :: Lang -> Lang
 i lang = case stack lang of
@@ -42,10 +39,8 @@ cons lang = case stack lang of
 uncons :: Lang -> Lang
 uncons lang = case stack lang of
     (Quot (c:is):cs) -> lang { stack = Quot is : c : cs }
-    _                -> lang
-        { errors = "uncons: quotation with at least one element expected"
-            : errors lang
-        }
+    _                -> lang { errors = msg : errors lang }
+        where msg = "uncons: quotation with at least one element expected"
 
 concatP :: Lang -> Lang
 concatP lang = case stack lang of
@@ -68,22 +63,20 @@ ifThenElse lang = case stack lang of
 arith :: (Double -> Double -> Double) -> Lang -> Lang
 arith operator lang = case (operator, stack lang) of
     (op, Number y:(Number c:cs)) -> lang { stack = Number (op c y) : cs }
-    (_ , _                     ) -> lang
-        { errors = "arithmetic operation: two numbers expected" : errors lang
-        }
+    (_ , _                     ) -> lang { errors = msg : errors lang }
+        where msg = "arithmetic operation: two numbers expected"
 
-comparison :: (Double -> Double -> Bool) -> Lang -> Lang
+comparison :: (Value -> Value -> Bool) -> Lang -> Lang
 comparison operator lang = case (operator, stack lang) of
-    (op, Number y:(Number c:cs)) -> lang { stack = toTruth (op c y) : cs }
-    (_ , _                     ) -> lang
-        { errors = "comparison operation: two numbers expected" : errors lang
-        }
+    (op, y:c:cs) -> lang { stack = toTruth (op c y) : cs }
+    (_ , _     ) -> lang { errors = msg : errors lang }
+        where msg = "comparison operation: two numbers expected"
 
 logic :: (Bool -> Bool -> Bool) -> Lang -> Lang
 logic operator lang = case (operator, stack lang) of
     (op, y:c:cs) -> lang { stack = toTruth (op (isTrue c) (isTrue y)) : cs }
-    (_, _) ->
-        lang { errors = "logic operation: two values expected" : errors lang }
+    (_ , _     ) -> lang { errors = msg : errors lang }
+        where msg = "logic operation: two values expected"
 
 lnot :: Lang -> Lang
 lnot lang = case stack lang of
@@ -136,6 +129,21 @@ primitives =
     , ("ifte"   , Function ifThenElse)
     , ("list"   , Function list)
     ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -5,7 +5,7 @@ import           Data.Maybe (fromMaybe)
 
 
 data Value = Symbol String | Number Double | Quot Stack
-    deriving (Eq,Show)
+    deriving (Eq, Ord, Show)
 
 type Stack = [Value]
 
@@ -43,7 +43,7 @@ runWord w lang = case w of
 runQuotation :: Stack -> Lang -> Lang
 runQuotation quotation lang = case quotation of
     []     -> lang
-    (i:is) -> runQuotation is lang' where lang' = runInstruction i lang
+    (i:is) -> runQuotation is (runInstruction i lang)
 
 runInstruction :: Value -> Lang -> Lang
 runInstruction ins lang = case ins of
@@ -117,6 +117,12 @@ split c s  = l : case s' of
     []      -> []
     (_:s'') -> split c s''
     where (l, s') = break (==c) s
+
+
+
+
+
+
 
 
 

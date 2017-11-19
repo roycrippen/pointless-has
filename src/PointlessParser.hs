@@ -1,8 +1,9 @@
 module PointlessParser where
 
+import           Debug.Trace
 import           Interpreter (Stack, Value (..), WordP (..))
-import           Parser      (Parser, anyChar, char, firstLetter, many, manyTill, newline, numberDouble, spaces, string,
-                              wordLetter, (<|>))
+import           Parser      (Parser, anyChar, char, emptyQuot, firstLetter, lookAhead, many, manyTill, newline,
+                              numberDouble, spaces, string, wordLetter, (<|>))
 
 numberP :: Parser Value
 numberP = do
@@ -28,7 +29,10 @@ nakedQuotations = many instruction
 quotation :: Parser Value
 quotation = do
     _ <- char '['
+    _ <- spaces
     q <- nakedQuotations
+    -- traceShowM q
+    _ <- spaces
     _ <- char ']'
     return (Quot q)
 
@@ -79,6 +83,19 @@ comments = many comment
 
 spacesAndComments :: Parser ()
 spacesAndComments = spaces >> comments >> return ()
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
