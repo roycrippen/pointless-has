@@ -24,8 +24,8 @@ instance Show WordP where
 
 type Vocabulary = M.Map String WordP
 
-getWord :: String -> Vocabulary -> WordP
-getWord w vcab = fromMaybe (error $ "undefined word " ++ w) (M.lookup w vcab)
+getWord :: String -> Vocabulary -> Maybe WordP
+getWord = M.lookup
 
 isTrue :: Value -> Bool
 isTrue (Number x) = x /= 0.0
@@ -47,8 +47,11 @@ runQuotation quotation lang = case quotation of
 
 runInstruction :: Value -> Lang -> Lang
 runInstruction ins lang = case ins of
-    Symbol w -> runWord (getWord w (vocab lang)) lang
-    x        -> lang { stack = x : stack lang }
+    Symbol w -> case getWord w (vocab lang) of
+        Just w' -> runWord w' lang
+        Nothing -> lang { errors = msg : errors lang }
+            where msg = "getWord: not a valid word " ++ show w
+    x -> lang { stack = x : stack lang }
 
 quotCons :: Value -> Value -> Value
 quotCons x (Quot q) = Quot (x : q)
@@ -117,6 +120,11 @@ split c s  = l : case s' of
     []      -> []
     (_:s'') -> split c s''
     where (l, s') = break (==c) s
+
+
+
+
+
 
 
 

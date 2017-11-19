@@ -81,8 +81,8 @@ coreDefinitions =
     , ("tailrec"   , "dup3 [tailrec] cons cons cons concat ifte")
     , ("when"      , "[] ifte")
     , ("unles"     , "[] swap ifte")
-    , ("neg"       , "0 swap -")
-    , ("abs"       , "dup 0  [<] [neg] when")
+    , ("neg"       , "-1 *")
+    , ("abs"       , "[0 <] [neg] when")
     , ("keep"      , "dupd dip")
     , ("rolldown"  , "swapd swap")
     , ("rollup"    , "rolldown rolldown")
@@ -107,6 +107,7 @@ coreDefinitions =
 -- original definitions
 -- , ("reverse" , "[] swap reverse'")
 -- , ("reverse'", "[uncons [swons] dip reverse'] [pop] branch")
+
 
 
 

@@ -1,66 +1,138 @@
--- module Main where
+module Main where
 
--- import           Interpreter     (WordP)
 import           CoreLibrary
-import           Data.Map        as M
+import           Data.Map         as M
 import           Interpreter
 import           Parser
 import           PointlessParser
 import           Primitives
 
+import           Test.Tasty
+import           Test.Tasty.HUnit
+
 
 -- stack ghci pointless-hs:pointless-hs-test
 
-sourceT :: String
-sourceT
+s1 :: String
+s1
     = " (*aaa*) DEFINE pop' == pop ; \n\
     \ DEFINE dup' == dup ; # bbb  \n\
     \ # ccc \n\
     \ DEFINE fact == [dup 1 - fact *] [pop 1] branch ; \n\
     \ 1 2 3 dup' dup' pop' . "
 
-sourceT2 :: String
-sourceT2 = "[] 1 swap"
+s2 :: String
+s2 = "-10 10 +"
 
 main :: IO ()
 main = do
 
-    -- let ((vocabulary, quots), _) = head $ parse program sourceT
-    --     aStack = [ Number 1.0, Number 2.0, Symbol "+", Quot [ Symbol "dup", Number 1.0, Symbol "+" ] ]
-    --     lang = Lang (M.fromList vocabulary) aStack ["display 1", "display 2"] ["error 1", "error 2"]
 
-    let (quots, _) = head $ parse (many instruction) sourceT2
-        defs       = (getQuotations coreDefinitions) ++ primitives
+    let (quots, _) = head $ parse (many instruction) s2
+        defs       = getQuotations coreDefinitions ++ primitives
         lang       = Lang (M.fromList defs) [] [] []
         result     = runQuotation quots lang
-
 
     putStrLn "\n"
     print quots
 
-    putStrLn "before:\n"
+    putStrLn "before:"
     putStrLn $ jsonResultsShow lang
 
-    putStrLn "after:\n"
+    putStrLn "\nafter:"
     putStrLn $ jsonResultsShow result
 
-            -- putStrLn "\n"
-    -- putStrLn $ jsonResultsShow lang
+    defaultMain unitTests
 
-    -- putStrLn "\n"
-    -- mapM_ (\(s, w) -> putStrLn $ s ++ " == " ++ formatWordAST w) vocabulary
 
-    -- putStrLn "\n"
-    -- mapM_ print vocabulary
+unitTests :: TestTree
+unitTests = testGroup
+    "Pointlees interprter tests"
+    [ parsePositiveDouble1
+    , parsePositiveDouble2
+    , parseNegativeDouble1
+    , parseNegativeDouble2
+    , parseNumberP1
+    , parseNumberP2
+    , parseNakedQuotation1
+    ]
 
-    -- putStrLn "\n"
-    -- mapM_ print quots
+parsePositiveDouble1 :: TestTree
+parsePositiveDouble1 = testCase "parse numberDouble 23"
+    $ assertEqual [] 23.0 val
+    where (val, _) = head $ parse numberDouble "23"
 
-    -- let quotS = parse nakedQuotations "[dup 1 - fact *] [pop 1] branch"
-    -- print quotS
+parsePositiveDouble2 :: TestTree
+parsePositiveDouble2 = testCase "parse numberDouble 23.4"
+    $ assertEqual [] 23.4 val
+    where (val, _) = head $ parse numberDouble "23.4"
 
-    -- let aaa = getQuotations coreDefinitions
-    -- print aaa
+parseNegativeDouble1 :: TestTree
+parseNegativeDouble1 = testCase "parse numberDouble -23"
+    $ assertEqual [] (-23.0) val
+    where (val, _) = head $ parse numberDouble "-23"
+
+parseNegativeDouble2 :: TestTree
+parseNegativeDouble2 = testCase "parse numberDouble -23.4"
+    $ assertEqual [] (-23.4) val
+    where (val, _) = head $ parse numberDouble "-23.4"
+
+
+parseNumberP1 :: TestTree
+parseNumberP1 = testCase "parse numberP -23"
+    $ assertEqual [] (Number (-23.0)) val
+    where (val, _) = head $ parse numberP "-23"
+
+parseNumberP2 :: TestTree
+parseNumberP2 = testCase "parse numberP -23.4"
+    $ assertEqual [] (Number (-23.4)) val
+    where (val, _) = head $ parse numberP "-23.4"
+
+parseNakedQuotation1 :: TestTree
+parseNakedQuotation1 =
+    testCase "parse nakedQuotaions \"-10 10 +\" "
+        $ assertEqual [] [Number (-10.0), Number 10.0, Symbol "+"] val
+    where (val, _) = head $ parse nakedQuotations "-10 10 +"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

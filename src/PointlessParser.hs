@@ -19,7 +19,7 @@ word = do
 instruction :: Parser Value
 instruction = do
     _      <- spaces
-    result <- quotation <|> word <|> numberP
+    result <- numberP <|> quotation <|> word
     _      <- spaces
     return result
 
@@ -83,6 +83,7 @@ comments = many comment
 
 spacesAndComments :: Parser ()
 spacesAndComments = spaces >> comments >> return ()
+
 
 
 

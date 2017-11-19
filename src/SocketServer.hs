@@ -52,7 +52,7 @@ talk vcab conn = forever $ do
                 -- T.putStrLn (T.pack (show quots))
                 -- T.putStrLn $ T.pack $ jsonResultsShow lang
                                       -> do
-                T.putStrLn $ T.pack "run message recieved: " `mappend` msg
+                T.putStrLn msg
                 let qStr       = T.unpack $ fromJust $ T.stripPrefix "run:" msg
                     (quots, _) = head $ parse nakedQuotations qStr
                     lang       = runQuotation quots (Lang vcab [] [] [])
@@ -67,6 +67,9 @@ talk vcab conn = forever $ do
 --     let ((defs, quots), _) = head $ parse program source
 --         coreLibrary        = getQuotations coreDefinitions
 --     return (primitives ++ coreLibrary ++ defs, quots)
+
+
+
 
 
 

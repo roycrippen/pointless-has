@@ -2,3 +2,5 @@
 .stack-work
 *.iml
 Link to pointless-hs-exe
+pointless-hs-exe
+.vscode/*.log
