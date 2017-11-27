@@ -23,10 +23,10 @@ instance Monad Parser where
 
 item :: Parser Char
 item = Parser item'
- where
-  item' s = case s of
-      ""     -> []
-      (c:cs) -> [(c, cs)]
+  where
+    item' s = case s of
+        ""     -> []
+        (c:cs) -> [(c, cs)]
 
 class Monad m => MonadPlus m where
     mzero :: m a
@@ -89,14 +89,14 @@ chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
 p `chainl1` op = do
     a <- p
     rest a
- where
-  rest a =
-      ( do
-              f <- op
-              b <- p
-              rest (f a b)
-          )
-          <|> return a
+  where
+    rest a =
+        ( do
+                f <- op
+                b <- p
+                rest (f a b)
+            )
+            <|> return a
 
 oneOf :: [Parser a] -> Parser a
 oneOf = foldl1 option
@@ -141,12 +141,12 @@ quotedString = do
 
 spaces :: Parser ()
 spaces = void (many (satisfies isSpace))
- where
-  isSpace ' '  = True
-  isSpace '\n' = True
-  isSpace '\r' = True
-  isSpace '\t' = True
-  isSpace _    = False
+  where
+    isSpace ' '  = True
+    isSpace '\n' = True
+    isSpace '\r' = True
+    isSpace '\t' = True
+    isSpace _    = False
 
 token :: Parser a -> Parser a
 token p = do
@@ -180,9 +180,9 @@ numberDouble = do
 
 letter :: Parser Char
 letter = satisfies isAlpha
- where
-  isAlpha c = isJust (find (==c) letters)
-  letters = ['a' .. 'z'] ++ ['A' .. 'Z']
+  where
+    isAlpha c = isJust (find (==c) letters)
+    letters = ['a' .. 'z'] ++ ['A' .. 'Z']
 
 firstLetter :: Parser Char
 firstLetter = letter <|> oneOf (map char "+-*/<>=!?§$%&@~´`',:.")
@@ -204,24 +204,6 @@ anyChar = satisfies (const True)
 
 emptyQuot :: Parser String
 emptyQuot = string "[]"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

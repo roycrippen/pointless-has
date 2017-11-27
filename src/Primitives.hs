@@ -1,6 +1,7 @@
 module Primitives where
 
-import           Interpreter (Lang (..), Value (..), WordP (..), formatV, isTrue, runQuotation, toTruth)
+import           Interpreter (Lang (..), Value (..), WordP (..), formatV,
+                              isTrue, runQuotation, toTruth)
 
 -- Primitives
 pop :: Lang -> Lang
@@ -29,12 +30,12 @@ x lang = case stack lang of
 i :: Lang -> Lang
 i lang = case stack lang of
     (Quot q:cs) -> runQuotation q (lang { stack = cs })
-    _           -> lang { errors = "i: quotation must be executable" : errors lang }
+    _ -> lang { errors = "i: quotation must be executable" : errors lang }
 
 cons :: Lang -> Lang
 cons lang = case stack lang of
     (Quot q:(c:cs)) -> lang { stack = Quot (c : q) : cs }
-    _               -> lang { errors = "cons: value and quotation expected" : errors lang }
+    _ -> lang { errors = "cons: value and quotation expected" : errors lang }
 
 uncons :: Lang -> Lang
 uncons lang = case stack lang of
@@ -45,7 +46,7 @@ uncons lang = case stack lang of
 concatP :: Lang -> Lang
 concatP lang = case stack lang of
     (Quot s:(Quot t:cs)) -> lang { stack = Quot (t ++ s) : cs }
-    _                    -> lang { errors = "concatP: two quotations expected" : errors lang }
+    _ -> lang { errors = "concatP: two quotations expected" : errors lang }
 
 printVal :: Lang -> Lang
 printVal lang = case stack lang of
@@ -129,26 +130,6 @@ primitives =
     , ("ifte"   , Function ifThenElse)
     , ("list"   , Function list)
     ]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
