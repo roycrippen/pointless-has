@@ -15,11 +15,12 @@ import           Test.Tasty.HUnit
 
 s1 :: String
 s1
-    = " (*aaa*) DEFINE pop' == pop ; \n\
-    \ DEFINE dup' == dup ; # bbb  \n\
+    = " (*aaa*) DEFINE stack' == stack ; \n\
+    \ DEFINE neg' == neg ; # bbb  \n\
     \ # ccc \n\
-    \ DEFINE fact == [dup 1 - fact *] [pop 1] branch ; \n\
-    \ 1 2 3 dup' dup' pop' . "
+    \ DEFINE map' == map ; \n\
+    \ 1 2 3 stack' [neg'] map . \n\
+    \ dup . . "
 
 s2 :: String
 s2 = "-10 10 +"
@@ -28,13 +29,13 @@ main :: IO ()
 main = do
 
 
-    let (quots, _) = head $ parse (many instruction) s2
-        defs       = getQuotations coreDefinitions ++ primitives
-        lang       = Lang (M.fromList defs) [] [] []
-        result     = runQuotation quots lang
+    let ((ds, qs), _) = head $ parse program s1
+        defs          = getQuotations coreDefinitions ++ primitives ++ ds
+        lang          = Lang (M.fromList defs) [] [] []
+        result        = runQuotation qs lang
 
     putStrLn "\n"
-    print quots
+    print qs
 
     putStrLn "before:"
     putStrLn $ jsonResultsShow lang
@@ -93,6 +94,13 @@ parseNakedQuotation1 =
     testCase "parse nakedQuotaions \"-10 10 +\" "
         $ assertEqual [] [Number (-10.0), Number 10.0, Symbol "+"] val
     where (val, _) = head $ parse nakedQuotations "-10 10 +"
+
+
+
+
+
+
+
 
 
 
