@@ -17,7 +17,7 @@ import           Interpreter        (Lang (..), Vocabulary, formatStack, jsonRes
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest, forkPingThread, receiveData,
                                            sendTextData)
 import           Parser             (parse)
-import           PointlessParser    (nakedQuotations)
+import           PointlessParser    (nakedQuotations, program)
 import           Primitives         (primitives)
 
 application :: WS.ServerApp
@@ -48,12 +48,17 @@ talk vcab conn = forever $ do
     msg <- WS.receiveData conn
     case msg of
         _
-            | T.isPrefixOf "load:" msg -> do
-                T.putStrLn msg
-                print $ getQuotations coreDefinitions
-                WS.sendTextData
-                    conn
-                    (T.pack "{\"load\": \"file loaded\"}" :: Text)
+            | T.isPrefixOf "load:" msg
+                -- call talk again with new vcab
+                                       -> do
+                let ack = "{\"load\": \"source loaded by pointless engine\"}"
+                WS.sendTextData conn (T.pack ack :: Text)
+
+                let source = T.unpack $ fromJust $ T.stripPrefix "load:" msg
+                    ((defs, quots), stack) = head $ parse program source
+                print defs
+                print quots
+                print stack
             | T.isPrefixOf "run:" msg -> do
                 T.putStrLn msg
                 let qStr       = T.unpack $ fromJust $ T.stripPrefix "run:" msg
@@ -73,6 +78,20 @@ talk vcab conn = forever $ do
 
 -- T.putStrLn (T.pack (show quots))
 -- T.putStrLn $ T.pack $ jsonResultsShow lang
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
