@@ -48,10 +48,13 @@ talk vcab conn = forever $ do
     msg <- WS.receiveData conn
     case msg of
         _
-            | T.isPrefixOf "run:" msg
-                -- T.putStrLn (T.pack (show quots))
-                -- T.putStrLn $ T.pack $ jsonResultsShow lang
-                                      -> do
+            | T.isPrefixOf "load:" msg -> do
+                T.putStrLn msg
+                print $ getQuotations coreDefinitions
+                WS.sendTextData
+                    conn
+                    (T.pack "{\"load\": \"file loaded\"}" :: Text)
+            | T.isPrefixOf "run:" msg -> do
                 T.putStrLn msg
                 let qStr       = T.unpack $ fromJust $ T.stripPrefix "run:" msg
                     (quots, _) = head $ parse nakedQuotations qStr
@@ -67,6 +70,18 @@ talk vcab conn = forever $ do
 --     let ((defs, quots), _) = head $ parse program source
 --         coreLibrary        = getQuotations coreDefinitions
 --     return (primitives ++ coreLibrary ++ defs, quots)
+
+-- T.putStrLn (T.pack (show quots))
+-- T.putStrLn $ T.pack $ jsonResultsShow lang
+
+
+
+
+
+
+
+
+
 
 
 

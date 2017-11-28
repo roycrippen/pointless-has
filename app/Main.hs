@@ -8,12 +8,16 @@ import           SocketServer       (application)
 
 
 main :: IO ()
-main = WS.runServer "127.0.0.1" 9160 application
+main = do
+    putStrLn "starting websocket server"
+    WS.runServer "127.0.0.1" 9160 application
 
 -- main = do
 --     let (q, s) = head $ parse nakedQuotations "[]"
 --     print q
 --     putStrLn "done"
+
+
 
 
 
