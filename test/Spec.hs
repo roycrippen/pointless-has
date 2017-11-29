@@ -28,37 +28,46 @@ s2 = "-10 10 +"
 s3 :: String
 s3 = "[1 2 ] [3 4] zip"
 
+s4 :: String
+s4 = "['a' 'b' 'c'] [to-upper] map"
+
+s5 :: String
+s5 = "DEFINE to-upper' == ['a' >= ] [32 -] when ; 'a' to-upper'"
+
 main :: IO ()
 main = do
 
 
-    -- let ((ds, qs), _) = head $ parse program s1
-    --     defs          = getQuotations coreDefinitions ++ primitives ++ ds
-    --     lang          = Lang (M.fromList defs) [] [] []
-    --     result        = runQuotation qs lang
+    let ((ds, qs), _) = head $ parse program s5
+        defs          = getQuotations coreDefinitions ++ primitives ++ ds
+        lang          = Lang (M.fromList defs) [] [] []
+        result        = runQuotation qs lang
 
-    -- putStrLn "\n"
-    -- print qs
+    putStrLn "\nds = "
+    print ds
 
-    -- putStrLn "before:"
-    -- putStrLn $ jsonResultsShow lang
-
-    -- putStrLn "\nafter:"
-    -- putStrLn $ jsonResultsShow result
-
-    let (qs, _) = head $ parse nakedQuotations s3
-        defs    = getQuotations coreDefinitions ++ primitives
-        lang    = Lang (M.fromList defs) [] [] []
-        result  = runQuotation qs lang
-
-    putStrLn "\n"
+    putStrLn "\nqs = "
     print qs
 
-    putStrLn "before:"
+    putStrLn "\nbefore:"
     putStrLn $ jsonResultsShow lang
 
     putStrLn "\nafter:"
     putStrLn $ jsonResultsShow result
+
+    -- let (qs, _) = head $ parse nakedQuotations s4
+    --     defs    = getQuotations coreDefinitions ++ primitives
+    --     lang    = Lang (M.fromList defs) [] [] []
+    --     result  = runQuotation qs lang
+
+    -- putStrLn "\nqs = "
+    -- print qs
+
+    -- putStrLn "\nbefore:"
+    -- putStrLn $ jsonResultsShow lang
+
+    -- putStrLn "\nafter:"
+    -- putStrLn $ jsonResultsShow result
 
     defaultMain unitTests
 
