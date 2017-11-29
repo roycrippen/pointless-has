@@ -23,7 +23,7 @@ s1
     \ dup . . "
 
 s2 :: String
-s2 = " \"\" 'a' swap cons "
+s2 = " \"a\" uncons "
 
 s3 :: String
 s3 = "[1 2 ] [3 4] zip"
@@ -55,19 +55,28 @@ main = do
     -- putStrLn "\nafter:"
     -- putStrLn $ jsonResultsShow result
 
+
     let (qs, _) = head $ parse nakedQuotations s2
         defs    = getQuotations coreDefinitions ++ primitives
         lang    = Lang (M.fromList defs) [] [] []
         result  = runQuotation qs lang
 
-    putStrLn "\nqs = "
+    putStrLn "\nqs before: = "
     print qs
+
+    putStrLn "\nqs after: = "
+    print $ stack result
+
+    putStrLn "\nformatStack qs: = "
+    print $ formatStack $ stack result
 
     putStrLn "\nbefore:"
     putStrLn $ jsonResultsShow lang
 
     putStrLn "\nafter:"
     putStrLn $ jsonResultsShow result
+
+    print $ Prelude.map formatV [Str "",Chr 'a']
 
     defaultMain unitTests
 
