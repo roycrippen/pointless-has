@@ -18,36 +18,40 @@ dup lang = case stack lang of
 
 dip :: Lang -> Lang
 dip lang = case stack lang of
-    (Quot q:(c:cs)) -> returnedLang { stack = c : stack returnedLang }
+    (Quot q : c:cs) -> returnedLang { stack = c : stack returnedLang }
         where returnedLang = runQuotation q (lang { stack = cs })
     _ -> lang { errors = "dip: value and quotation expected" : errors lang }
 
 x :: Lang -> Lang
 x lang = case stack lang of
-    (Quot q:cs) -> rLang { stack = stack rLang ++ [Quot q] ++ cs }
+    (Quot q : cs) -> rLang { stack = stack rLang ++ [Quot q] ++ cs }
         where rLang = runQuotation q (lang { stack = [] })
     _ -> lang { errors = msg : errors lang }
         where msg = "x: quotation must be executable without a stack"
 
 i :: Lang -> Lang
 i lang = case stack lang of
-    (Quot q:cs) -> runQuotation q (lang { stack = cs })
+    (Quot q : cs) -> runQuotation q (lang { stack = cs })
     _ -> lang { errors = "i: quotation must be executable" : errors lang }
 
 cons :: Lang -> Lang
 cons lang = case stack lang of
-    (Quot q:(c:cs)) -> lang { stack = Quot (c : q) : cs }
-    _ -> lang { errors = "cons: value and quotation expected" : errors lang }
+    (Quot q : c:cs)       -> lang { stack = Quot (c : q) : cs }
+    (Str  q : Chr c : cs) -> lang { stack = Str  (c : q) : cs }
+    _ -> lang { errors = msg : errors lang }
+        where msg =  "cons: value then quotation or char then string expected"
 
 uncons :: Lang -> Lang
 uncons lang = case stack lang of
-    (Quot (c:is):cs) -> lang { stack = Quot is : c : cs }
+    (Quot (i:is) : cs) -> lang { stack = Quot is : i  : cs }
+    (Str  (i:is) : cs) -> lang { stack = Str is : Chr i : cs }
     _                -> lang { errors = msg : errors lang }
-        where msg = "uncons: quotation with at least one element expected"
+        where msg = "uncons: non empty quotation or string expected"
 
 concatP :: Lang -> Lang
 concatP lang = case stack lang of
-    (Quot s:(Quot t:cs)) -> lang { stack = Quot (t ++ s) : cs }
+    (Quot s : Quot t : cs) -> lang { stack = Quot (t ++ s) : cs }
+    (Str  s : Str  t : cs) -> lang { stack = Str  (t ++ s) : cs }
     _ -> lang { errors = "concatP: two quotations expected" : errors lang }
 
 printVal :: Lang -> Lang

@@ -23,7 +23,7 @@ s1
     \ dup . . "
 
 s2 :: String
-s2 = "-10 10 +"
+s2 = " \"\" 'a' swap cons "
 
 s3 :: String
 s3 = "[1 2 ] [3 4] zip"
@@ -38,27 +38,13 @@ main :: IO ()
 main = do
 
 
-    let ((ds, qs), _) = head $ parse program s5
-        defs          = getQuotations coreDefinitions ++ primitives ++ ds
-        lang          = Lang (M.fromList defs) [] [] []
-        result        = runQuotation qs lang
+    -- let ((ds, qs), _) = head $ parse program s5
+    --     defs          = getQuotations coreDefinitions ++ primitives ++ ds
+    --     lang          = Lang (M.fromList defs) [] [] []
+    --     result        = runQuotation qs lang
 
-    putStrLn "\nds = "
-    print ds
-
-    putStrLn "\nqs = "
-    print qs
-
-    putStrLn "\nbefore:"
-    putStrLn $ jsonResultsShow lang
-
-    putStrLn "\nafter:"
-    putStrLn $ jsonResultsShow result
-
-    -- let (qs, _) = head $ parse nakedQuotations s4
-    --     defs    = getQuotations coreDefinitions ++ primitives
-    --     lang    = Lang (M.fromList defs) [] [] []
-    --     result  = runQuotation qs lang
+    -- putStrLn "\nds = "
+    -- print ds
 
     -- putStrLn "\nqs = "
     -- print qs
@@ -68,6 +54,20 @@ main = do
 
     -- putStrLn "\nafter:"
     -- putStrLn $ jsonResultsShow result
+
+    let (qs, _) = head $ parse nakedQuotations s2
+        defs    = getQuotations coreDefinitions ++ primitives
+        lang    = Lang (M.fromList defs) [] [] []
+        result  = runQuotation qs lang
+
+    putStrLn "\nqs = "
+    print qs
+
+    putStrLn "\nbefore:"
+    putStrLn $ jsonResultsShow lang
+
+    putStrLn "\nafter:"
+    putStrLn $ jsonResultsShow result
 
     defaultMain unitTests
 
@@ -86,6 +86,8 @@ unitTests = testGroup
     , parseNakedQuotation3
     , parseCharP1
     , parseCharP2
+    , parseQuotedStringP1
+    , parseQuotedStringP2
     ]
 
 parsePositiveDouble1 :: TestTree
@@ -148,6 +150,16 @@ parseCharP2 = testCase "parse charP \'$\'"
     $ assertEqual [] (Chr '$') val
     where (val, _) = head $ parse charP "\'$\'"
 
+
+parseQuotedStringP1 :: TestTree
+parseQuotedStringP1 = testCase "parse parsequotedStringP \"abc\""
+    $ assertEqual [] (Str "abc") val
+    where (val, _) = head $ parse quotedStringP "\"abc\""
+
+parseQuotedStringP2 :: TestTree
+parseQuotedStringP2 = testCase "parse parsequotedStringP \"\""
+    $ assertEqual [] (Str "") val
+    where (val, _) = head $ parse quotedStringP "\"\""
 
 
 

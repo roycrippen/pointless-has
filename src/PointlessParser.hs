@@ -44,7 +44,7 @@ quotation = do
     _ <- char '['
     _ <- spaces
     q <- nakedQuotations
-    -- traceShowM q
+    -- traceM $ "\nq: " ++ show q
     _ <- spaces
     _ <- char ']'
     return (Quot q)

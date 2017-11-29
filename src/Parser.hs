@@ -4,6 +4,7 @@ import           Control.Applicative (pure)
 import           Control.Monad       (ap, liftM, void)
 import           Data.List           (find)
 import           Data.Maybe          (isJust)
+import           Debug.Trace
 
 newtype Parser a = Parser (String -> [(a, String)])
 
@@ -133,9 +134,17 @@ lookAhead p = Parser
 quotedString :: Parser String
 quotedString = do
     _ <- char '"'
-    s <- manyTill item (char '"')
-    _ <- char '"'
-    return s
+    b <- lookAhead $ char '"'
+    -- traceM $ "\nb: " ++ show b
+    if b
+        then do
+            _ <- char '"'
+            return []
+        else do
+            s <- manyTill item (char '"')
+            -- traceM $ "\ns: " ++ s
+            _ <- char '"'
+            return s
 
 -- Lexical combinators
 
