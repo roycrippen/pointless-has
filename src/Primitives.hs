@@ -52,7 +52,7 @@ concatP lang = case stack lang of
 
 printVal :: Lang -> Lang
 printVal lang = case stack lang of
-    (c:cs) -> lang { stack = cs, display =  display lang ++ [formatV c] }
+    (c:cs) -> lang { stack = cs, result =  result lang ++ [formatV c] }
     _      -> lang { errors = "printVal: stack empty" : errors lang }
 
 ifThenElse :: Lang -> Lang
@@ -63,11 +63,27 @@ ifThenElse lang = case stack lang of
         where (result:_) = stack $ runQuotation qif (lang { stack = cs })
     _ -> lang { errors = "ifte: three quotations expected" : errors lang }
 
-arith :: (Double -> Double -> Double) -> Lang -> Lang
-arith operator lang = case (operator, stack lang) of
-    (op, Number y:(Number c:cs)) -> lang { stack = Number (op c y) : cs }
-    (_ , _                     ) -> lang { errors = msg : errors lang }
-        where msg = "arithmetic operation: two numbers expected"
+arithMulDiv :: (Double -> Double -> Double) -> Lang -> Lang
+arithMulDiv operator lang = case (operator, stack lang) of
+    (op, Number y : Number c : cs) -> lang { stack = Number (op c y) : cs }
+    (_ , _)                        -> lang { errors = msg : errors lang }
+            where msg = "arithMulDiv: two numbers expected"
+
+plus :: Lang -> Lang
+plus lang = case stack lang of
+    (Number y : Number c : cs) -> lang { stack = Number (c + y) : cs }
+    (Number y : Chr c : cs)    -> lang { stack = Chr chr : cs }
+        where chr = toEnum (fromEnum c + round y) :: Char
+    _                          -> lang { errors = msg : errors lang }
+        where msg = "plus: two numbers or a char then an integer expected"
+
+minus :: Lang -> Lang
+minus lang = case stack lang of
+    (Number y : Number c : cs) -> lang { stack = Number (c - y) : cs }
+    (Number y : Chr c : cs)    -> lang { stack = Chr chr : cs }
+        where chr = toEnum (fromEnum c - round y) :: Char
+    _                          -> lang { errors = msg : errors lang }
+        where msg = "minus: two numbers or a char then an integer expected"
 
 comparison :: (Value -> Value -> Bool) -> Lang -> Lang
 comparison operator lang = case (operator, stack lang) of
@@ -123,11 +139,11 @@ primitives =
     , ("cons"     , Function cons)
     , ("uncons"   , Function uncons)
     , ("concat"   , Function concatP)
-    , ("+"        , Function $ arith (+))
-    , ("-"        , Function $ arith (-))
-    , ("*"        , Function $ arith (*))
-    , ("/"        , Function $ arith (/))
-    , ("%"        , Function $ arith truncMod)
+    , ("+"        , Function plus)
+    , ("-"        , Function minus)
+    , ("*"        , Function $ arithMulDiv (*))
+    , ("/"        , Function $ arithMulDiv (/))
+    , ("%"        , Function $ arithMulDiv truncMod)
     , ("="        , Function $ comparison (==))
     , ("<="       , Function $ comparison (<=))
     , (">="       , Function $ comparison (>=))
