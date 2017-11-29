@@ -4,7 +4,7 @@ import           Debug.Trace
 import           Interpreter (Stack, Value (..), WordP (..))
 import           Parser      (Parser, anyChar, char, emptyQuot, firstLetter,
                               lookAhead, many, manyTill, newline, numberDouble,
-                              spaces, string, wordLetter, (<|>))
+                              quotedString, spaces, string, wordLetter, (<|>))
 
 numberP :: Parser Value
 numberP = do
@@ -18,6 +18,11 @@ charP = do
     _ <- char '\''
     return (Chr c)
 
+quotedStringP :: Parser Value
+quotedStringP = do
+    str <- quotedString
+    return (Str str)
+
 word :: Parser Value
 word = do
     c  <- firstLetter
@@ -27,7 +32,7 @@ word = do
 instruction :: Parser Value
 instruction = do
     _      <- spaces
-    result <- numberP <|> charP <|> quotation <|> word
+    result <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
     _      <- spaces
     return result
 
