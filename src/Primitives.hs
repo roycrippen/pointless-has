@@ -3,6 +3,8 @@ module Primitives where
 import           Interpreter (Lang (..), Value (..), WordP (..), formatV,
                               isTrue, runQuotation, toTruth)
 
+import           Debug.Trace
+
 -- Primitives
 pop :: Lang -> Lang
 pop lang = case stack lang of
@@ -50,12 +52,12 @@ concatP lang = case stack lang of
 
 printVal :: Lang -> Lang
 printVal lang = case stack lang of
-    (c:cs) -> lang { stack = cs, display = formatV c : display lang }
+    (c:cs) -> lang { stack = cs, display =  display lang ++ [formatV c] }
     _      -> lang { errors = "printVal: stack empty" : errors lang }
 
 ifThenElse :: Lang -> Lang
 ifThenElse lang = case stack lang of
-    (Quot qelse:(Quot qthen:(Quot qif:cs))) -> if isTrue result
+    (Quot qelse : Quot qthen : Quot qif : cs) -> if isTrue result
         then runQuotation qthen (lang { stack = cs })
         else runQuotation qelse (lang { stack = cs })
         where (result:_) = stack $ runQuotation qif (lang { stack = cs })
@@ -98,37 +100,51 @@ list lang = case stack lang of
     (_     :cs) -> lang { stack = toTruth False : cs }
     _           -> lang { errors = "list: stack empty" : errors lang }
 
+linrec :: Lang -> Lang
+linrec lang = case stack lang of
+    (Quot r2 : Quot r1 : Quot t : Quot p : cs) -> if isTrue result
+        then runQuotation t (lang { stack = cs })
+        else do
+            let rLang = runQuotation r1 (lang { stack = cs })
+                cs' = stack rLang
+                stack' = Quot r2 : Quot r1 : Quot t : Quot p : cs'
+                rLang' = linrec (rLang { stack =  stack' })
+            runQuotation r2 rLang'
+        where (result:_) = stack $ runQuotation p (lang {stack = cs})
+    _   -> lang { errors = "linrec: argument on stack are incorrect" : errors lang }
+
 truncMod :: (RealFrac a, RealFrac a1) => a1 -> a -> Double
 truncMod c y = fromInteger (truncate c `mod` truncate y) :: Double
 
 primitives :: [(String, WordP)]
 primitives =
-    [ ("pop"    , Function pop)
-    , ("dup"    , Function dup)
-    , ("cons"   , Function cons)
-    , ("uncons" , Function uncons)
-    , ("concat" , Function concatP)
-    , ("+"      , Function $ arith (+))
-    , ("-"      , Function $ arith (-))
-    , ("*"      , Function $ arith (*))
-    , ("/"      , Function $ arith (/))
-    , ("%"      , Function $ arith truncMod)
-    , ("="      , Function $ comparison (==))
-    , ("<="     , Function $ comparison (<=))
-    , (">="     , Function $ comparison (>=))
-    , ("<"      , Function $ comparison (<))
-    , (">"      , Function $ comparison (>))
-    , ("and"    , Function $ logic (&&))
-    , ("or"     , Function $ logic (||))
-    , ("null"   , Function lnot)
-    , ("stack"  , Function stackP)
-    , ("unstack", Function unstack)
-    , ("."      , Function printVal)
-    , ("dip"    , Function dip)
-    , ("x"      , Function x)
-    , ("i"      , Function i)
-    , ("ifte"   , Function ifThenElse)
-    , ("list"   , Function list)
+    [ ("pop"      , Function pop)
+    , ("dup"      , Function dup)
+    , ("cons"     , Function cons)
+    , ("uncons"   , Function uncons)
+    , ("concat"   , Function concatP)
+    , ("+"        , Function $ arith (+))
+    , ("-"        , Function $ arith (-))
+    , ("*"        , Function $ arith (*))
+    , ("/"        , Function $ arith (/))
+    , ("%"        , Function $ arith truncMod)
+    , ("="        , Function $ comparison (==))
+    , ("<="       , Function $ comparison (<=))
+    , (">="       , Function $ comparison (>=))
+    , ("<"        , Function $ comparison (<))
+    , (">"        , Function $ comparison (>))
+    , ("and"      , Function $ logic (&&))
+    , ("or"       , Function $ logic (||))
+    , ("null"     , Function lnot)
+    , ("stack"    , Function stackP)
+    , ("unstack"  , Function unstack)
+    , ("."        , Function printVal)
+    , ("dip"      , Function dip)
+    , ("x"        , Function x)
+    , ("i"        , Function i)
+    , ("ifte"     , Function ifThenElse)
+    , ("list"     , Function list)
+    , ("linrec"   , Function linrec)
     ]
 
 
