@@ -51,9 +51,9 @@ coreDefinitions =
   , ("repeat"           , "[swons] cons [] rollup times")
   , ("step"             , "[null2] [pop2] [[uncons] dip dup dip2] tailrec")
   , ("size"             , "0 swap [pop succ] step")
-  , ("map"              , "[] rollup [swons] concat step reverse")
+  , ("map"              , "swap [[]] [\"\"] iflist swap rolldown [swons] concat step reverse")
   , ("fold"             , "swapd step")
-  , ("filter"           , "[] rollup [[swons] [pop] ifte] cons step reverse")
+  , ("filter"           , "swap [[]] [\"\"] iflist swap rolldown [[swons] [pop] ifte] cons step reverse")
   , ("even"             , "2 % 0 =")
   , ("odd"              , "even not")
   , ("swoncat"          , "swap concat")
@@ -68,7 +68,7 @@ coreDefinitions =
   , ("iflist"           , "[list] rollup ifte")
   , ("unswons"          , "uncons swap")
   , ("shunt"            , "[swons] step")
-  , ("reverse"          , "[[]] [[]] iflist swap shunt")
+  , ("reverse"          , "[[]] [\"\"] iflist swap shunt")
   , ("reversed"         , "[reverse] dip")
   , ("sum"              , "0 [+] fold")
   , ("product"          , "1 [*] fold")
@@ -111,6 +111,7 @@ coreDefinitions =
   , ("zip"              , "[null2] [pop2 []] [uncons2] [[pairlist] dip cons] linrec")
   , ("from-to"          , "[] cons [pop pop] swoncat [>] swap [[dup succ] dip] [cons] linrec")
   , ("from-to-list"     , "[] from-to")
+  , ("from-to-string"   , "\"\" from-to")
   , ("tailrec"          , "[] linrec")
   , ("split"            , "dup2 filter rollup [ not ] concat filter")
   , ("pairstep"         , "[dupd] swoncat [step pop] cons cons step")
@@ -171,6 +172,9 @@ coreDefinitions =
   -- , ("nub2"      , "[] [[has] [pop] [swons] ifte] fold")
   -- , ("rollup"    , "rolldown rolldown")
   -- , ("step"             , "[pop] [[uncons] dip dup dip2 step ] [pop2] ifte")
+  -- , ("map"              , "[] rollup [swons] concat step reverse")
+  -- , ("map"              , "[] rollup [swons] concat step reverse")
+  -- , ("filter"           , "[] rollup [[swons] [pop] ifte] cons step reverse")
 
 
 
