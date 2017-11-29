@@ -4,7 +4,11 @@ import qualified Data.Map   as M (Map, lookup, toList)
 import           Data.Maybe (fromMaybe)
 
 
-data Value = Symbol String | Number Double | Chr Char | Quot Stack
+data Value = Symbol String
+           | Number Double
+           | Chr Char
+           | Str String
+           | Quot Stack
     deriving (Eq, Ord, Show)
 
 type Stack = [Value]
@@ -72,6 +76,7 @@ formatV (Number n) = if isInteger then show (truncate n :: Integer) else show n
 formatV (Quot []) = "[]"
 formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
 formatV (Chr c)   = [c]
+formatV (Str s)   = s
 
 formatWordP :: WordP -> String
 formatWordP (Quotation xs) = formatV (Quot xs)
