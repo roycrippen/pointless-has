@@ -73,6 +73,10 @@ unitTests = testGroup
     , parseNumberP1
     , parseNumberP2
     , parseNakedQuotation1
+    , parseNakedQuotation2
+    , parseNakedQuotation3
+    , parseCharP1
+    , parseCharP2
     ]
 
 parsePositiveDouble1 :: TestTree
@@ -112,6 +116,28 @@ parseNakedQuotation1 =
         $ assertEqual [] [Number (-10.0), Number 10.0, Symbol "+"] val
     where (val, _) = head $ parse nakedQuotations "-10 10 +"
 
+parseNakedQuotation2 :: TestTree
+parseNakedQuotation2 =
+    testCase "parse nakedQuotaions \"-10 'a'\" "
+        $ assertEqual [] [Number (-10.0), Chr 'a'] val
+    where (val, _) = head $ parse nakedQuotations "-10 'a'"
+
+parseNakedQuotation3 :: TestTree
+parseNakedQuotation3 =
+    testCase "parse nakedQuotaions \"'a' [dup 'z'] i 'b'\" "
+        $ assertEqual [] [Chr 'a',  Quot [Symbol "dup", Chr 'z'], Symbol "i", Chr 'b'] val
+    where (val, _) = head $ parse nakedQuotations "'a' [dup 'z'] i 'b'"
+
+
+parseCharP1 :: TestTree
+parseCharP1 = testCase "parse charP \'z\'"
+    $ assertEqual [] (Chr 'z') val
+    where (val, _) = head $ parse charP "\'z\'"
+
+parseCharP2 :: TestTree
+parseCharP2 = testCase "parse charP \'$\'"
+    $ assertEqual [] (Chr '$') val
+    where (val, _) = head $ parse charP "\'$\'"
 
 
 
