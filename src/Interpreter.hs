@@ -63,7 +63,7 @@ quotCons _ _        = error "Error in cons, second argument not a quotation"
 
 -- pretty-prints
 formatStack :: Stack -> String
-formatStack = unlines . map formatV
+formatStack = unlines . map ((\ s -> if s == "" then "\"\"" else s) . formatV)
 
 formatV :: Value -> String
 formatV (Symbol s) = s
