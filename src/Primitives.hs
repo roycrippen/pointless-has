@@ -45,7 +45,7 @@ uncons :: Lang -> Lang
 uncons lang = case stack lang of
     (Quot (i:is) : cs) -> lang { stack = Quot is : i  : cs }
     (Str  (i:is) : cs) -> lang { stack = Str is : Chr i : cs }
-    _                -> lang { errors = msg : errors lang }
+    _                  -> lang { errors = msg : errors lang }
         where msg = "uncons: non empty quotation or string expected"
 
 concatP :: Lang -> Lang
@@ -103,8 +103,9 @@ logic operator lang = case (operator, stack lang) of
 
 lnot :: Lang -> Lang
 lnot lang = case stack lang of
-    (c:cs) -> lang { stack = toTruth (not (isTrue c)) : cs }
-    _      -> lang { errors = "null: value expected" : errors lang }
+    (Str s : cs) ->  lang { stack = toTruth (s == "") : cs }
+    (c:cs)       -> lang { stack = toTruth (not (isTrue c)) : cs }
+    _            -> lang { errors = "null: value expected" : errors lang }
 
 stackP :: Lang -> Lang
 stackP lang = lang { stack = Quot cs : cs } where cs = stack lang
