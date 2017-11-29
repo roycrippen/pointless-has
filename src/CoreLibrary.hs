@@ -49,7 +49,6 @@ coreDefinitions =
   , ("in"               , "swap [=] cons filter size [1 >=] [true] [false] ifte swap pop")
   , ("times"            , "[pop] [[pred] dip dup dip2 times] [pop2] ifte")
   , ("repeat"           , "[swons] cons [] rollup times")
-  -- , ("step"             , "[pop] [[uncons] dip dup dip2 step ] [pop2] ifte")
   , ("step"             , "[null2] [pop2] [[uncons] dip dup dip2] tailrec")
   , ("size"             , "0 swap [pop succ] step")
   , ("map"              , "[] rollup [swons] concat step reverse")
@@ -171,6 +170,7 @@ coreDefinitions =
   -- , ("nub"       , "[] swap [[has] [pop] [swons] ifte] step")
   -- , ("nub2"      , "[] [[has] [pop] [swons] ifte] fold")
   -- , ("rollup"    , "rolldown rolldown")
+  -- , ("step"             , "[pop] [[uncons] dip dup dip2 step ] [pop2] ifte")
 
 
 
