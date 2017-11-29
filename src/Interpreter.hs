@@ -4,15 +4,15 @@ import qualified Data.Map   as M (Map, lookup, toList)
 import           Data.Maybe (fromMaybe)
 
 
-data Value = Symbol String | Number Double | Quot Stack
+data Value = Symbol String | Number Double | Chr Char | Quot Stack
     deriving (Eq, Ord, Show)
 
 type Stack = [Value]
 
-data Lang = Lang { vocab   :: Vocabulary
-                 , stack   :: Stack
-                 , display :: [String]
-                 , errors  :: [String]
+data Lang = Lang { vocab  :: Vocabulary
+                 , stack  :: Stack
+                 , result :: [String]
+                 , errors :: [String]
                  }
                  deriving (Show)
 
@@ -71,6 +71,7 @@ formatV (Number n) = if isInteger then show (truncate n :: Integer) else show n
   isInteger       = realFrac < 0.00000001
 formatV (Quot []) = "[]"
 formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
+formatV (Chr c)   = [c]
 
 formatWordP :: WordP -> String
 formatWordP (Quotation xs) = formatV (Quot xs)
@@ -84,7 +85,7 @@ jsonResultsShow :: Lang -> String
 jsonResultsShow lang = "{\n" ++ ssStr ++ dsStr ++ esStr ++ "\n}"
  where
   ssStr = jsonStackElementShow (stack lang) ++ ",\n"
-  dsStr = jsonArrayElementShow "display" (display lang) ++ ",\n"
+  dsStr = jsonArrayElementShow "result" (result lang) ++ ",\n"
   esStr = jsonArrayElementShow "errors" (errors lang)
 
 jsonStackElementShow :: Stack -> String
