@@ -79,6 +79,8 @@ process :: Stack -> Vocabulary -> WS.Connection -> IO ()
 process qs vcab conn = do
     let lang    = runQuotation qs (Lang vcab [] [] [])
         results = T.pack $ jsonResultsShow lang
+    -- T.putStrLn $ T.pack $ "result stack: " ++ show (stack lang)
+    -- T.putStrLn (T.pack "results: " `mappend` results)
     WS.sendTextData conn (results :: Text)
 
 
