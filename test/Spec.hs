@@ -25,14 +25,31 @@ s1
 s2 :: String
 s2 = "-10 10 +"
 
+s3 :: String
+s3 = "[1 2 ] [3 4] zip"
+
 main :: IO ()
 main = do
 
 
-    let ((ds, qs), _) = head $ parse program s1
-        defs          = getQuotations coreDefinitions ++ primitives ++ ds
-        lang          = Lang (M.fromList defs) [] [] []
-        result        = runQuotation qs lang
+    -- let ((ds, qs), _) = head $ parse program s1
+    --     defs          = getQuotations coreDefinitions ++ primitives ++ ds
+    --     lang          = Lang (M.fromList defs) [] [] []
+    --     result        = runQuotation qs lang
+
+    -- putStrLn "\n"
+    -- print qs
+
+    -- putStrLn "before:"
+    -- putStrLn $ jsonResultsShow lang
+
+    -- putStrLn "\nafter:"
+    -- putStrLn $ jsonResultsShow result
+
+    let (qs, _) = head $ parse nakedQuotations s3
+        defs    = getQuotations coreDefinitions ++ primitives
+        lang    = Lang (M.fromList defs) [] [] []
+        result  = runQuotation qs lang
 
     putStrLn "\n"
     print qs
