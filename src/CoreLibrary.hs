@@ -42,7 +42,8 @@ coreDefinitions =
   , ("nullary"          , "stack [i] dip cons unstack swap pop")
   , ("unary"            , "stack [i] dip cons unstack [pop2] dip")
   , ("binary"           , "stack [i] dip cons unstack [pop3] dip")
-  , ("unary2"           , "[unary] cons dup dip dip")
+  , ("i2"               , "[dip] dip i")
+  , ("unary2"           , "[unary  ] cons dup i2")
   , ("infra"            , "swons [stack] dip cons unstack [i stack] dip cons unstack")
   , ("cleave"           , "[dup] dip2 swap dip2 i")
   , ("branch"           , "[] rollup ifte")
@@ -116,7 +117,7 @@ coreDefinitions =
   , ("split"            , "dup2 filter rollup [ not ] concat filter")
   , ("pairstep"         , "[dupd] swoncat [step pop] cons cons step")
   , ("mapr"             , "[[null] [] [uncons]] dip [dip cons] cons linrec")
-  , ("foldr"            , "[[null] ] dip [] cons [pop] swoncat [uncons]] dip linrec")
+  , ("foldr"            , "[[[null]] dip [] cons [pop] swoncat [uncons]] dip linrec")
   , ("stepr2"           , "[[null2] [pop pop]] dip [dip] cons [dip] cons [uncons2] swoncat tailrec")
   , ("mapr2"            , "[[null2] [pop2 []] [uncons2]] dip [dip cons] cons linrec")
   , ("foldr2"           , "[[ [null2] ] dip [] cons [pop2] swoncat [uncons2] ] dip linrec")
@@ -127,6 +128,17 @@ coreDefinitions =
   , ("while"            , "swap [not] concat [] rolldown tailrec")
   , ("to-upper"         , "['a' >= ] [32 -] when")
   , ("to-lower"         , "['a' <  ] [32 +] when")
+  , ("positive"         , "0 >")
+  , ("negative"         , "0 <")
+  , ("prime"            , "2 [[dup * >] nullary [rem 0 >] dip and] [succ] while dup * < ")
+  , ("fact"             , "[1 1] dip [dup [*] dip succ] times pop")
+  , ("fib"              , "[1 0] dip [swap [+] unary] times popd")
+  , ("nfib"             , "[1 1] dip [dup [+ succ] dip swap] times pop")
+  , ("gcd"              , "[0 >] [dup rollup rem] while pop")
+  , ("fahrenheit"       , "9 * 5 / 32 + ")
+  , ("celsius"          , "32 - 5 * 9 /")
+  , ("pi"               , "3.14159265")
+  , ("radians"          , "pi * 180 /")
   , (""        , "")
   , (""        , "")
   , (""        , "")
@@ -134,13 +146,6 @@ coreDefinitions =
   , (""        , "")
   , (""        , "")
   , (""        , "")
-  , (""        , "")
-  , (""        , "")
-  , (""        , "")
-  , (""        , "")
-  , (""        , "")
-  , (""        , "")
-  , ("fib"            , "[1 0] dip [swap [+] unary] times popd")
   ]
 
 -- todo fix reverse once string are implemnented
@@ -175,6 +180,7 @@ coreDefinitions =
   -- , ("map"              , "[] rollup [swons] concat step reverse")
   -- , ("map"              , "[] rollup [swons] concat step reverse")
   -- , ("filter"           , "[] rollup [[swons] [pop] ifte] cons step reverse")
+  -- , ("unary2"           , "[unary] cons dup dip dip")
 
 
 
