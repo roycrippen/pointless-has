@@ -1,8 +1,6 @@
 module Interpreter where
 
-import qualified Data.Map   as M (Map, lookup, toList)
-import           Data.Maybe (fromMaybe)
-
+import qualified Data.Map as M (Map, lookup, toList)
 
 data Value = Symbol String
            | Number Double

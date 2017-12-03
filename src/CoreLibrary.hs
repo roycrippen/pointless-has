@@ -1,5 +1,6 @@
 module CoreLibrary
-    ( getQuotations
+    ( getQuotation
+    , getQuotations
     , coreDefinitions
     ) where
 

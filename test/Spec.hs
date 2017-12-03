@@ -31,12 +31,14 @@ s3 = "[1 2 ] [3 4] zip"
 s4 :: String
 s4 = "['a' 'b' 'c'] [to-upper] map"
 
+s6 :: String
+s6 = "[1.1] \"aaa\" def "
+
 s5 :: String
 s5 = "DEFINE to-upper' == ['a' >= ] [32 -] when ; 'a' to-upper'"
 
 main :: IO ()
 main = do
-
 
     -- let ((ds, qs), _) = head $ parse program s5
     --     defs          = getQuotations coreDefinitions ++ primitives ++ ds
@@ -56,27 +58,29 @@ main = do
     -- putStrLn $ jsonResultsShow result
 
 
-    let (qs, _) = head $ parse nakedQuotations s2
+    let (qs, _) = head $ parse nakedQuotations s6
         defs    = getQuotations coreDefinitions ++ primitives
         lang    = Lang (M.fromList defs) [] [] []
-        result  = runQuotation qs lang
+        res  = runQuotation qs lang
 
     putStrLn "\nqs before: = "
     print qs
 
     putStrLn "\nqs after: = "
-    print $ stack result
+    print $ stack res
 
     putStrLn "\nformatStack qs: = "
-    print $ formatStack $ stack result
+    print $ formatStack $ stack res
 
     putStrLn "\nbefore:"
     putStrLn $ jsonResultsShow lang
 
     putStrLn "\nafter:"
-    putStrLn $ jsonResultsShow result
+    putStrLn $ jsonResultsShow res
 
-    print $ Prelude.map formatV [Str "",Chr 'a']
+    putStrLn "\nvocab:"
+    let xs = M.toList (vocab lang)
+    mapM_ print xs
 
     defaultMain unitTests
 

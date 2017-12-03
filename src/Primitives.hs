@@ -1,9 +1,11 @@
 module Primitives where
 
-import           Interpreter (Lang (..), Value (..), WordP (..), formatV,
-                              isTrue, runQuotation, toTruth)
-
+import           CoreLibrary (getQuotation)
+import           Data.Map    as M
 import           Debug.Trace
+import           Interpreter (Lang (..), Value (..), WordP (..), formatStack,
+                              formatV, isTrue, jsonVocabShow, runQuotation,
+                              toTruth)
 
 -- Primitives
 pop :: Lang -> Lang
@@ -22,15 +24,25 @@ dip lang = case stack lang of
         where returnedLang = runQuotation q (lang { stack = cs })
     _ -> lang { errors = "dip: value and quotation expected" : errors lang }
 
-x :: Lang -> Lang
-x lang = case stack lang of
+def :: Lang -> Lang
+def lang = case stack lang of
+    (Quot q : Str s : cs) -> lang { vocab = vocab', stack = cs }
+        where
+            vocab' = insert s (Quotation q) (vocab lang)
+            xs = M.toList vocab'
+            -- result' = result lang ++ [s ++ " ->  " ++ formatStack q] ++ voccab''
+    _      -> lang { errors = msg : errors lang }
+        where msg = "def: string followed by quotation expected"
+
+xP :: Lang -> Lang
+xP lang = case stack lang of
     (Quot q : cs) -> rLang { stack = stack rLang ++ [Quot q] ++ cs }
         where rLang = runQuotation q (lang { stack = [] })
     _ -> lang { errors = msg : errors lang }
         where msg = "x: quotation must be executable without a stack"
 
-i :: Lang -> Lang
-i lang = case stack lang of
+iP :: Lang -> Lang
+iP lang = case stack lang of
     (Quot q : cs) -> runQuotation q (lang { stack = cs })
     _ -> lang { errors = "i: quotation must be executable" : errors lang }
 
@@ -57,14 +69,14 @@ concatP lang = case stack lang of
 printVal :: Lang -> Lang
 printVal lang = case stack lang of
     (c:cs) -> lang { stack = cs, result =  result lang ++ [formatV c] }
-    _      -> lang { errors = "printVal: stack empty" : errors lang }
+    _      -> lang        -- { errors = "printVal: stack empty" : errors lang }
 
 ifThenElse :: Lang -> Lang
 ifThenElse lang = case stack lang of
-    (Quot qelse : Quot qthen : Quot qif : cs) -> if isTrue result
+    (Quot qelse : Quot qthen : Quot qif : cs) -> if isTrue res
         then runQuotation qthen (lang { stack = cs })
         else runQuotation qelse (lang { stack = cs })
-        where (result:_) = stack $ runQuotation qif (lang { stack = cs })
+        where (res:_) = stack $ runQuotation qif (lang { stack = cs })
     _ -> lang { errors = "ifte: three quotations expected" : errors lang }
 
 arithMulDiv :: (Double -> Double -> Double) -> Lang -> Lang
@@ -123,7 +135,7 @@ list lang = case stack lang of
 
 linrec :: Lang -> Lang
 linrec lang = case stack lang of
-    (Quot r2 : Quot r1 : Quot t : Quot p : cs) -> if isTrue result
+    (Quot r2 : Quot r1 : Quot t : Quot p : cs) -> if isTrue res
         then runQuotation t (lang { stack = cs })
         else do
             let rLang = runQuotation r1 (lang { stack = cs })
@@ -131,7 +143,7 @@ linrec lang = case stack lang of
                 stack' = Quot r2 : Quot r1 : Quot t : Quot p : cs'
                 rLang' = linrec (rLang { stack =  stack' })
             runQuotation r2 rLang'
-        where (result:_) = stack $ runQuotation p (lang {stack = cs})
+        where (res:_) = stack $ runQuotation p (lang {stack = cs})
     _   -> lang { errors = "linrec: argument on stack are incorrect" : errors lang }
 
 truncMod :: (RealFrac a, RealFrac a1) => a1 -> a -> Double
@@ -161,11 +173,12 @@ primitives =
     , ("unstack"  , Function unstack)
     , ("."        , Function printVal)
     , ("dip"      , Function dip)
-    , ("x"        , Function x)
-    , ("i"        , Function i)
+    , ("x"        , Function xP)
+    , ("i"        , Function iP)
     , ("ifte"     , Function ifThenElse)
     , ("list"     , Function list)
     , ("linrec"   , Function linrec)
+    , ("def"      , Function def)
     ]
 
 
