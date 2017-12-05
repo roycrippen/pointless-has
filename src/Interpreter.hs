@@ -1,6 +1,7 @@
 module Interpreter where
 
 import qualified Data.Map as M (Map, lookup, toList)
+import           Numeric  (showFFloat)
 
 data Value = Symbol String
            | Number Double
@@ -65,12 +66,13 @@ formatStack = unlines . map ((\ s -> if s == "" then "\"\"" else s) . formatV)
 
 formatV :: Value -> String
 formatV (Symbol s) = s
-formatV (Number n) = if isInteger then show (truncate n :: Integer) else show n
+formatV (Number n) = if isInteger then show (truncate n :: Integer) else floatStr
  where
   properFraction' :: Double -> (Integer, Double)
   properFraction' = properFraction
   (_, realFrac)   = properFraction' n
-  isInteger       = realFrac < 0.00000001
+  isInteger       = abs realFrac < 0.00000001
+  floatStr        = showFFloat (Just 6) n ""
 formatV (Quot []) = "[]"
 formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
 formatV (Chr c)   = [c]
@@ -124,112 +126,5 @@ split c s  = l : case s' of
     []      -> []
     (_:s'') -> split c s''
     where (l, s') = break (==c) s
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
