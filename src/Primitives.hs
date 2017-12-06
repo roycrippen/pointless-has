@@ -29,7 +29,7 @@ def lang = case stack lang of
     (Quot q : Str s : cs) -> lang { vocab = vocab', stack = cs }
         where
             vocab' = insert s (Quotation q) (vocab lang)
-            xs = M.toList vocab'
+            -- xs = M.toList vocab'
             -- result' = result lang ++ [s ++ " ->  " ++ formatStack q] ++ voccab''
     _      -> lang { errors = msg : errors lang }
         where msg = "def: string followed by quotation expected"
