@@ -13,7 +13,7 @@ import           Data.Monoid        (mappend)
 import           Data.Text          (Text)
 import qualified Data.Text          as T (isPrefixOf, pack, stripPrefix, unpack)
 import qualified Data.Text.IO       as T (putStrLn)
-import           Interpreter        (Lang (..), Stack, Vocabulary, formatStack,
+import           Interpreter        (Lang (..), ValueP, Vocabulary,
                                      jsonResultsShow, jsonVocabShow,
                                      runQuotation)
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest,
@@ -75,7 +75,7 @@ talk vcab conn = forever $ do
                 process qs vcab conn
             | otherwise -> WS.sendTextData conn ("unknown topic" :: Text)
 
-process :: Stack -> Vocabulary -> WS.Connection -> IO ()
+process :: [ValueP] -> Vocabulary -> WS.Connection -> IO ()
 process qs vcab conn = do
     let lang    = runQuotation qs (Lang vcab [] [] [])
         results = T.pack $ jsonResultsShow lang

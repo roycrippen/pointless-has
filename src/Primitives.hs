@@ -2,7 +2,7 @@ module Primitives where
 
 import           Data.Map    as M
 -- import           Debug.Trace
-import           Interpreter (Lang (..), Value (..), WordP (..), formatV,
+import           Interpreter (Lang (..), ValueP (..), WordP (..), formatV,
                               isTrue, runQuotation, toTruth)
 
 -- Primitives
@@ -77,27 +77,27 @@ ifThenElse lang = case stack lang of
 
 arithMulDiv :: (Double -> Double -> Double) -> Lang -> Lang
 arithMulDiv operator lang = case (operator, stack lang) of
-    (op, Number y : Number c : cs) -> lang { stack = Number (op c y) : cs }
+    (op, NumP y : NumP c : cs) -> lang { stack = NumP (op c y) : cs }
     (_ , _)                        -> lang { errors = msg : errors lang }
             where msg = "arithMulDiv: two numbers expected"
 
 plus :: Lang -> Lang
 plus lang = case stack lang of
-    (Number y : Number c : cs) -> lang { stack = Number (c + y) : cs }
-    (Number y : Chr c : cs)    -> lang { stack = Chr chr : cs }
+    (NumP y : NumP c : cs) -> lang { stack = NumP (c + y) : cs }
+    (NumP y : Chr c : cs)    -> lang { stack = Chr chr : cs }
         where chr = toEnum (fromEnum c + round y) :: Char
     _                          -> lang { errors = msg : errors lang }
         where msg = "plus: two numbers or a char then an integer expected"
 
 minus :: Lang -> Lang
 minus lang = case stack lang of
-    (Number y : Number c : cs) -> lang { stack = Number (c - y) : cs }
-    (Number y : Chr c : cs)    -> lang { stack = Chr chr : cs }
+    (NumP y : NumP c : cs) -> lang { stack = NumP (c - y) : cs }
+    (NumP y : Chr c : cs)    -> lang { stack = Chr chr : cs }
         where chr = toEnum (fromEnum c - round y) :: Char
     _                          -> lang { errors = msg : errors lang }
         where msg = "minus: two numbers or a char then an integer expected"
 
-comparison :: (Value -> Value -> Bool) -> Lang -> Lang
+comparison :: (ValueP -> ValueP -> Bool) -> Lang -> Lang
 comparison operator lang = case (operator, stack lang) of
     (op, y:c:cs) -> lang { stack = toTruth (op c y) : cs }
     (_ , _     ) -> lang { errors = msg : errors lang }

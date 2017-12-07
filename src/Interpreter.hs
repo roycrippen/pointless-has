@@ -1,26 +1,27 @@
 module Interpreter where
 
-import qualified Data.Map as M (Map, lookup, toList)
-import           Numeric  (showFFloat)
+import           Data.Aeson
+import qualified Data.ByteString.Lazy       as B ()
+import qualified Data.ByteString.Lazy.Char8 as BC (unpack)
+import qualified Data.Map                   as M (Map, lookup, toList)
+import           Numeric                    (showFFloat)
 
-data Value = Symbol String
-           | Number Double
+data ValueP = Symbol String
+           | NumP Double
            | Chr Char
            | Str String
-           | Quot Stack
+           | Quot [ValueP]
     deriving (Eq, Ord, Show)
 
-type Stack = [Value]
-
 data Lang = Lang { vocab  :: Vocabulary
-                 , stack  :: Stack
+                 , stack  :: [ValueP]
                  , result :: [String]
                  , errors :: [String]
                  }
                  deriving (Show)
 
-data WordP = Quotation Stack          -- composite word
-           | Function (Lang -> Lang)  -- function to execute
+data WordP = Quotation [ValueP]
+           | Function (Lang -> Lang)
 
 instance Show WordP where
     show = formatWordP
@@ -30,25 +31,25 @@ type Vocabulary = M.Map String WordP
 getWord :: String -> Vocabulary -> Maybe WordP
 getWord = M.lookup
 
-isTrue :: Value -> Bool
-isTrue (Number x) = x /= 0.0
+isTrue :: ValueP -> Bool
+isTrue (NumP x)   = x /= 0.0
 isTrue (Quot   q) = not (null q)
 isTrue _          = False
 
-toTruth :: Bool -> Value
-toTruth b = if b then Number 1.0 else Number 0.0
+toTruth :: Bool -> ValueP
+toTruth b = if b then NumP 1.0 else NumP 0.0
 
 runWord :: WordP -> Lang -> Lang
 runWord w lang = case w of
     Quotation q -> runQuotation q lang
     Function  f -> f lang
 
-runQuotation :: Stack -> Lang -> Lang
+runQuotation :: [ValueP] -> Lang -> Lang
 runQuotation quotation lang = case quotation of
     []     -> lang
     (i:is) -> runQuotation is (runInstruction i lang)
 
-runInstruction :: Value -> Lang -> Lang
+runInstruction :: ValueP -> Lang -> Lang
 runInstruction ins lang = case ins of
     Symbol w -> case getWord w (vocab lang) of
         Just w' -> runWord w' lang
@@ -56,17 +57,17 @@ runInstruction ins lang = case ins of
             where msg = "getWord: not a valid word " ++ show w
     x -> lang { stack = x : stack lang }
 
-quotCons :: Value -> Value -> Value
+quotCons :: ValueP -> ValueP -> ValueP
 quotCons x (Quot q) = Quot (x : q)
 quotCons _ _        = error "Error in cons, second argument not a quotation"
 
 -- pretty-prints
-formatStack :: Stack -> String
+formatStack :: [ValueP] -> String
 formatStack = unlines . map ((\ s -> if s == "" then "\"\"" else s) . formatV)
 
-formatV :: Value -> String
+formatV :: ValueP -> String
 formatV (Symbol s) = s
-formatV (Number n) = if isInteger then show (truncate n :: Integer) else floatStr
+formatV (NumP n) = if isInteger then show (truncate n :: Integer) else floatStr
  where
   properFraction' :: Double -> (Integer, Double)
   properFraction' = properFraction
@@ -84,20 +85,25 @@ formatWordP (Function  _ ) = "Primitive function"
 
 formatWordAST :: WordP -> String
 formatWordAST (Quotation xs) = show xs
-formatWordAST (Function  _ ) = "function: Vocabulary -> Stack -> Stack"
+formatWordAST (Function  _ ) = "function: Vocabulary -> [ValueP] -> [ValueP]"
 
 jsonResultsShow :: Lang -> String
 jsonResultsShow lang = "{\n" ++ ssStr ++ dsStr ++ esStr ++ "\n}"
  where
   ssStr = jsonStackElementShow (stack lang) ++ ",\n"
-  dsStr = jsonArrayElementShow "result" (result lang) ++ ",\n"
-  esStr = jsonArrayElementShow "errors" (errors lang)
+  dsStr = "\"result\":" ++ encodeP (result lang) ++ ",\n"
+  esStr = "\"errors\":" ++ encodeP (errors lang)
+--   dsStr = jsonArrayElementShow "result" (result lang) ++ ",\n"
+--   esStr = jsonArrayElementShow "errors" (errors lang)
 
-jsonStackElementShow :: Stack -> String
+encodeP :: [String] -> String
+encodeP xs = BC.unpack $ encode xs
+
+jsonStackElementShow :: [ValueP] -> String
 jsonStackElementShow stck = jsonArrayElementShow "stack" (split ',' stack')
     where stack' = map (\c -> if c == '\n' then ',' else c) $ formatStack stck
 
-jsonStackShow :: Stack -> String
+jsonStackShow :: [ValueP] -> String
 jsonStackShow = jsonWrapElement . jsonStackElementShow
 
 jsonVocabElementShow :: Vocabulary -> String

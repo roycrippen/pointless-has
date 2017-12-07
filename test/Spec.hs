@@ -1,12 +1,13 @@
 module Main where
 
 import           CoreLibrary
-import           Data.Map         as M
+import           Data.Aeson
+import qualified Data.ByteString.Lazy as B
+import           Data.Map             as M
 import           Interpreter
 import           Parser
 import           PointlessParser
 import           Primitives
-
 import           Test.Tasty
 import           Test.Tasty.HUnit
 
@@ -32,7 +33,7 @@ s4 :: String
 s4 = "['a' 'b' 'c'] [to-upper] map"
 
 s6 :: String
-s6 = "[1.1] \"aaa\" def "
+s6 = "\"aaa\" [1.1] def aaa aaa aaa . . . pop aaa  "
 
 s5 :: String
 s5 = "DEFINE to-upper' == ['a' >= ] [32 -] when ; 'a' to-upper'"
@@ -83,9 +84,13 @@ main = do
     putStrLn "\nafter:"
     putStrLn $ jsonResultsShow res
 
-    putStrLn "\nvocab:"
-    let xs = M.toList (vocab lang)
-    mapM_ print xs
+    -- putStrLn "\nvocab:"
+    -- let xs = M.toList (vocab lang)
+    -- mapM_ print xs
+
+    putStrLn "\njson result: "
+    B.putStr $ encode (result res)
+    putStrLn "\n"
 
     defaultMain unitTests
 
@@ -131,24 +136,24 @@ parseNegativeDouble2 = testCase "parse numberDouble -23.4"
 
 parseNumberP1 :: TestTree
 parseNumberP1 = testCase "parse numberP -23"
-    $ assertEqual [] (Number (-23.0)) val
+    $ assertEqual [] (NumP (-23.0)) val
     where (val, _) = head $ parse numberP "-23"
 
 parseNumberP2 :: TestTree
 parseNumberP2 = testCase "parse numberP -23.4"
-    $ assertEqual [] (Number (-23.4)) val
+    $ assertEqual [] (NumP (-23.4)) val
     where (val, _) = head $ parse numberP "-23.4"
 
 parseNakedQuotation1 :: TestTree
 parseNakedQuotation1 =
     testCase "parse nakedQuotaions \"-10 10 +\" "
-        $ assertEqual [] [Number (-10.0), Number 10.0, Symbol "+"] val
+        $ assertEqual [] [NumP (-10.0), NumP 10.0, Symbol "+"] val
     where (val, _) = head $ parse nakedQuotations "-10 10 +"
 
 parseNakedQuotation2 :: TestTree
 parseNakedQuotation2 =
     testCase "parse nakedQuotaions \"-10 'a'\" "
-        $ assertEqual [] [Number (-10.0), Chr 'a'] val
+        $ assertEqual [] [NumP (-10.0), Chr 'a'] val
     where (val, _) = head $ parse nakedQuotations "-10 'a'"
 
 parseNakedQuotation3 :: TestTree

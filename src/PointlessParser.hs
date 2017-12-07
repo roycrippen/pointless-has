@@ -1,45 +1,45 @@
 module PointlessParser where
 
 import           Debug.Trace
-import           Interpreter (Stack, Value (..), WordP (..))
+import           Interpreter (ValueP (..), WordP (..))
 import           Parser      (Parser, anyChar, char, emptyQuot, firstLetter,
                               lookAhead, many, manyTill, newline, numberDouble,
                               quotedString, spaces, string, wordLetter, (<|>))
 
-numberP :: Parser Value
+numberP :: Parser ValueP
 numberP = do
     d <- numberDouble
-    return (Number d)
+    return (NumP d)
 
-charP :: Parser Value
+charP :: Parser ValueP
 charP = do
     _ <- char '\''
     c <- firstLetter
     _ <- char '\''
     return (Chr c)
 
-quotedStringP :: Parser Value
+quotedStringP :: Parser ValueP
 quotedStringP = do
     str <- quotedString
     return (Str str)
 
-word :: Parser Value
+word :: Parser ValueP
 word = do
     c  <- firstLetter
     cs <- many wordLetter
     return (Symbol (c : cs))
 
-instruction :: Parser Value
+instruction :: Parser ValueP
 instruction = do
     _      <- spaces
     result <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
     _      <- spaces
     return result
 
-nakedQuotations :: Parser Stack
+nakedQuotations :: Parser [ValueP]
 nakedQuotations = many instruction
 
-quotation :: Parser Value
+quotation :: Parser ValueP
 quotation = do
     _ <- char '['
     _ <- spaces
@@ -71,7 +71,7 @@ definition = do
     _    <- spacesAndComments
     return (name, Quotation q)
 
-program :: Parser ([(String, WordP)], Stack)
+program :: Parser ([(String, WordP)], [ValueP])
 program = do
     _  <- spacesAndComments
     ds <- many definition
