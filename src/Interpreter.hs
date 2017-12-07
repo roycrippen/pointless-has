@@ -93,9 +93,8 @@ jsonResultsShow lang = "{\n" ++ ssStr ++ dsStr ++ esStr ++ "\n}"
   ssStr = jsonStackElementShow (stack lang) ++ ",\n"
   dsStr = "\"result\":" ++ encodeP (result lang) ++ ",\n"
   esStr = "\"errors\":" ++ encodeP (errors lang)
---   dsStr = jsonArrayElementShow "result" (result lang) ++ ",\n"
---   esStr = jsonArrayElementShow "errors" (errors lang)
 
+-- todo convert this and all json functions to -> Text
 encodeP :: [String] -> String
 encodeP xs = BC.unpack $ encode xs
 
