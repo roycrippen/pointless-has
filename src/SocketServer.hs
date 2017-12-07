@@ -85,18 +85,6 @@ process qs vcab conn = do
 
 
 
--- getProgram :: IO ([(String, WordP)], Stack)
--- getProgram = do
---     source <- readFile "data/test.joy"
---     let ((defs, quots), _) = head $ parse program source
---         coreLibrary        = getQuotations coreDefinitions
---     return (primitives ++ coreLibrary ++ defs, quots)
-
--- T.putStrLn (T.pack (show quots))
--- T.putStrLn $ T.pack $ jsonResultsShow lang
-
-
-
 
 
 

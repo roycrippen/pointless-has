@@ -64,7 +64,7 @@ concatP lang = case stack lang of
 
 printVal :: Lang -> Lang
 printVal lang = case stack lang of
-    (c:cs) -> lang { stack = cs, result =  formatV c : result lang }
+    (c:cs) -> lang { stack = cs, result =  result lang ++ [formatV c] }
     _      -> lang
 
 ifThenElse :: Lang -> Lang
