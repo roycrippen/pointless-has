@@ -37,6 +37,11 @@ s6 = "[1.1] \"aaa\" def "
 s5 :: String
 s5 = "DEFINE to-upper' == ['a' >= ] [32 -] when ; 'a' to-upper'"
 
+xs' :: [String]
+xs' = go 0 []
+    where
+        go n xs = if n == 10000 then xs else  go (n+1) ("kdshjhkjashdjhsdjk asdkjkjasdhjasdjkasjdhjahsdkj" : xs)
+
 main :: IO ()
 main = do
 

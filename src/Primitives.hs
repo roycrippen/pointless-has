@@ -1,11 +1,9 @@
 module Primitives where
 
-import           CoreLibrary (getQuotation)
 import           Data.Map    as M
-import           Debug.Trace
-import           Interpreter (Lang (..), Value (..), WordP (..), formatStack,
-                              formatV, isTrue, jsonVocabShow, runQuotation,
-                              toTruth)
+-- import           Debug.Trace
+import           Interpreter (Lang (..), Value (..), WordP (..), formatV,
+                              isTrue, runQuotation, toTruth)
 
 -- Primitives
 pop :: Lang -> Lang
@@ -29,8 +27,6 @@ def lang = case stack lang of
     (Quot q : Str s : cs) -> lang { vocab = vocab', stack = cs }
         where
             vocab' = insert s (Quotation q) (vocab lang)
-            -- xs = M.toList vocab'
-            -- result' = result lang ++ [s ++ " ->  " ++ formatStack q] ++ voccab''
     _      -> lang { errors = msg : errors lang }
         where msg = "def: string followed by quotation expected"
 
@@ -68,8 +64,8 @@ concatP lang = case stack lang of
 
 printVal :: Lang -> Lang
 printVal lang = case stack lang of
-    (c:cs) -> lang { stack = cs, result =  result lang ++ [formatV c] }
-    _      -> lang        -- { errors = "printVal: stack empty" : errors lang }
+    (c:cs) -> lang { stack = cs, result =  formatV c : result lang }
+    _      -> lang
 
 ifThenElse :: Lang -> Lang
 ifThenElse lang = case stack lang of
