@@ -14,75 +14,26 @@ import           Test.Tasty.HUnit
 
 -- stack ghci pointless-hs:pointless-hs-test
 
-s1 :: String
-s1
-    = " (*aaa*) DEFINE stack' == stack ; \n\
-    \ DEFINE neg' == neg ; # bbb  \n\
-    \ # ccc \n\
-    \ DEFINE map' == map ; \n\
-    \ 1 2 3 stack' [neg'] map . \n\
-    \ dup . . "
+sKeep01 :: String
+sKeep01 = "\"aaa\" [1.1] def aaa aaa [] cons cons \"\" "
 
-s2 :: String
-s2 = " \"a\" uncons "
-
-s3 :: String
-s3 = "[1 2 ] [3 4] zip"
-
-s4 :: String
-s4 = "['a' 'b' 'c'] [to-upper] map"
-
-s6 :: String
-s6 = "\"aaa\" [1.1] def aaa aaa aaa . . . pop aaa  "
-
-s5 :: String
-s5 = "DEFINE to-upper' == ['a' >= ] [32 -] when ; 'a' to-upper'"
-
-xs' :: [String]
-xs' = go 0 []
-    where
-        go n xs = if n == 10000 then xs else  go (n+1) ("kdshjhkjashdjhsdjk asdkjkjasdhjasdjkasjdhjahsdkj" : xs)
+runQuot :: String -> Lang
+runQuot s = runQuotation qs lang
+  where
+    (qs, _) = head $ parse nakedQuotations s
+    defs    = getQuotations coreDefinitions ++ primitives
+    lang    = Lang (M.fromList defs) [] [] []
 
 main :: IO ()
 main = do
 
-    -- let ((ds, qs), _) = head $ parse program s5
-    --     defs          = getQuotations coreDefinitions ++ primitives ++ ds
-    --     lang          = Lang (M.fromList defs) [] [] []
-    --     result        = runQuotation qs lang
-
-    -- putStrLn "\nds = "
-    -- print ds
-
-    -- putStrLn "\nqs = "
-    -- print qs
-
-    -- putStrLn "\nbefore:"
-    -- putStrLn $ jsonResultsShow lang
-
-    -- putStrLn "\nafter:"
-    -- putStrLn $ jsonResultsShow result
-
-
-    let (qs, _) = head $ parse nakedQuotations s6
-        defs    = getQuotations coreDefinitions ++ primitives
-        lang    = Lang (M.fromList defs) [] [] []
-        res  = runQuotation qs lang
-
-    putStrLn "\nqs before: = "
-    print qs
+    let res = runQuot sKeep01
 
     putStrLn "\nqs after: = "
     print $ stack res
 
-    putStrLn "\nformatStack qs: = "
+    putStrLn "\nformatStack res: = "
     print $ formatStack $ stack res
-
-    putStrLn "\nbefore:"
-    putStrLn $ jsonResultsShow lang
-
-    putStrLn "\nafter:"
-    putStrLn $ jsonResultsShow res
 
     -- putStrLn "\nvocab:"
     -- let xs = M.toList (vocab lang)
@@ -111,6 +62,7 @@ unitTests = testGroup
     , parseCharP2
     , parseQuotedStringP1
     , parseQuotedStringP2
+    , formatStack1
     ]
 
 parsePositiveDouble1 :: TestTree
@@ -158,19 +110,19 @@ parseNakedQuotation2 =
 
 parseNakedQuotation3 :: TestTree
 parseNakedQuotation3 =
-    testCase "parse nakedQuotaions \"'a' [dup 'z'] i 'b'\" "
-        $ assertEqual [] [Chr 'a',  Quot [Symbol "dup", Chr 'z'], Symbol "i", Chr 'b'] val
+    testCase "parse nakedQuotaions \"'a' [dup 'z'] i 'b'\" " $ assertEqual
+        []
+        [Chr 'a', Quot [Symbol "dup", Chr 'z'], Symbol "i", Chr 'b']
+        val
     where (val, _) = head $ parse nakedQuotations "'a' [dup 'z'] i 'b'"
 
 
 parseCharP1 :: TestTree
-parseCharP1 = testCase "parse charP \'z\'"
-    $ assertEqual [] (Chr 'z') val
+parseCharP1 = testCase "parse charP \'z\'" $ assertEqual [] (Chr 'z') val
     where (val, _) = head $ parse charP "\'z\'"
 
 parseCharP2 :: TestTree
-parseCharP2 = testCase "parse charP \'$\'"
-    $ assertEqual [] (Chr '$') val
+parseCharP2 = testCase "parse charP \'$\'" $ assertEqual [] (Chr '$') val
     where (val, _) = head $ parse charP "\'$\'"
 
 
@@ -183,6 +135,16 @@ parseQuotedStringP2 :: TestTree
 parseQuotedStringP2 = testCase "parse parsequotedStringP \"\""
     $ assertEqual [] (Str "") val
     where (val, _) = head $ parse quotedStringP "\"\""
+
+formatStack1 :: TestTree
+formatStack1 = testCase "formatStack after running s6"
+    $ assertEqual [] "\"\"\n[ 1.100000 1.100000 ]\n" val
+    where val = formatStack $ stack $ runQuot sKeep01
+
+
+
+
+
 
 
 
