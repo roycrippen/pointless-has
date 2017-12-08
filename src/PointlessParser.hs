@@ -1,7 +1,7 @@
 module PointlessParser where
 
 import           Debug.Trace
-import           Interpreter (ValueP (..), WordP (..))
+import           Interpreter
 import           Parser      (Parser, anyChar, char, emptyQuot, firstLetter,
                               lookAhead, many, manyTill, newline, numberDouble,
                               quotedString, spaces, string, wordLetter, (<|>))
@@ -96,5 +96,6 @@ comments = many comment
 
 spacesAndComments :: Parser ()
 spacesAndComments = spaces >> comments >> return ()
+
 
 

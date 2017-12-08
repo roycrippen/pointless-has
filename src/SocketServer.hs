@@ -13,9 +13,7 @@ import           Data.Monoid        (mappend)
 import           Data.Text          (Text)
 import qualified Data.Text          as T (isPrefixOf, pack, stripPrefix, unpack)
 import qualified Data.Text.IO       as T (putStrLn)
-import           Interpreter        (Lang (..), ValueP, Vocabulary,
-                                     jsonResultsShow, jsonVocabShow,
-                                     runQuotation)
+import           Interpreter
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest,
                                            forkPingThread, receiveData,
                                            sendTextData)
@@ -35,15 +33,18 @@ application pending = do
                 WS.sendTextData conn ("pointless" :: Text)
                 T.putStrLn "editor connected"
 
-                -- give editor the vocabulary
+                -- create vocabulary
                 let coreLibrary = getQuotations coreDefinitions
                     vcab        = M.fromList $ primitives ++ coreLibrary
-                WS.sendTextData conn (T.pack $ jsonVocabShow vcab :: Text)
 
                 -- listen for commands forever
                 talk vcab conn
             | otherwise -> do
-                let err = "incorrect connection topic: '" `mappend` msg `mappend` "'" :: Text
+                let
+                    err =
+                        "incorrect connection topic: '"
+                        `mappend` msg
+                        `mappend` "'" :: Text
                 WS.sendTextData conn err
 
 talk :: Vocabulary -> WS.Connection -> IO ()
@@ -57,19 +58,23 @@ talk vcab conn = forever $ do
                 WS.sendTextData conn (T.pack ack :: Text)
 
                 -- process request
-                let source = T.unpack $ fromJust $ T.stripPrefix "load:" msg
+                let
+                    source = T.unpack $ fromJust $ T.stripPrefix "load:" msg
                     ((ds, qs), _) = head $ parse program source
-                    vcab' =  M.fromList $ getQuotations coreDefinitions ++ primitives ++ ds
+                    vcab' =
+                        M.fromList
+                            $  getQuotations coreDefinitions
+                            ++ primitives
+                            ++ ds
                 process qs vcab' conn
 
                 -- send updated vocabulary
-                WS.sendTextData conn (T.pack $ jsonVocabShow vcab' :: Text)
+                WS.sendTextData conn  (T.pack $ jsonVocabShow vcab' :: Text)
                 -- putStrLn $ jsonVocabShow vcab'
 
                 -- re-start talk with new vocabulary
-                talk vcab' conn
+                talk            vcab' conn
             | T.isPrefixOf "run:" msg -> do
-                -- run single quote
                 T.putStrLn msg
                 let source  = T.unpack $ fromJust $ T.stripPrefix "run:" msg
                     (qs, _) = head $ parse nakedQuotations source
@@ -79,10 +84,18 @@ talk vcab conn = forever $ do
 process :: [ValueP] -> Vocabulary -> WS.Connection -> IO ()
 process qs vcab conn = do
     let lang    = runQuotation qs (Lang vcab [] [] [])
-        results = T.pack $ jsonResultsShow lang
+        results = jsonResultsShow lang
     -- T.putStrLn $ T.pack $ "result stack: " ++ show (stack lang)
     -- T.putStrLn (T.pack "results: " `mappend` results)
     WS.sendTextData conn (results :: Text)
+
+
+
+
+
+
+
+
 
 
 

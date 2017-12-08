@@ -1,30 +1,29 @@
 module Interpreter where
 
-import           Data.Aeson
-import qualified Data.ByteString.Lazy       as B ()
-import qualified Data.ByteString.Lazy.Char8 as BC (unpack)
-import qualified Data.Map                   as M (Map, lookup, toList)
-import           Numeric                    (showFFloat)
+import qualified Data.Map         as M (Map, lookup, toList)
+import           Data.Aeson.Text  (encodeToLazyText)
+import           Numeric          (showFFloat)
+import           Data.Text        (Text)
+import qualified Data.Text        as T  (pack, unpack)
+import qualified Data.Text.Lazy   as TL  (toStrict)
+
 
 data ValueP = Symbol String
-           | NumP Double
-           | Chr Char
-           | Str String
-           | Quot [ValueP]
-    deriving (Eq, Ord, Show)
+            | NumP Double
+            | Chr Char
+            | Str String
+            | Quot [ValueP]
+            deriving (Eq, Ord, Show)
 
 data Lang = Lang { vocab  :: Vocabulary
-                 , stack  :: [ValueP]
-                 , result :: [String]
-                 , errors :: [String]
-                 }
-                 deriving (Show)
+      , stack  :: [ValueP]
+      , result :: [String]
+      , errors :: [String]
+      }
+      deriving (Show)
 
-data WordP = Quotation [ValueP]
-           | Function (Lang -> Lang)
-
-instance Show WordP where
-    show = formatWordP
+data WordP = Quotation [ValueP] | Function (Lang -> Lang)
+instance Show WordP where show = formatWordP
 
 type Vocabulary = M.Map String WordP
 
@@ -61,11 +60,9 @@ quotCons :: ValueP -> ValueP -> ValueP
 quotCons x (Quot q) = Quot (x : q)
 quotCons _ _        = error "Error in cons, second argument not a quotation"
 
--- pretty-prints
-formatStack :: [ValueP] -> String
--- formatStack = unlines . map ((\s -> if s == "" then "\"\"" else s) . formatV)
-formatStack = unlines . map (show . formatV)
-
+--
+-- pretty printers
+--
 formatV :: ValueP -> String
 formatV (Symbol s) = s
 formatV (NumP n) = if isInteger then show (truncate n :: Integer) else floatStr
@@ -88,23 +85,27 @@ formatWordAST :: WordP -> String
 formatWordAST (Quotation xs) = show xs
 formatWordAST (Function  _ ) = "function: Vocabulary -> [ValueP] -> [ValueP]"
 
-jsonResultsShow :: Lang -> String
-jsonResultsShow lang = "{\n" ++ ssStr ++ dsStr ++ esStr ++ "\n}"
+formatStack :: [ValueP] -> String
+formatStack = unlines . map formatV
+
+--
+-- json formatters
+--
+jsonResultsShow :: Lang -> Text
+jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
   where
-    ssStr = jsonStackElementShow (stack lang) ++ ",\n"
-    dsStr = "\"result\":" ++ encodeP (result lang) ++ ",\n"
-    esStr = "\"errors\":" ++ encodeP (errors lang)
+    stackT  = encodeP "\"stack\":" [formatStack $ stack lang]
+    resultT = encodeP "\"result\":" (reverse $ result lang)
+    errorT  = encodeP "\"errors\":" (errors lang)
+    text =
+        stackT
+            `mappend` T.pack ",\n"
+            `mappend` resultT
+            `mappend` T.pack ",\n"
+            `mappend` errorT
 
--- todo convert this and all json functions to -> Text
-encodeP :: [String] -> String
-encodeP xs = BC.unpack $ encode xs
-
-jsonStackElementShow :: [ValueP] -> String
-jsonStackElementShow stck = jsonArrayElementShow "stack" (split ',' stack')
-    where stack' = map (\c -> if c == '\n' then ',' else c) $ formatStack stck
-
-jsonStackShow :: [ValueP] -> String
-jsonStackShow = jsonWrapElement . jsonStackElementShow
+encodeP :: String -> [String] -> Text
+encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
 
 jsonVocabElementShow :: Vocabulary -> String
 jsonVocabElementShow vcab = jsonArrayElementShow "vocab" vocab'
@@ -126,12 +127,30 @@ jsonArrayShow name xs = jsonWrapElement $ jsonArrayElementShow name xs
 jsonWrapElement :: String -> String
 jsonWrapElement s = "{\n" ++ s ++ "\n}"
 
-split :: Char -> String -> [String]
-split _ "" = []
-split c s  = l : case s' of
-    []      -> []
-    (_:s'') -> split c s''
-    where (l, s') = break (==c) s
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

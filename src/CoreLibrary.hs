@@ -4,7 +4,7 @@ module CoreLibrary
     , coreDefinitions
     ) where
 
-import           Interpreter     (WordP (..))
+import           Interpreter
 import           Parser          (parse)
 import           PointlessParser (nakedQuotations)
 
@@ -190,6 +190,7 @@ coreDefinitions =
   -- , ("map"              , "[] rollup [swons] concat step reverse")
   -- , ("filter"           , "[] rollup [[swons] [pop] ifte] cons step reverse")
   -- , ("unary2"           , "[unary] cons dup dip dip")
+
 
 
 
