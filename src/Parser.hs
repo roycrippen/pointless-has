@@ -12,11 +12,11 @@ parse :: Parser t -> String -> [(t, String)]
 parse (Parser p) = p
 
 instance Functor Parser where
-    fmap = liftM
+  fmap = liftM
 
 instance Applicative Parser where
-    pure  = return
-    (<*>) = ap
+  pure  = return
+  (<*>) = ap
 
 instance Monad Parser where
    return a = Parser (\s -> [(a,s)])
@@ -30,13 +30,13 @@ item = Parser item'
         (c:cs) -> [(c, cs)]
 
 class Monad m => MonadPlus m where
-    mzero :: m a
-    mplus :: m a -> m a -> m a
+  mzero :: m a
+  mplus :: m a -> m a -> m a
 
 -- mplus for the Parser is like an choice operator.
 instance MonadPlus Parser where
-    mzero = Parser (const [])
-    mplus p q = Parser (\s -> parse p s ++ parse q s)
+  mzero = Parser (const [])
+  mplus p q = Parser (\s -> parse p s ++ parse q s)
 
 option :: Parser a -> Parser a -> Parser a
 option p q = Parser

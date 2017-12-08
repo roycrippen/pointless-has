@@ -4,6 +4,6 @@
         ".stack-work": true,
         "data": true
     },
-    "editor.tabSize": 4,
+    "editor.tabSize": 2,
     "editor.formatOnSave": true
 }

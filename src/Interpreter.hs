@@ -32,9 +32,9 @@ getWord :: String -> Vocabulary -> Maybe WordP
 getWord = M.lookup
 
 isTrue :: ValueP -> Bool
-isTrue (NumP x)   = x /= 0.0
-isTrue (Quot   q) = not (null q)
-isTrue _          = False
+isTrue (NumP x) = x /= 0.0
+isTrue (Quot q) = not (null q)
+isTrue _        = False
 
 toTruth :: Bool -> ValueP
 toTruth b = if b then NumP 1.0 else NumP 0.0
@@ -63,21 +63,22 @@ quotCons _ _        = error "Error in cons, second argument not a quotation"
 
 -- pretty-prints
 formatStack :: [ValueP] -> String
-formatStack = unlines . map ((\ s -> if s == "" then "\"\"" else s) . formatV)
+-- formatStack = unlines . map ((\s -> if s == "" then "\"\"" else s) . formatV)
+formatStack = unlines . map (show . formatV)
 
 formatV :: ValueP -> String
 formatV (Symbol s) = s
 formatV (NumP n) = if isInteger then show (truncate n :: Integer) else floatStr
- where
-  properFraction' :: Double -> (Integer, Double)
-  properFraction' = properFraction
-  (_, realFrac)   = properFraction' n
-  isInteger       = abs realFrac < 0.00000001
-  floatStr        = showFFloat (Just 6) n ""
+  where
+    properFraction' :: Double -> (Integer, Double)
+    properFraction' = properFraction
+    (_, realFrac)   = properFraction' n
+    isInteger       = abs realFrac < 0.00000001
+    floatStr        = showFFloat (Just 6) n ""
 formatV (Quot []) = "[]"
 formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
-formatV (Chr c)   = [c]
-formatV (Str s)   = show s
+formatV (Chr  c ) = [c]
+formatV (Str  s ) = show s
 
 formatWordP :: WordP -> String
 formatWordP (Quotation xs) = formatV (Quot xs)
@@ -89,10 +90,10 @@ formatWordAST (Function  _ ) = "function: Vocabulary -> [ValueP] -> [ValueP]"
 
 jsonResultsShow :: Lang -> String
 jsonResultsShow lang = "{\n" ++ ssStr ++ dsStr ++ esStr ++ "\n}"
- where
-  ssStr = jsonStackElementShow (stack lang) ++ ",\n"
-  dsStr = "\"result\":" ++ encodeP (result lang) ++ ",\n"
-  esStr = "\"errors\":" ++ encodeP (errors lang)
+  where
+    ssStr = jsonStackElementShow (stack lang) ++ ",\n"
+    dsStr = "\"result\":" ++ encodeP (result lang) ++ ",\n"
+    esStr = "\"errors\":" ++ encodeP (errors lang)
 
 -- todo convert this and all json functions to -> Text
 encodeP :: [String] -> String
@@ -107,17 +108,17 @@ jsonStackShow = jsonWrapElement . jsonStackElementShow
 
 jsonVocabElementShow :: Vocabulary -> String
 jsonVocabElementShow vcab = jsonArrayElementShow "vocab" vocab'
- where
-  vocab' = map (\(k, v) -> k ++ " == " ++ formatWordP v) $ M.toList vcab
+  where
+    vocab' = map (\(k, v) -> k ++ " == " ++ formatWordP v) $ M.toList vcab
 
 jsonVocabShow :: Vocabulary -> String
 jsonVocabShow = jsonWrapElement . jsonVocabElementShow
 
 jsonArrayElementShow :: String -> [String] -> String
 jsonArrayElementShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
- where
-  body        = foldl (\acc v -> acc ++ show v ++ ", ") "" xs
-  bodyTrimmed = take (length body - 2) body
+  where
+    body        = foldl (\acc v -> acc ++ show v ++ ", ") "" xs
+    bodyTrimmed = take (length body - 2) body
 
 jsonArrayShow :: String -> [String] -> String
 jsonArrayShow name xs = jsonWrapElement $ jsonArrayElementShow name xs
@@ -131,5 +132,6 @@ split c s  = l : case s' of
     []      -> []
     (_:s'') -> split c s''
     where (l, s') = break (==c) s
+
 
 
