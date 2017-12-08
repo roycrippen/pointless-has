@@ -77,7 +77,7 @@ formatV (NumP n) = if isInteger then show (truncate n :: Integer) else floatStr
 formatV (Quot []) = "[]"
 formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
 formatV (Chr c)   = [c]
-formatV (Str s)   = s
+formatV (Str s)   = show s
 
 formatWordP :: WordP -> String
 formatWordP (Quotation xs) = formatV (Quot xs)

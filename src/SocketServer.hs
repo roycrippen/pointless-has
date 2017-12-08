@@ -64,6 +64,7 @@ talk vcab conn = forever $ do
 
                 -- send updated vocabulary
                 WS.sendTextData conn (T.pack $ jsonVocabShow vcab' :: Text)
+                -- putStrLn $ jsonVocabShow vcab'
 
                 -- re-start talk with new vocabulary
                 talk vcab' conn
