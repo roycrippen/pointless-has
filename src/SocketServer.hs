@@ -11,7 +11,7 @@ import           Data.Map           as M
 import           Data.Maybe         (fromJust)
 import           Data.Monoid        (mappend)
 import           Data.Text          (Text)
-import qualified Data.Text          as T (isPrefixOf, pack, stripPrefix, unpack)
+import qualified Data.Text          as T (isPrefixOf, pack, replace, stripPrefix, unlines, unpack)
 import qualified Data.Text.IO       as T (putStrLn)
 import           Interpreter
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest, forkPingThread,
@@ -53,8 +53,7 @@ talk vcab conn = forever $ do
                 WS.sendTextData conn (T.pack ack :: Text)
 
                 -- process request
-                let
-                    source = T.unpack $ fromJust $ T.stripPrefix "load:" msg
+                let source = T.unpack $ fromJust $ T.stripPrefix "load:" msg
                     ((ds, qs), _) = head $ parse program source
                     vcab' =
                         M.fromList
@@ -65,15 +64,15 @@ talk vcab conn = forever $ do
 
                 -- send updated vocabulary
                 WS.sendTextData conn  (T.pack $ jsonVocabShow vcab' :: Text)
-                -- putStrLn $ jsonVocabShow vcab'
 
                 -- re-start talk with new vocabulary
                 talk            vcab' conn
             | T.isPrefixOf "run:" msg -> do
                 T.putStrLn msg
-                let source  = T.unpack $ fromJust $ T.stripPrefix "run:" msg
-                    (qs, _) = head $ parse nakedQuotations source
-                -- T.putStrLn $ T.pack $ unlines $ Prelude.map formatV qs
+                let source  = fromJust $ T.stripPrefix "run:" msg
+                    source' = T.unpack $ T.replace (T.pack "\\n") (T.pack  "\n") source
+                    (qs, _) = head $ parse nakedQuotations source'
+                -- T.putStrLn $ T.unlines $ Prelude.map (T.pack . formatV) qs
                 process qs vcab conn
             | otherwise -> WS.sendTextData conn ("unknown topic" :: Text)
 
@@ -81,141 +80,7 @@ process :: [ValueP] -> Vocabulary -> WS.Connection -> IO ()
 process qs vcab conn = do
     let lang    = runQuotation qs (Lang vcab [] [] [] "")
         results = jsonResultsShow lang
-    -- T.putStrLn $ T.pack $ "result stack: " ++ show (stack lang)
-    -- T.putStrLn (T.pack "results: " `mappend` results)
+    -- T.putStrLn results
     WS.sendTextData conn (results :: Text)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

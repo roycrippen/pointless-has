@@ -76,7 +76,7 @@ formatV (NumP n) = if isInteger n then show (truncate n :: Integer) else floatSt
 formatV (Quot []) = "[]"
 formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
 formatV (Chr  c ) = [c]
-formatV (Str  s ) = show s
+formatV (Str  s ) =  show s
 
 isInteger :: Double -> Bool
 isInteger d = abs realFrac < 0.0000001
@@ -97,7 +97,7 @@ formatWordAST (Quotation xs) = show xs
 formatWordAST (Function  _ ) = "function: Vocabulary -> [ValueP] -> [ValueP]"
 
 formatStack :: [ValueP] -> [String]
-formatStack xs  = map (\x -> formatV x) xs
+formatStack = map formatV
 
 -- |
 -- | json formatters
@@ -118,10 +118,13 @@ jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
                       `mappend` errorT
                       `mappend` newline
                       `mappend` displayT
-
+--
 encodeP :: String -> [String] -> Text
-encodeP s xs = T.replace (T.pack "\\n") (T.pack "\n") encoded
-  where encoded = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
+encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
+
+-- encodeP :: String -> [String] -> Text
+-- encodeP s xs = T.replace (T.pack "\\n") (T.pack  "\n") encoded
+--   where encoded = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
 
 jsonVocabElementShow :: Vocabulary -> String
 jsonVocabElementShow vcab = jsonArrayElementShow "vocab" vocab'

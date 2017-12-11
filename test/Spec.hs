@@ -15,13 +15,13 @@ import           Test.Tasty.HUnit
 -- stack ghci pointless-hs:pointless-hs-test
 
 sKeep01 :: String
-sKeep01 = "\"aaa\" [1.1] def aaa aaa [] cons cons \"\" "
+sKeep01 = "\"aaa\" [1.1] def aaa aaa [] cons cons dup "
 
-sKeep02 :: String
-sKeep02 = "\"ab\nc\" putchars ."
+s02 :: String
+s02 = "\"a\nb\" putchars ."
 
-sKeep03 :: String
-sKeep03 = "10 \'\n\' putch . "
+s03 :: String
+s03 = "\"a\n\n\nb\" . "
 
 runQuot :: String -> Lang
 runQuot s = runQuotation qs lang
@@ -33,9 +33,10 @@ runQuot s = runQuotation qs lang
 main :: IO ()
 main = do
 
-    putStrLn $ show (head $ parse nakedQuotations sKeep03)
+    let (qs, _) = head $ parse nakedQuotations s02
+    mapM_ (putStrLn . formatV) qs
 
-    let res = runQuot sKeep03
+    let res = runQuot s02
 
     putStrLn "\nqs after: = "
     print $ stack res
@@ -52,7 +53,6 @@ main = do
     putStrLn "\n"
 
     defaultMain unitTests
-
 
 unitTests :: TestTree
 unitTests = testGroup
@@ -145,8 +145,8 @@ parseQuotedStringP2 = testCase "parse parsequotedStringP \"\""
     where (val, _) = head $ parse quotedStringP "\"\""
 
 formatStack1 :: TestTree
-formatStack1 = testCase "formatStack after running s6"
-    $ assertEqual [] "\"\"\n[ 1.100000 1.100000 ]\n" val
+formatStack1 = testCase "formatStack after running"
+    $ assertEqual [] ["[ 1.100000 1.100000 ]", "[ 1.100000 1.100000 ]"] val
     where val = formatStack $ stack $ runQuot sKeep01
 
 

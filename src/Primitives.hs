@@ -1,7 +1,7 @@
 module Primitives where
 
 import           Data.Map    as M
-import           Data.Maybe  (fromJust)
+import           Data.Maybe  (fromJust, isJust)
 import           Interpreter
 -- import           Debug.Trace
 
@@ -66,9 +66,9 @@ concatP lang = case stack lang of
 printVal :: Lang -> Lang
 printVal lang = case stack lang of
     (c:cs) -> lang { stack = cs, result = result', display = "" }
-      where result' = result lang ++ (lines $ display lang ++ formatV c)
+      where result' = result lang ++ lines (display lang) ++ lines (formatV c)
     []     -> lang { result = result', display = "" }
-      where result' = if display lang == "" then [""] else [display lang]
+      where result' = if display lang == "" then [""] else lines $ display lang
 
 put :: Lang -> Lang
 put lang = case stack lang of
@@ -80,10 +80,10 @@ putch lang = case stack lang of
     (c:cs) -> lang { stack = cs, display = display', errors = errors' }
       where
         displayChar = formatPutch c
-        display'    = if displayChar /= Nothing
-                        then display lang ++ [fromJust displayChar]
+        display'    = if isJust displayChar
+                        then fromJust displayChar : display lang               -- ++ [fromJust displayChar]
                         else display lang
-        errors'     = if displayChar /= Nothing
+        errors'     = if isJust displayChar
                         then errors lang
                         else "putch: character or integer expected" : errors lang
     _      -> lang

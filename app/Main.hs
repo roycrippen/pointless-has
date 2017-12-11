@@ -64,4 +64,3 @@ runPointless lang = forever $ do
 showHelp :: IO ()
 showHelp = putStrLn "implement some help..."
 
-
