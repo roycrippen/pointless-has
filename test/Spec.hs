@@ -2,8 +2,9 @@ module Main where
 
 import           CoreLibrary
 import           Data.Aeson
-import qualified Data.ByteString.Lazy as B
-import           Data.Map             as M
+import qualified Data.Map         as M
+import qualified Data.Text        as T
+import qualified Data.Text.IO     as T
 import           Interpreter
 import           Parser
 import           PointlessParser
@@ -11,23 +12,30 @@ import           Primitives
 import           Test.Tasty
 import           Test.Tasty.HUnit
 
-
 -- stack ghci pointless-hs:pointless-hs-test
 
 sKeep01 :: String
 sKeep01 = "\"aaa\" [1.1] def aaa aaa [] cons cons \"\" "
+
+sKeep02 :: String
+sKeep02 = "\"ab\nc\" putchars ."
+
+sKeep03 :: String
+sKeep03 = "10 \'\n\' putch . "
 
 runQuot :: String -> Lang
 runQuot s = runQuotation qs lang
   where
     (qs, _) = head $ parse nakedQuotations s
     defs    = getQuotations coreDefinitions ++ primitives
-    lang    = Lang (M.fromList defs) [] [] []
+    lang    = Lang (M.fromList defs) [] [] [] ""
 
 main :: IO ()
 main = do
 
-    let res = runQuot sKeep01
+    putStrLn $ show (head $ parse nakedQuotations sKeep03)
+
+    let res = runQuot sKeep03
 
     putStrLn "\nqs after: = "
     print $ stack res
@@ -39,8 +47,8 @@ main = do
     -- let xs = M.toList (vocab lang)
     -- mapM_ print xs
 
-    putStrLn "\njson result: "
-    B.putStr $ encode (result res)
+    putStrLn "\njson : "
+    T.putStr $ jsonResultsShow res
     putStrLn "\n"
 
     defaultMain unitTests

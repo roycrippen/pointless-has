@@ -1,6 +1,7 @@
 module Primitives where
 
 import           Data.Map    as M
+import           Data.Maybe  (fromJust)
 import           Interpreter
 -- import           Debug.Trace
 
@@ -40,7 +41,7 @@ xP lang = case stack lang of
 iP :: Lang -> Lang
 iP lang = case stack lang of
     (Quot q:cs) -> runQuotation q (lang { stack = cs })
-    _ -> lang { errors = "i: quotation must be executable" : errors lang }
+    _           -> lang { errors = "i: quotation must be executable" : errors lang }
 
 cons :: Lang -> Lang
 cons lang = case stack lang of
@@ -59,12 +60,32 @@ uncons lang = case stack lang of
 concatP :: Lang -> Lang
 concatP lang = case stack lang of
     (Quot s:Quot t:cs) -> lang { stack = Quot (t ++ s) : cs }
-    (Str s:Str t:cs) -> lang { stack = Str (t ++ s) : cs }
-    _ -> lang { errors = "concatP: two quotations expected" : errors lang }
+    (Str s:Str t:cs)   -> lang { stack = Str (t ++ s) : cs }
+    _                  -> lang { errors = "concatP: two quotations expected" : errors lang }
 
 printVal :: Lang -> Lang
 printVal lang = case stack lang of
-    (c:cs) -> lang { stack = cs, result = formatV c : result lang }
+    (c:cs) -> lang { stack = cs, result = result', display = "" }
+      where result' = result lang ++ (lines $ display lang ++ formatV c)
+    []     -> lang { result = result' }
+      where result' = if display lang == "" then [""] else [display lang]
+
+put :: Lang -> Lang
+put lang = case stack lang of
+    (c:cs) -> lang { stack = cs, display = display lang ++ formatV c }
+    _      -> lang
+
+putch :: Lang -> Lang
+putch lang = case stack lang of
+    (c:cs) -> lang { stack = cs, display = display', errors = errors' }
+      where
+        displayChar = formatPutch c
+        display'    = if displayChar /= Nothing
+                        then display lang ++ [fromJust displayChar]
+                        else display lang
+        errors'     = if displayChar /= Nothing
+                        then errors lang
+                        else "putch: character or integer expected" : errors lang
     _      -> lang
 
 ifThenElse :: Lang -> Lang
@@ -170,6 +191,8 @@ primitives =
     , ("stack"  , Function stackP)
     , ("unstack", Function unstack)
     , ("."      , Function printVal)
+    , ("put"    , Function put)
+    , ("putch"  , Function putch)
     , ("dip"    , Function dip)
     , ("x"      , Function xP)
     , ("i"      , Function iP)
@@ -178,15 +201,6 @@ primitives =
     , ("linrec" , Function linrec)
     , ("def"    , Function def)
     ]
-
-
-
-
-
-
-
-
-
 
 
 

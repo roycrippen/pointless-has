@@ -194,7 +194,7 @@ letter = satisfies isAlpha
     letters = ['a' .. 'z'] ++ ['A' .. 'Z']
 
 firstLetter :: Parser Char
-firstLetter = letter <|> oneOf (map char "+-*/<>=!?§$%&@~´`',:.")
+firstLetter = letter <|> oneOf (map char "+-*/<>=!?§$%&@~´,:.")
 
 wordLetter :: Parser Char
 wordLetter = firstLetter <|> digit

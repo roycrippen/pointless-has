@@ -148,6 +148,7 @@ coreDefinitions =
   , ("celsius"   , "32 - 5 * 9 /")
   , ("pi"        , "3.14159265")
   , ("radians"   , "pi * 180 /")
+  , ("putchars"  , "[putch] step")
   , (""          , "")
   , (""          , "")
   , (""          , "")
