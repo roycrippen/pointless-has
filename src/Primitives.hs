@@ -67,7 +67,7 @@ printVal :: Lang -> Lang
 printVal lang = case stack lang of
     (c:cs) -> lang { stack = cs, result = result', display = "" }
       where result' = result lang ++ (lines $ display lang ++ formatV c)
-    []     -> lang { result = result' }
+    []     -> lang { result = result', display = "" }
       where result' = if display lang == "" then [""] else [display lang]
 
 put :: Lang -> Lang

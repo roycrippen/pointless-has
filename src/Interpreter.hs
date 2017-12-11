@@ -71,22 +71,20 @@ properFraction' = properFraction
 
 formatV :: ValueP -> String
 formatV (Symbol s) = s
-formatV (NumP n) = if isInteger then show (truncate n :: Integer) else floatStr
-  where
-    (_, realFrac)   = properFraction' n
-    isInteger       = abs realFrac < 0.00000001
-    floatStr        = showFFloat (Just 6) n ""
+formatV (NumP n) = if isInteger n then show (truncate n :: Integer) else floatStr
+  where floatStr        = showFFloat (Just 6) n ""
 formatV (Quot []) = "[]"
 formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
 formatV (Chr  c ) = [c]
 formatV (Str  s ) = show s
 
+isInteger :: Double -> Bool
+isInteger d = abs realFrac < 0.0000001
+  where (_, realFrac)   = properFraction' d
+
 formatPutch :: ValueP -> Maybe Char
-formatPutch (NumP n) = if isInteger then Just charFromInt else Nothing
-  where
-    (_, realFrac)   = properFraction' n
-    isInteger       = abs realFrac < 0.00000001
-    charFromInt = chr (truncate n :: Int)
+formatPutch (NumP n) = if isInteger n then Just charFromInt else Nothing
+  where charFromInt = chr (truncate n :: Int)
 formatPutch (Chr  c ) = Just c
 formatPutch _ = Nothing
 

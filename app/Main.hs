@@ -58,7 +58,7 @@ runPointless lang = forever $ do
     _    -> do
       let lang' = runQuot quoteStr lang
       mapM_ putStrLn (errors lang')
-      mapM_ print (result lang')
+      mapM_ putStrLn (result lang')
       runPointless $ lang' {result = [], errors = []}
 
 showHelp :: IO ()
