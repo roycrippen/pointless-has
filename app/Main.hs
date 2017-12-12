@@ -51,8 +51,11 @@ runPointless :: Lang -> IO ()
 runPointless lang = forever $ do
   putStr "Pointless> "
   hFlush stdout
-  quoteStr <- getLine
-  putStrLn quoteStr
+  quoteStr' <- getLine
+  -- putStr "quotation before = "
+  -- putStrLn quoteStr'
+  let quoteStr = replaceStr "\\n" "\n" quoteStr'
+
   case quoteStr of
     ":q" -> exitSuccess
     ":h" -> showHelp >> runPointless lang
@@ -65,3 +68,15 @@ runPointless lang = forever $ do
 showHelp :: IO ()
 showHelp = putStrLn "implement some help..."
 
+replaceStr :: String -> String -> String -> String
+replaceStr _ _ [] = []
+replaceStr old new str = go str
+  where
+    go [] = []
+    go str' =
+      let (prefix, rest) = splitAt n str'
+      in
+        if old == prefix
+        then new ++ go rest
+        else head str' : go (tail str')
+    n = length old
