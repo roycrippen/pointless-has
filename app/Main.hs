@@ -52,6 +52,7 @@ runPointless lang = forever $ do
   putStr "Pointless> "
   hFlush stdout
   quoteStr <- getLine
+  putStrLn quoteStr
   case quoteStr of
     ":q" -> exitSuccess
     ":h" -> showHelp >> runPointless lang
