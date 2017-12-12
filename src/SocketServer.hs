@@ -53,13 +53,10 @@ talk vcab conn = forever $ do
                 WS.sendTextData conn (T.pack ack :: Text)
 
                 -- process request
-                let source = T.unpack $ fromJust $ T.stripPrefix "load:" msg
-                    ((ds, qs), _) = head $ parse program source
-                    vcab' =
-                        M.fromList
-                            $  getQuotations coreDefinitions
-                            ++ primitives
-                            ++ ds
+                let source  = fromJust $ T.stripPrefix "load:" msg
+                    source' = T.unpack $ T.replace (T.pack "\\n") (T.pack  "\n") source
+                    ((ds, qs), _) = head $ parse program source'
+                    vcab' = M.fromList $  getQuotations coreDefinitions ++ primitives ++ ds
                 process qs vcab' conn
 
                 -- send updated vocabulary
