@@ -1,10 +1,9 @@
 module PointlessParser where
 
-import           Debug.Trace
+-- import           Debug.Trace
 import           Interpreter
-import           Parser      (Parser, anyChar, char, emptyQuot, firstLetter, lookAhead, many,
-                              manyTill, newline, numberDouble, quotedString, spaces, string,
-                              wordLetter, (<|>))
+import           Parser      (Parser, anyChar, char, firstLetter, many, manyTill, newline,
+                              numberDouble, quotedString, spaces, string, wordLetter, (<|>))
 
 numberP :: Parser ValueP
 numberP = do
