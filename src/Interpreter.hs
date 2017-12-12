@@ -108,7 +108,7 @@ jsonResultsShow :: Lang -> Text
 jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
   where
     stackT   = encodeP "\"stack\":" (formatStack $ stack lang)
-    resultT  = encodeP "\"result\":" (reverse $ result lang)
+    resultT  = encodeP "\"result\":" (result lang)
     errorT   = encodeP "\"errors\":" (errors lang)
     displayT = encodeP "\"display\":" [display lang]
     newline  = T.pack ",\n"
@@ -118,13 +118,9 @@ jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
                       `mappend` errorT
                       `mappend` newline
                       `mappend` displayT
---
+
 encodeP :: String -> [String] -> Text
 encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
-
--- encodeP :: String -> [String] -> Text
--- encodeP s xs = T.replace (T.pack "\\n") (T.pack  "\n") encoded
---   where encoded = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
 
 jsonVocabElementShow :: Vocabulary -> String
 jsonVocabElementShow vcab = jsonArrayElementShow "vocab" vocab'

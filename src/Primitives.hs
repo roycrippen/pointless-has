@@ -66,9 +66,10 @@ concatP lang = case stack lang of
 printVal :: Lang -> Lang
 printVal lang = case stack lang of
     (c:cs) -> lang { stack = cs, result = result', display = "" }
-      where result' = result lang ++ lines (display lang) ++ lines (formatV c)
+      where result' = result lang ++ lines (display lang ++ formatV c)
     []     -> lang { result = result', display = "" }
-      where result' = if display lang == "" then [""] else lines $ display lang
+      where result' = if display lang == ""
+                        then result lang else result lang ++ lines (display lang)
 
 put :: Lang -> Lang
 put lang = case stack lang of
@@ -81,7 +82,7 @@ putch lang = case stack lang of
       where
         displayChar = formatPutch c
         display'    = if isJust displayChar
-                        then fromJust displayChar : display lang               -- ++ [fromJust displayChar]
+                        then display lang ++ [fromJust displayChar]
                         else display lang
         errors'     = if isJust displayChar
                         then errors lang
