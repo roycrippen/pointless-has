@@ -4,7 +4,7 @@ import           Control.Applicative (pure)
 import           Control.Monad       (ap, liftM, void)
 import           Data.List           (find)
 import           Data.Maybe          (isJust)
-import           Debug.Trace
+-- import           Debug.Trace
 
 newtype Parser a = Parser (String -> [(a, String)])
 
@@ -33,7 +33,6 @@ class Monad m => MonadPlus m where
   mzero :: m a
   mplus :: m a -> m a -> m a
 
--- mplus for the Parser is like an choice operator.
 instance MonadPlus Parser where
   mzero = Parser (const [])
   mplus p q = Parser (\s -> parse p s ++ parse q s)
@@ -99,8 +98,11 @@ p `chainl1` op = do
             )
             <|> return a
 
-oneOf :: [Parser a] -> Parser a
-oneOf = foldl1 option
+oneOf :: String -> Parser Char
+oneOf cs = satisfies (`elem` cs)
+
+noneOf :: String -> Parser Char
+noneOf cs = satisfies (`notElem` cs)
 
 manyN :: Parser a -> Int -> Parser [a]
 manyN p 1 = do
@@ -131,23 +133,8 @@ lookAhead p = Parser
         _  -> [(True, s)]
     )
 
-quotedString :: Parser String
-quotedString = do
-    _ <- char '"'
-    b <- lookAhead $ char '"'
-    -- traceM $ "\nb: " ++ show b
-    if b
-        then do
-            _ <- char '"'
-            return []
-        else do
-            s <- manyTill item (char '"')
-            -- traceM $ "\ns: " ++ s
-            _ <- char '"'
-            return s
-
--- Lexical combinators
-
+-- | Lexical combinators
+-- |
 spaces :: Parser ()
 spaces = void (many (satisfies isSpace))
   where
@@ -168,7 +155,7 @@ symb :: String -> Parser String
 symb s = token $ string s
 
 digit :: Parser Char
-digit = satisfies isDigit where isDigit c = isJust (find (==c) ['0' .. '9'])
+digit = satisfies isDigit where isDigit c = isJust (find (== c) ['0' .. '9'])
 
 numberInt :: Parser Int
 numberInt = do
@@ -194,7 +181,7 @@ letter = satisfies isAlpha
     letters = ['a' .. 'z'] ++ ['A' .. 'Z']
 
 firstLetter :: Parser Char
-firstLetter = letter <|> oneOf (map char "+-*/<>=!?§$%&@~´',:.")
+firstLetter = letter <|> oneOf "+-*/<>=!?§$%&@~´',:."
 
 wordLetter :: Parser Char
 wordLetter = firstLetter <|> digit
@@ -215,7 +202,25 @@ emptyQuot :: Parser String
 emptyQuot = string "[]"
 
 
+escapeNewLine :: Parser Char
+escapeNewLine = do
+    b <- lookAhead (string "\\\n")
+    -- traceM $ "\nb: " ++ show b
+    if b
+    then do
+        _ <- char '\\'
+        char '\n'
+    else mzero
 
+nonEscape :: Parser Char
+nonEscape = noneOf "\\\""
 
+-- character :: Parser Char
+-- character = nonEscape <|> escapeNewLine
 
-
+quotedString :: Parser String
+quotedString = do
+    char '"'
+    strings <- many (escapeNewLine <|> nonEscape)
+    char '"'
+    return strings
