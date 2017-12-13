@@ -180,11 +180,11 @@ letter = satisfies isAlpha
     isAlpha c = isJust (find (==c) letters)
     letters = ['a' .. 'z'] ++ ['A' .. 'Z']
 
-otherChars :: Parser Char
-otherChars = letter <|> oneOf "+-*/<>=!?§$%&@~´',:._"
+firstLetter :: Parser Char
+firstLetter = letter <|> oneOf "+-*/<>=!?§$%&@~´',:._"
 
 wordLetter :: Parser Char
-wordLetter = otherChars <|> digit
+wordLetter = firstLetter <|> digit
 
 newline :: Parser Char
 newline = char '\n'
