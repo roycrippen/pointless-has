@@ -89,7 +89,6 @@ coreDefinitions =
   , ("falsity" , "false")
   , ("conjoin" , "[[false] ifte] cons cons ")
   , ("disjoin" , "[ifte] cons [true] swons cons")
-  , ("negate"  , "[[false] [true] ifte] cons")
   , ("call"    , "[] cons i")
   , ("drop"    , "[rest] times")
   , ("pairlist", "[] cons cons")
@@ -148,6 +147,8 @@ coreDefinitions =
   , ("celsius"   , "32 - 5 * 9 /")
   , ("pi"        , "3.14159265")
   , ("radians"   , "pi * 180 /")
+  , ("set-var"   , "swap [] cons define")
+  , ("defines", "dup size 2 / [ dup dup second swap first set-var 2 drop ] times pop")
   , ("putchars"  , "[putch] step")
   , ("putstrings", "[putchars] step")
   , (""          , "")
@@ -192,6 +193,7 @@ coreDefinitions =
   -- , ("map"              , "[] rollup [swons] concat step reverse")
   -- , ("filter"           , "[] rollup [[swons] [pop] ifte] cons step reverse")
   -- , ("unary2"           , "[unary] cons dup dip dip")
+  -- , ("negate"  , "[[false] [true] ifte] cons")
 
 
 
