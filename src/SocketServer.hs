@@ -37,13 +37,13 @@ application pending = do
                     vcab        = M.fromList $ primitives ++ coreLibrary
 
                 -- listen for commands forever
-                talk vcab conn
+                talk (Lang vcab [] [] [] "") conn
             | otherwise -> do
                 let err = "incorrect connection topic: '" `mappend` msg `mappend` "'" :: Text
                 WS.sendTextData conn err
 
-talk :: Vocabulary -> WS.Connection -> IO ()
-talk vcab conn = forever $ do
+talk :: Lang -> WS.Connection -> IO ()
+talk lang conn = forever $ do
     msg <- WS.receiveData conn
     case msg of
         _
@@ -57,27 +57,50 @@ talk vcab conn = forever $ do
                     source' = T.unpack $ T.replace (T.pack "\\n") (T.pack  "\n") source
                     ((ds, qs), _) = head $ parse program source'
                     vcab' = M.fromList $  getQuotations coreDefinitions ++ primitives ++ ds
-                process qs vcab' conn
+                    lang' = runQuotation qs (lang { vocab = vcab' })
+                    resultsJSON' = jsonResultsShow lang'
 
-                -- send updated vocabulary
-                WS.sendTextData conn  (T.pack $ jsonVocabShow vcab' :: Text)
+                -- T.putStrLn results
+                WS.sendTextData conn (resultsJSON' :: Text)
+
+                -- always send updated vocabulary
+                -- todo send only on def once tx is implemented
+                WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang') :: Text)
 
                 -- re-start talk with new vocabulary
-                talk            vcab' conn
+                talk (Lang (vocab lang') [] [] [] "") conn
+
             | T.isPrefixOf "run:" msg -> do
                 T.putStrLn msg
                 let source  = fromJust $ T.stripPrefix "run:" msg
                     source' = T.unpack $ T.replace (T.pack "\\n") (T.pack  "\n") source
                     (qs, _) = head $ parse nakedQuotations source'
-                -- T.putStrLn $ T.unlines $ Prelude.map (T.pack . formatV) qs
-                process qs vcab conn
+                    -- T.putStrLn $ T.unlines $ Prelude.map (T.pack . formatV) qs
+                    lang' = runQuotation qs lang
+                    resultsJSON = jsonResultsShow lang'
+
+                -- T.putStrLn results
+                WS.sendTextData conn (resultsJSON :: Text)
+
+                -- always send updated vocabulary
+                -- todo send only on def once tx is implemented
+                WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang') :: Text)
+
+                -- re-start talk with new vocabulary
+                talk (Lang (vocab lang') [] [] [] "") conn
+
             | otherwise -> WS.sendTextData conn ("unknown topic" :: Text)
 
-process :: [ValueP] -> Vocabulary -> WS.Connection -> IO ()
-process qs vcab conn = do
-    let lang    = runQuotation qs (Lang vcab [] [] [] "")
-        results = jsonResultsShow lang
-    -- T.putStrLn results
-    WS.sendTextData conn (results :: Text)
+-- process :: [ValueP] -> Vocabulary -> WS.Connection -> IO ()
+-- process qs vcab conn = do
+--     let lang    = runQuotation qs (Lang vcab [] [] [] "")
+--         results = jsonResultsShow lang
+--     -- T.putStrLn results
+--     WS.sendTextData conn (results :: Text)
+
+--     -- always send updated vocabulary
+--     -- todo send only on def once tx is implemented
+--     WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang) :: Text)
+
 
 
