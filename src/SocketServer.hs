@@ -11,7 +11,7 @@ import           Data.Map           as M
 import           Data.Maybe         (fromJust)
 import           Data.Monoid        (mappend)
 import           Data.Text          (Text)
-import qualified Data.Text          as T (isPrefixOf, pack, replace, stripPrefix, unlines, unpack)
+import qualified Data.Text          as T (isPrefixOf, pack, replace, stripPrefix, unpack)
 import qualified Data.Text.IO       as T (putStrLn)
 import           Interpreter
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest, forkPingThread,

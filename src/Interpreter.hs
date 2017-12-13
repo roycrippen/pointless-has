@@ -4,7 +4,7 @@ import           Data.Aeson.Text (encodeToLazyText)
 import           Data.Char       (chr)
 import qualified Data.Map        as M (Map, lookup, toList)
 import           Data.Text       (Text)
-import qualified Data.Text       as T (pack, replace)
+import qualified Data.Text       as T (pack)
 import qualified Data.Text.Lazy  as TL (toStrict)
 import           Numeric         (showFFloat)
 

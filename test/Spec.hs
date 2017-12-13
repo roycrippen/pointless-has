@@ -1,9 +1,9 @@
 module Main where
 
 import           CoreLibrary
-import           Data.Aeson
+-- import           Data.Aeson
 import qualified Data.Map         as M
-import qualified Data.Text        as T
+-- import qualified Data.Text        as T
 import qualified Data.Text.IO     as T
 import           Interpreter
 import           Parser
@@ -21,7 +21,7 @@ sKeep02 :: String
 sKeep02 = "\"a\\\n\\\nz\" putchars ."
 
 s1 :: String
-s1 = " [ 10 20 + ] i [] cons \"aaa\" swap def "
+s1 = " \"aaa\" [10] define . aaa "
 
 runQuot :: String -> Lang
 runQuot s = runQuotation qs lang
@@ -38,12 +38,12 @@ main = do
   print xs
   print qs
 
-  let res = runQuot sKeep02
+  let res = runQuot s1
 
   putStrLn "\nafter result: = "
   print (result res)
 
-  putStrLn "\njson : "
+  putStrLn "\njson results : "
   T.putStr $ jsonResultsShow res
   putStrLn "\n"
 
