@@ -24,8 +24,8 @@ dip lang = case stack lang of
         where returnedLang = runQuotation q (lang { stack = cs })
     _ -> lang { errors = "dip: value and quotation expected" : errors lang }
 
-def :: Lang -> Lang
-def lang = case stack lang of
+define :: Lang -> Lang
+define lang = case stack lang of
     (Quot q:Str s:cs) -> lang { vocab = vocab', stack = cs }
         where vocab' = insert s (Quotation q) (vocab lang)
     _ -> lang { errors = msg : errors lang }
@@ -200,7 +200,7 @@ primitives =
     , ("ifte"   , Function ifThenElse)
     , ("list"   , Function list)
     , ("linrec" , Function linrec)
-    , ("def"    , Function def)
+    , ("define" , Function define)
     ]
 
 
