@@ -15,10 +15,13 @@ import           Test.Tasty.HUnit
 -- stack ghci pointless-hs:pointless-hs-test
 
 sKeep01 :: String
-sKeep01 = "\"aaa\" [1.1] def aaa aaa [] cons cons dup "
+sKeep01 = "\"aaa\" [1.1] define aaa aaa [] cons cons dup "
 
 sKeep02 :: String
 sKeep02 = "\"a\\\n\\\nz\" putchars ."
+
+s1 :: String
+s1 = " [ 10 20 + ] i [] cons \"aaa\" swap def "
 
 runQuot :: String -> Lang
 runQuot s = runQuotation qs lang
@@ -30,9 +33,10 @@ runQuot s = runQuotation qs lang
 main :: IO ()
 main = do
 
-  let (qs, _) = head $ parse nakedQuotations sKeep02
+  let (qs, _) = head $ parse nakedQuotations s1
       xs = map formatV qs
   print xs
+  print qs
 
   let res = runQuot sKeep02
 
