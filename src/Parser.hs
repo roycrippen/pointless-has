@@ -180,11 +180,11 @@ letter = satisfies isAlpha
     isAlpha c = isJust (find (==c) letters)
     letters = ['a' .. 'z'] ++ ['A' .. 'Z']
 
-firstLetter :: Parser Char
-firstLetter = letter <|> oneOf "+-*/<>=!?§$%&@~´',:."
+otherChars :: Parser Char
+otherChars = letter <|> oneOf "+-*/<>=!?§$%&@~´',:._"
 
 wordLetter :: Parser Char
-wordLetter = firstLetter <|> digit
+wordLetter = otherChars <|> digit
 
 newline :: Parser Char
 newline = char '\n'
@@ -200,7 +200,6 @@ anyChar = satisfies (const True)
 
 emptyQuot :: Parser String
 emptyQuot = string "[]"
-
 
 escapeNewLine :: Parser Char
 escapeNewLine = do

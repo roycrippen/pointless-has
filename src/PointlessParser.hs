@@ -30,9 +30,9 @@ word = do
 
 instruction :: Parser ValueP
 instruction = do
-    _   <- spaces
+    _   <- spacesCommentsSpecifications
     res <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
-    _   <- spaces
+    _   <- spacesCommentsSpecifications
     return res
 
 nakedQuotations :: Parser [ValueP]
@@ -60,32 +60,32 @@ definitionHeader = do
 
 definition :: Parser (String, WordP)
 definition = do
-    _    <- spacesAndComments
+    _    <- spacesCommentsSpecifications
     _    <- string "DEFINE"
     _    <- spaces
     name <- definitionHeader
     q    <- nakedQuotations
     _    <- spaces
     _    <- char ';'
-    _    <- spacesAndComments
+    _    <- spacesCommentsSpecifications
     return (name, Quotation q)
 
 program :: Parser ([(String, WordP)], [ValueP])
 program = do
-    _  <- spacesAndComments
+    _  <- spacesCommentsSpecifications
     ds <- many definition
     _  <- spaces
     _  <- comments
     qs <- nakedQuotations
-    _  <- spacesAndComments
+    _  <- spacesCommentsSpecifications
     return (ds, qs)
 
 comment :: Parser ()
 comment =
-    (string "#" >> manyTill anyChar newline >> spaces >> return ())
-        <|> (  string "(*"
-            >> manyTill anyChar (string "*)")
-            >> string "*)"
+    (string "$" >> manyTill anyChar newline >> spaces >> return ())
+        <|> (  char '{'
+            >> manyTill anyChar (char '}')
+            >> char '}'
             >> spaces
             >> return ()
             )
@@ -93,8 +93,17 @@ comment =
 comments :: Parser [()]
 comments = many comment
 
-spacesAndComments :: Parser ()
-spacesAndComments = spaces >> comments >> return ()
+specification :: Parser ()
+specification =
+            char '('
+            >> manyTill anyChar (char ')')
+            >> char ')'
+            >> spaces
+            >> return ()
 
+specifications :: Parser [()]
+specifications = many specification
 
+spacesCommentsSpecifications :: Parser ()
+spacesCommentsSpecifications = spaces >> comments >> specifications >> return ()
 
