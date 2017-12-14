@@ -33,9 +33,8 @@ main = do
         exitSuccess
     _ -> do
       putStrLn "Welcome to the Pointless repl"
-      putStrLn ":h for help"
-      putStrLn ":q to exit (or ctrl+c)"
-      putStrLn "or enter a Pointless expression\n"
+      putStrLn "Enter a valid Pointless expression or :h for help"
+      putStrLn "Pointless> "
       let defs = getQuotations coreDefinitions ++ primitives
           lang = Lang (M.fromList defs) [] [] [] ""
       runPointless lang
@@ -55,18 +54,42 @@ runPointless lang = forever $ do
   -- putStr "quotation before = "
   -- putStrLn quoteStr'
   let quoteStr = replaceStr "\\n" "\n" quoteStr'
+  runCommand quoteStr
+    where
+      runCommand :: String -> IO ()
+      runCommand s =
+        case take 2 s of
+        ":q" -> exitSuccess
+        ":h" -> showHelp >> runPointless lang
+        ":l" -> do
+          lang' <- loadAndRunFile s lang
+          runPointless lang' { result = [], errors = [] }
+        ":r" -> showHelp >> runPointless lang
+        _    -> do
+          let lang' = runQuot s lang
+          mapM_ putStrLn (errors lang')
+          mapM_ putStrLn (result lang')
+          runPointless $ lang' { result = [], errors = [] }
 
-  case quoteStr of
-    ":q" -> exitSuccess
-    ":h" -> showHelp >> runPointless lang
-    _    -> do
-      let lang' = runQuot quoteStr lang
-      mapM_ putStrLn (errors lang')
-      mapM_ putStrLn (result lang')
-      runPointless $ lang' {result = [], errors = []}
+loadAndRunFile :: String -> Lang -> IO Lang
+loadAndRunFile file lang = do
+  let file' = replaceStr ":l " "" file ++ ".pless"
+  source' <- readFile file'
+  let source = replaceStr  "\\n" "\n" source'
+      lang' = runQuot source lang
+  mapM_ putStrLn (errors lang')
+  mapM_ putStrLn (result lang')
+  return lang'
 
 showHelp :: IO ()
-showHelp = putStrLn "implement some help..."
+showHelp = do
+  putStrLn ":h             show help"
+  putStrLn ":q             exit"
+  putStrLn "Ctrl+c         exit"
+  putStrLn ":l <filename>  load a Pointless script"
+  putStrLn ":r             reload Pointless script"
+  putStrLn "or enter a valid Pointless expression"
+  putStrLn "Pointless> "
 
 replaceStr :: String -> String -> String -> String
 replaceStr _ _ [] = []
