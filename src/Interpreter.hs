@@ -1,13 +1,8 @@
 module Interpreter where
 
-import           Data.Aeson.Text (encodeToLazyText)
-import           Data.Char       (chr)
-import qualified Data.Map        as M (Map, lookup, toList)
-import           Data.Text       (Text)
-import qualified Data.Text       as T (pack)
-import qualified Data.Text.Lazy  as TL (toStrict)
-import           Numeric         (showFFloat)
-
+import           Data.Char (chr)
+import qualified Data.Map  as M (Map, lookup)
+import           Numeric   (showFFloat)
 
 data ValueP = Symbol String
             | NumP Double
@@ -58,16 +53,9 @@ runInstruction ins lang = case ins of
             where msg = "getWord: not a valid word " ++ show w
     x -> lang { stack = x : stack lang }
 
-quotCons :: ValueP -> ValueP -> ValueP
-quotCons x (Quot q) = Quot (x : q)
-quotCons _ _        = error "Error in cons, second argument not a quotation"
-
---
--- pretty printers
---
-
-properFraction' :: Double -> (Integer, Double)
-properFraction' = properFraction
+-- |
+-- | pretty printers
+-- |
 
 formatV :: ValueP -> String
 formatV (Symbol s) = s
@@ -77,10 +65,6 @@ formatV (Quot []) = "[]"
 formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
 formatV (Chr  c ) = [c]
 formatV (Str  s ) =  show s
-
-isInteger :: Double -> Bool
-isInteger d = abs realFrac < 0.0000001
-  where (_, realFrac)   = properFraction' d
 
 formatPutch :: ValueP -> Maybe Char
 formatPutch (NumP n) = if isInteger n then Just charFromInt else Nothing
@@ -99,49 +83,9 @@ formatWordAST (Function  _ ) = "function: Vocabulary -> [ValueP] -> [ValueP]"
 formatStack :: [ValueP] -> [String]
 formatStack = map formatV
 
--- |
--- | json formatters
--- |
-
--- | Serializes a Lang to JSON.
-jsonResultsShow :: Lang -> Text
-jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
-  where
-    stackT   = encodeP "\"stack\":" (formatStack $ stack lang)
-    resultT  = encodeP "\"result\":" (result lang)
-    errorT   = encodeP "\"errors\":" (errors lang)
-    displayT = encodeP "\"display\":" [display lang]
-    newline  = T.pack ",\n"
-    text     = stackT `mappend` newline
-                      `mappend` resultT
-                      `mappend` newline
-                      `mappend` errorT
-                      `mappend` newline
-                      `mappend` displayT
-
-encodeP :: String -> [String] -> Text
-encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
-
-jsonVocabElementShow :: Vocabulary -> String
-jsonVocabElementShow vcab = jsonArrayElementShow "vocab" vocab'
-  where
-    vocab' = map (\(k, v) -> k ++ " == " ++ formatWordP v) $ M.toList vcab
-
-jsonVocabShow :: Vocabulary -> String
-jsonVocabShow = jsonWrapElement . jsonVocabElementShow
-
-jsonArrayElementShow :: String -> [String] -> String
-jsonArrayElementShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
-  where
-    body        = foldl (\acc v -> acc ++ show v ++ ", ") "" xs
-    bodyTrimmed = take (length body - 2) body
-
-jsonArrayShow :: String -> [String] -> String
-jsonArrayShow name xs = jsonWrapElement $ jsonArrayElementShow name xs
-
-jsonWrapElement :: String -> String
-jsonWrapElement s = "{\n" ++ s ++ "\n}"
-
-
-
+isInteger :: Double -> Bool
+isInteger d = abs realFrac < 0.0000001
+  where (_, realFrac) = properFraction' d
+        properFraction' :: Double -> (Integer, Double)
+        properFraction' = properFraction
 

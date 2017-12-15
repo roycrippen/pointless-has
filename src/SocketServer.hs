@@ -1,19 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module SocketServer
-    ( application
-    , talk
-    ) where
+module SocketServer ( application ) where
 
 import           Control.Monad      (forever)
 import           CoreLibrary        (coreDefinitions, getQuotations)
-import           Data.Map           as M
+import           Data.Aeson.Text    (encodeToLazyText)
+import           Data.Map           as M (fromList, toList)
 import           Data.Maybe         (fromJust)
 import           Data.Monoid        (mappend)
 import           Data.Text          (Text)
 import qualified Data.Text          as T (isPrefixOf, pack, replace, stripPrefix, unpack)
 import qualified Data.Text.IO       as T (putStrLn)
-import           Interpreter
+import qualified Data.Text.Lazy     as TL (toStrict)
+import           Interpreter        (Lang (..), Vocabulary, formatStack, formatWordP, runQuotation)
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest, forkPingThread,
                                            receiveData, sendTextData)
 import           Parser             (parse)
@@ -91,14 +90,40 @@ talk lang conn = forever $ do
 
             | otherwise -> WS.sendTextData conn ("unknown topic" :: Text)
 
--- process :: [ValueP] -> Vocabulary -> WS.Connection -> IO ()
--- process qs vcab conn = do
---     let lang    = runQuotation qs (Lang vcab [] [] [] "")
---         results = jsonResultsShow lang
---     -- T.putStrLn results
---     WS.sendTextData conn (results :: Text)
 
---     -- always send updated vocabulary
---     -- todo send only on def once tx is implemented
---     WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang) :: Text)
+-- | Serializes a Lang to JSON.
+jsonResultsShow :: Lang -> Text
+jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
+  where
+    stackT   = encodeP "\"stack\":" (formatStack $ stack lang)
+    resultT  = encodeP "\"result\":" (result lang)
+    errorT   = encodeP "\"errors\":" (errors lang)
+    displayT = encodeP "\"display\":" [display lang]
+    newline  = T.pack ",\n"
+    text     = stackT `mappend` newline
+                      `mappend` resultT
+                      `mappend` newline
+                      `mappend` errorT
+                      `mappend` newline
+                      `mappend` displayT
+
+encodeP :: String -> [String] -> Text
+encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
+
+jsonVocabElementShow :: Vocabulary -> String
+jsonVocabElementShow vcab = jsonArrayElementShow "vocab" vocab'
+  where
+    vocab' = map (\(k, v) -> k ++ " == " ++ formatWordP v) $ M.toList vcab
+
+jsonVocabShow :: Vocabulary -> String
+jsonVocabShow = jsonWrapElement . jsonVocabElementShow
+
+jsonArrayElementShow :: String -> [String] -> String
+jsonArrayElementShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
+  where
+    body        = foldl (\acc v -> acc ++ show v ++ ", ") "" xs
+    bodyTrimmed = take (length body - 2) body
+
+jsonWrapElement :: String -> String
+jsonWrapElement s = "{\n" ++ s ++ "\n}"
 
