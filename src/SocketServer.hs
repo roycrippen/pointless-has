@@ -17,7 +17,7 @@ import           Interpreter
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest, forkPingThread,
                                            receiveData, sendTextData)
 import           Parser             (parse)
-import           PointlessParser    (nakedQuotations, program)
+import           PointlessParser    (nakedQuotations)
 import           Primitives         (primitives)
 
 application :: WS.ServerApp
@@ -55,8 +55,8 @@ talk lang conn = forever $ do
                 -- process request
                 let source  = fromJust $ T.stripPrefix "load:" msg
                     source' = T.unpack $ T.replace (T.pack "\\n") (T.pack  "\n") source
-                    ((ds, qs), _) = head $ parse program source'
-                    vcab' = M.fromList $  getQuotations coreDefinitions ++ primitives ++ ds
+                    (qs, _):_ = parse nakedQuotations source'
+                    vcab' = M.fromList $  getQuotations coreDefinitions ++ primitives
                     lang' = runQuotation qs (lang { vocab = vcab' })
                     resultsJSON' = jsonResultsShow lang'
 
@@ -74,7 +74,7 @@ talk lang conn = forever $ do
                 T.putStrLn msg
                 let source  = fromJust $ T.stripPrefix "run:" msg
                     source' = T.unpack $ T.replace (T.pack "\\n") (T.pack  "\n") source
-                    (qs, _) = head $ parse nakedQuotations source'
+                    (qs, _):_ = parse nakedQuotations source'
                     -- T.putStrLn $ T.unlines $ Prelude.map (T.pack . formatV) qs
                     lang' = runQuotation qs lang
                     resultsJSON = jsonResultsShow lang'
@@ -101,6 +101,4 @@ talk lang conn = forever $ do
 --     -- always send updated vocabulary
 --     -- todo send only on def once tx is implemented
 --     WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang) :: Text)
-
-
 

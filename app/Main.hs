@@ -44,7 +44,7 @@ q1 = " 10 [1 10 [] from-to .] times "
 
 runQuot :: String -> Lang -> Lang
 runQuot s = runQuotation qs
- where (qs, _) = head $ parse nakedQuotations s
+ where (qs, _):_ = parse nakedQuotations s
 
 runPointless :: Lang -> IO ()
 runPointless lang = forever $ do
@@ -96,10 +96,12 @@ replaceStr _ _ [] = []
 replaceStr old new str = go str
   where
     go [] = []
-    go str' =
+    go str'@(x:xs) =
       let (prefix, rest) = splitAt n str'
       in
         if old == prefix
         then new ++ go rest
-        else head str' : go (tail str')
+        else x : go xs
     n = length old
+
+

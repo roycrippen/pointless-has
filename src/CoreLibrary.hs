@@ -10,7 +10,7 @@ import           PointlessParser (nakedQuotations)
 
 getQuotation :: (String, String) -> (String, WordP)
 getQuotation (name, qs) = (name, Quotation q)
-  where q = fst $ head (parse nakedQuotations qs)
+  where (q, _):_ = parse nakedQuotations qs
 
 getQuotations :: [(String, String)] -> [(String, WordP)]
 getQuotations = map getQuotation
@@ -194,7 +194,6 @@ coreDefinitions =
   -- , ("filter"           , "[] rollup [[swons] [pop] ifte] cons step reverse")
   -- , ("unary2"           , "[unary] cons dup dip dip")
   -- , ("negate"  , "[[false] [true] ifte] cons")
-
 
 
 

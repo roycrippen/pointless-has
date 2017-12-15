@@ -58,27 +58,27 @@ definitionHeader = do
         Symbol x -> return x
         _        -> return "INVALID_DEFINITION_NAME"
 
-definition :: Parser (String, WordP)
-definition = do
-    _    <- spacesCommentsSpecifications
-    _    <- string "DEFINE"
-    _    <- spaces
-    name <- definitionHeader
-    q    <- nakedQuotations
-    _    <- spaces
-    _    <- char ';'
-    _    <- spacesCommentsSpecifications
-    return (name, Quotation q)
+-- definition :: Parser (String, WordP)
+-- definition = do
+--     _    <- spacesCommentsSpecifications
+--     _    <- string "DEFINE"
+--     _    <- spaces
+--     name <- definitionHeader
+--     q    <- nakedQuotations
+--     _    <- spaces
+--     _    <- char ';'
+--     _    <- spacesCommentsSpecifications
+--     return (name, Quotation q)
 
-program :: Parser ([(String, WordP)], [ValueP])
-program = do
-    _  <- spacesCommentsSpecifications
-    ds <- many definition
-    _  <- spaces
-    _  <- comments
-    qs <- nakedQuotations
-    _  <- spacesCommentsSpecifications
-    return (ds, qs)
+-- program :: Parser ([(String, WordP)], [ValueP])
+-- program = do
+--     _  <- spacesCommentsSpecifications
+--     ds <- many definition
+--     _  <- spaces
+--     _  <- comments
+--     qs <- nakedQuotations
+--     _  <- spacesCommentsSpecifications
+--     return (ds, qs)
 
 comment :: Parser ()
 comment =
@@ -106,4 +106,5 @@ specifications = many specification
 
 spacesCommentsSpecifications :: Parser ()
 spacesCommentsSpecifications = spaces >> comments >> specifications >> return ()
+
 
