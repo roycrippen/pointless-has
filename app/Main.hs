@@ -36,7 +36,7 @@ main = do
       putStrLn "Enter a valid Pointless expression or :h for help"
       putStrLn "Pointless> "
       let defs = getQuotations coreDefinitions ++ primitives
-          lang = Lang (M.fromList defs) [] [] [] ""
+          lang = Lang (M.fromList defs) [] [] ""
       runPointless lang
 
 q1 :: String
@@ -63,13 +63,13 @@ runPointless lang = forever $ do
         ":h" -> showHelp >> runPointless lang
         ":l" -> do
           lang' <- loadAndRunFile s lang
-          runPointless lang' { result = [], errors = [] }
+          runPointless lang' { result = [] }
         ":r" -> showHelp >> runPointless lang
         _    -> do
           let lang' = runQuot s lang
-          mapM_ putStrLn (errors lang')
+          -- mapM_ putStrLn (errors lang')
           mapM_ putStrLn (result lang')
-          runPointless $ lang' { result = [], errors = [] }
+          runPointless $ lang' { result = [] }
 
 loadAndRunFile :: String -> Lang -> IO Lang
 loadAndRunFile file lang = do
@@ -77,7 +77,7 @@ loadAndRunFile file lang = do
   source' <- readFile file'
   let source = replaceStr  "\\n" "\n" source'
       lang' = runQuot source lang
-  mapM_ putStrLn (errors lang')
+  -- mapM_ putStrLn (errors lang')
   mapM_ putStrLn (result lang')
   return lang'
 

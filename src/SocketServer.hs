@@ -36,7 +36,7 @@ application pending = do
                     vcab        = M.fromList $ primitives ++ coreLibrary
 
                 -- listen for commands forever
-                talk (Lang vcab [] [] [] "") conn
+                talk (Lang vcab [] [] "") conn
             | otherwise -> do
                 let err = "incorrect connection topic: '" `mappend` msg `mappend` "'" :: Text
                 WS.sendTextData conn err
@@ -67,7 +67,7 @@ talk lang conn = forever $ do
                 WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang') :: Text)
 
                 -- re-start talk with new vocabulary
-                talk (Lang (vocab lang') [] [] [] "") conn
+                talk (Lang (vocab lang') [] [] "") conn
 
             | T.isPrefixOf "run:" msg -> do
                 T.putStrLn msg
@@ -86,7 +86,7 @@ talk lang conn = forever $ do
                 WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang') :: Text)
 
                 -- re-start talk with new vocabulary
-                talk (Lang (vocab lang') [] [] [] "") conn
+                talk (Lang (vocab lang') [] [] "") conn
 
             | otherwise -> WS.sendTextData conn ("unknown topic" :: Text)
 
@@ -97,13 +97,10 @@ jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
   where
     stackT   = encodeP "\"stack\":" (formatStack $ stack lang)
     resultT  = encodeP "\"result\":" (result lang)
-    errorT   = encodeP "\"errors\":" (errors lang)
     displayT = encodeP "\"display\":" [display lang]
     newline  = T.pack ",\n"
     text     = stackT `mappend` newline
                       `mappend` resultT
-                      `mappend` newline
-                      `mappend` errorT
                       `mappend` newline
                       `mappend` displayT
 
@@ -126,4 +123,5 @@ jsonArrayElementShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
 
 jsonWrapElement :: String -> String
 jsonWrapElement s = "{\n" ++ s ++ "\n}"
+
 

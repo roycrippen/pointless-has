@@ -14,7 +14,7 @@ data ValueP = Symbol String
 data Lang = Lang { vocab   :: Vocabulary
                  , stack   :: [ValueP]
                  , result  :: [String]
-                 , errors  :: [String]
+                --  , errors  :: [String]
                  , display :: String
                  }
                  deriving (Show)
@@ -49,8 +49,8 @@ runInstruction :: ValueP -> Lang -> Lang
 runInstruction ins lang = case ins of
     Symbol w -> case getWord w (vocab lang) of
         Just w' -> runWord w' lang
-        Nothing -> lang { errors = msg : errors lang }
-            where msg = "getWord: not a valid word " ++ show w
+        Nothing -> lang { result = msg : result lang }
+            where msg = "ERROR(getWord): not a valid word " ++ show w
     x -> lang { stack = x : stack lang }
 
 -- |
