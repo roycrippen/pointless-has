@@ -14,7 +14,6 @@ data ValueP = Symbol String
 data Lang = Lang { vocab   :: Vocabulary
                  , stack   :: [ValueP]
                  , result  :: [String]
-                --  , errors  :: [String]
                  , display :: String
                  }
                  deriving (Show)
