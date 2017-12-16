@@ -1,12 +1,8 @@
 module Interpreter where
 
-import qualified Data.Map         as M (Map, lookup, toList)
-import           Data.Aeson.Text  (encodeToLazyText)
-import           Numeric          (showFFloat)
-import           Data.Text        (Text)
-import qualified Data.Text        as T  (pack, unpack)
-import qualified Data.Text.Lazy   as TL  (toStrict)
-
+import           Data.Char (chr)
+import qualified Data.Map  as M (Map, lookup)
+import           Numeric   (showFFloat)
 
 data ValueP = Symbol String
             | NumP Double
@@ -15,12 +11,12 @@ data ValueP = Symbol String
             | Quot [ValueP]
             deriving (Eq, Ord, Show)
 
-data Lang = Lang { vocab  :: Vocabulary
-      , stack  :: [ValueP]
-      , result :: [String]
-      , errors :: [String]
-      }
-      deriving (Show)
+data Lang = Lang { vocab   :: Vocabulary
+                 , stack   :: [ValueP]
+                 , result  :: [String]
+                 , display :: String
+                 }
+                 deriving (Show)
 
 data WordP = Quotation [ValueP] | Function (Lang -> Lang)
 instance Show WordP where show = formatWordP
@@ -52,30 +48,28 @@ runInstruction :: ValueP -> Lang -> Lang
 runInstruction ins lang = case ins of
     Symbol w -> case getWord w (vocab lang) of
         Just w' -> runWord w' lang
-        Nothing -> lang { errors = msg : errors lang }
-            where msg = "getWord: not a valid word " ++ show w
+        Nothing -> lang { result = msg : result lang }
+            where msg = "ERROR(getWord): not a valid word " ++ show w
     x -> lang { stack = x : stack lang }
 
-quotCons :: ValueP -> ValueP -> ValueP
-quotCons x (Quot q) = Quot (x : q)
-quotCons _ _        = error "Error in cons, second argument not a quotation"
+-- |
+-- | pretty printers
+-- |
 
---
--- pretty printers
---
 formatV :: ValueP -> String
 formatV (Symbol s) = s
-formatV (NumP n) = if isInteger then show (truncate n :: Integer) else floatStr
-  where
-    properFraction' :: Double -> (Integer, Double)
-    properFraction' = properFraction
-    (_, realFrac)   = properFraction' n
-    isInteger       = abs realFrac < 0.00000001
-    floatStr        = showFFloat (Just 6) n ""
+formatV (NumP n) = if isInteger n then show (truncate n :: Integer) else floatStr
+  where floatStr        = showFFloat (Just 6) n ""
 formatV (Quot []) = "[]"
 formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
 formatV (Chr  c ) = [c]
-formatV (Str  s ) = show s
+formatV (Str  s ) =  show s
+
+formatPutch :: ValueP -> Maybe Char
+formatPutch (NumP n) = if isInteger n then Just charFromInt else Nothing
+  where charFromInt = chr (truncate n :: Int)
+formatPutch (Chr  c ) = Just c
+formatPutch _ = Nothing
 
 formatWordP :: WordP -> String
 formatWordP (Quotation xs) = formatV (Quot xs)
@@ -85,72 +79,12 @@ formatWordAST :: WordP -> String
 formatWordAST (Quotation xs) = show xs
 formatWordAST (Function  _ ) = "function: Vocabulary -> [ValueP] -> [ValueP]"
 
-formatStack :: [ValueP] -> String
-formatStack = unlines . map formatV
+formatStack :: [ValueP] -> [String]
+formatStack = map formatV
 
---
--- json formatters
---
-jsonResultsShow :: Lang -> Text
-jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
-  where
-    stackT  = encodeP "\"stack\":" [formatStack $ stack lang]
-    resultT = encodeP "\"result\":" (reverse $ result lang)
-    errorT  = encodeP "\"errors\":" (errors lang)
-    text =
-        stackT
-            `mappend` T.pack ",\n"
-            `mappend` resultT
-            `mappend` T.pack ",\n"
-            `mappend` errorT
-
-encodeP :: String -> [String] -> Text
-encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
-
-jsonVocabElementShow :: Vocabulary -> String
-jsonVocabElementShow vcab = jsonArrayElementShow "vocab" vocab'
-  where
-    vocab' = map (\(k, v) -> k ++ " == " ++ formatWordP v) $ M.toList vcab
-
-jsonVocabShow :: Vocabulary -> String
-jsonVocabShow = jsonWrapElement . jsonVocabElementShow
-
-jsonArrayElementShow :: String -> [String] -> String
-jsonArrayElementShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
-  where
-    body        = foldl (\acc v -> acc ++ show v ++ ", ") "" xs
-    bodyTrimmed = take (length body - 2) body
-
-jsonArrayShow :: String -> [String] -> String
-jsonArrayShow name xs = jsonWrapElement $ jsonArrayElementShow name xs
-
-jsonWrapElement :: String -> String
-jsonWrapElement s = "{\n" ++ s ++ "\n}"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+isInteger :: Double -> Bool
+isInteger d = abs realFrac < 0.0000001
+  where (_, realFrac) = properFraction' d
+        properFraction' :: Double -> (Integer, Double)
+        properFraction' = properFraction
 

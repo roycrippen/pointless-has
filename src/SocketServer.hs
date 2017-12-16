@@ -1,24 +1,22 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module SocketServer
-    ( application
-    , talk
-    ) where
+module SocketServer ( application ) where
 
 import           Control.Monad      (forever)
 import           CoreLibrary        (coreDefinitions, getQuotations)
-import           Data.Map           as M
+import           Data.Aeson.Text    (encodeToLazyText)
+import           Data.Map           as M (fromList, toList)
 import           Data.Maybe         (fromJust)
 import           Data.Monoid        (mappend)
 import           Data.Text          (Text)
-import qualified Data.Text          as T (isPrefixOf, pack, stripPrefix, unpack)
+import qualified Data.Text          as T (isPrefixOf, pack, replace, stripPrefix, unpack)
 import qualified Data.Text.IO       as T (putStrLn)
-import           Interpreter
-import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest,
-                                           forkPingThread, receiveData,
-                                           sendTextData)
+import qualified Data.Text.Lazy     as TL (toStrict)
+import           Interpreter        (Lang (..), Vocabulary, formatStack, formatWordP, runQuotation)
+import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest, forkPingThread,
+                                           receiveData, sendTextData)
 import           Parser             (parse)
-import           PointlessParser    (nakedQuotations, program)
+import           PointlessParser    (nakedQuotations)
 import           Primitives         (primitives)
 
 application :: WS.ServerApp
@@ -38,17 +36,13 @@ application pending = do
                     vcab        = M.fromList $ primitives ++ coreLibrary
 
                 -- listen for commands forever
-                talk vcab conn
+                talk (Lang vcab [] [] "") conn
             | otherwise -> do
-                let
-                    err =
-                        "incorrect connection topic: '"
-                        `mappend` msg
-                        `mappend` "'" :: Text
+                let err = "incorrect connection topic: '" `mappend` msg `mappend` "'" :: Text
                 WS.sendTextData conn err
 
-talk :: Vocabulary -> WS.Connection -> IO ()
-talk vcab conn = forever $ do
+talk :: Lang -> WS.Connection -> IO ()
+talk lang conn = forever $ do
     msg <- WS.receiveData conn
     case msg of
         _
@@ -58,168 +52,76 @@ talk vcab conn = forever $ do
                 WS.sendTextData conn (T.pack ack :: Text)
 
                 -- process request
-                let
-                    source = T.unpack $ fromJust $ T.stripPrefix "load:" msg
-                    ((ds, qs), _) = head $ parse program source
-                    vcab' =
-                        M.fromList
-                            $  getQuotations coreDefinitions
-                            ++ primitives
-                            ++ ds
-                process qs vcab' conn
+                let source  = fromJust $ T.stripPrefix "load:" msg
+                    source' = T.unpack $ T.replace (T.pack "\\n") (T.pack  "\n") source
+                    (qs, _):_ = parse nakedQuotations source'
+                    vcab' = M.fromList $  getQuotations coreDefinitions ++ primitives
+                    lang' = runQuotation qs (lang { vocab = vcab' })
+                    resultsJSON' = jsonResultsShow lang'
 
-                -- send updated vocabulary
-                WS.sendTextData conn  (T.pack $ jsonVocabShow vcab' :: Text)
-                -- putStrLn $ jsonVocabShow vcab'
+                -- T.putStrLn results
+                WS.sendTextData conn (resultsJSON' :: Text)
+
+                -- always send updated vocabulary
+                -- todo send only on def once tx is implemented
+                WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang') :: Text)
 
                 -- re-start talk with new vocabulary
-                talk            vcab' conn
+                talk (Lang (vocab lang') [] [] "") conn
+
             | T.isPrefixOf "run:" msg -> do
                 T.putStrLn msg
-                let source  = T.unpack $ fromJust $ T.stripPrefix "run:" msg
-                    (qs, _) = head $ parse nakedQuotations source
-                process qs vcab conn
+                let source  = fromJust $ T.stripPrefix "run:" msg
+                    source' = T.unpack $ T.replace (T.pack "\\n") (T.pack  "\n") source
+                    (qs, _):_ = parse nakedQuotations source'
+                    -- T.putStrLn $ T.unlines $ Prelude.map (T.pack . formatV) qs
+                    lang' = runQuotation qs lang
+                    resultsJSON = jsonResultsShow lang'
+
+                -- T.putStrLn results
+                WS.sendTextData conn (resultsJSON :: Text)
+
+                -- always send updated vocabulary
+                -- todo send only on def once tx is implemented
+                WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang') :: Text)
+
+                -- re-start talk with new vocabulary
+                talk (Lang (vocab lang') [] [] "") conn
+
             | otherwise -> WS.sendTextData conn ("unknown topic" :: Text)
 
-process :: [ValueP] -> Vocabulary -> WS.Connection -> IO ()
-process qs vcab conn = do
-    let lang    = runQuotation qs (Lang vcab [] [] [])
-        results = jsonResultsShow lang
-    -- T.putStrLn $ T.pack $ "result stack: " ++ show (stack lang)
-    -- T.putStrLn (T.pack "results: " `mappend` results)
-    WS.sendTextData conn (results :: Text)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-- | Serializes a Lang to JSON.
+jsonResultsShow :: Lang -> Text
+jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
+  where
+    stackT   = encodeP "\"stack\":" (formatStack $ stack lang)
+    resultT  = encodeP "\"result\":" (result lang)
+    displayT = encodeP "\"display\":" [display lang]
+    newline  = T.pack ",\n"
+    text     = stackT `mappend` newline
+                      `mappend` resultT
+                      `mappend` newline
+                      `mappend` displayT
+
+encodeP :: String -> [String] -> Text
+encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
+
+jsonVocabElementShow :: Vocabulary -> String
+jsonVocabElementShow vcab = jsonArrayElementShow "vocab" vocab'
+  where
+    vocab' = map (\(k, v) -> k ++ " == " ++ formatWordP v) $ M.toList vcab
+
+jsonVocabShow :: Vocabulary -> String
+jsonVocabShow = jsonWrapElement . jsonVocabElementShow
+
+jsonArrayElementShow :: String -> [String] -> String
+jsonArrayElementShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
+  where
+    body        = foldl (\acc v -> acc ++ show v ++ ", ") "" xs
+    bodyTrimmed = take (length body - 2) body
+
+jsonWrapElement :: String -> String
+jsonWrapElement s = "{\n" ++ s ++ "\n}"
 
 

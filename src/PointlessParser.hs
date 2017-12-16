@@ -1,10 +1,9 @@
 module PointlessParser where
 
-import           Debug.Trace
+-- import           Debug.Trace
 import           Interpreter
-import           Parser      (Parser, anyChar, char, emptyQuot, firstLetter,
-                              lookAhead, many, manyTill, newline, numberDouble,
-                              quotedString, spaces, string, wordLetter, (<|>))
+import           Parser      (Parser, anyChar, char, firstLetter, many, manyTill, newline,
+                              numberDouble, quotedString, spaces, string, wordLetter, (<|>))
 
 numberP :: Parser ValueP
 numberP = do
@@ -14,7 +13,7 @@ numberP = do
 charP :: Parser ValueP
 charP = do
     _ <- char '\''
-    c <- firstLetter
+    c <- newline <|> firstLetter
     _ <- char '\''
     return (Chr c)
 
@@ -31,10 +30,10 @@ word = do
 
 instruction :: Parser ValueP
 instruction = do
-    _      <- spaces
-    result <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
-    _      <- spaces
-    return result
+    _   <- spacesCommentsSpecifications
+    res <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
+    _   <- spacesCommentsSpecifications
+    return res
 
 nakedQuotations :: Parser [ValueP]
 nakedQuotations = many instruction
@@ -59,34 +58,34 @@ definitionHeader = do
         Symbol x -> return x
         _        -> return "INVALID_DEFINITION_NAME"
 
-definition :: Parser (String, WordP)
-definition = do
-    _    <- spacesAndComments
-    _    <- string "DEFINE"
-    _    <- spaces
-    name <- definitionHeader
-    q    <- nakedQuotations
-    _    <- spaces
-    _    <- char ';'
-    _    <- spacesAndComments
-    return (name, Quotation q)
+-- definition :: Parser (String, WordP)
+-- definition = do
+--     _    <- spacesCommentsSpecifications
+--     _    <- string "DEFINE"
+--     _    <- spaces
+--     name <- definitionHeader
+--     q    <- nakedQuotations
+--     _    <- spaces
+--     _    <- char ';'
+--     _    <- spacesCommentsSpecifications
+--     return (name, Quotation q)
 
-program :: Parser ([(String, WordP)], [ValueP])
-program = do
-    _  <- spacesAndComments
-    ds <- many definition
-    _  <- spaces
-    _  <- comments
-    qs <- nakedQuotations
-    _  <- spacesAndComments
-    return (ds, qs)
+-- program :: Parser ([(String, WordP)], [ValueP])
+-- program = do
+--     _  <- spacesCommentsSpecifications
+--     ds <- many definition
+--     _  <- spaces
+--     _  <- comments
+--     qs <- nakedQuotations
+--     _  <- spacesCommentsSpecifications
+--     return (ds, qs)
 
 comment :: Parser ()
 comment =
-    (string "#" >> manyTill anyChar newline >> spaces >> return ())
-        <|> (  string "(*"
-            >> manyTill anyChar (string "*)")
-            >> string "*)"
+    (string "$" >> manyTill anyChar newline >> spaces >> return ())
+        <|> (  char '{'
+            >> manyTill anyChar (char '}')
+            >> char '}'
             >> spaces
             >> return ()
             )
@@ -94,8 +93,18 @@ comment =
 comments :: Parser [()]
 comments = many comment
 
-spacesAndComments :: Parser ()
-spacesAndComments = spaces >> comments >> return ()
+specification :: Parser ()
+specification =
+            char '('
+            >> manyTill anyChar (char ')')
+            >> char ')'
+            >> spaces
+            >> return ()
 
+specifications :: Parser [()]
+specifications = many specification
+
+spacesCommentsSpecifications :: Parser ()
+spacesCommentsSpecifications = spaces >> comments >> specifications >> return ()
 
 
