@@ -25,8 +25,9 @@ s1 = " \"aaa\" [10] define . aaa "
 
 ioTest :: Lang -> Lang
 ioTest lang = unsafePerformIO  $ do
-  print (result lang)
-  return lang
+  putStrLn "ioTest:"
+  mapM_ putStrLn $ (result lang)
+  return lang { result = [] }
 
 
 runQuot :: String -> Lang
@@ -34,7 +35,7 @@ runQuot s = runQuotation qs lang
   where
     (qs, _):_ = parse nakedQuotations s
     defs    = getQuotations coreDefinitions ++ primitives
-    lang    = Lang (M.fromList defs) [] [] ""
+    lang    = Lang (M.fromList defs) [] [] "" REPL
 
 main :: IO ()
 main = do
@@ -53,7 +54,7 @@ main = do
   T.putStr $ jsonResultsShow res
   putStrLn "\n"
 
-  let lang  = runQuot "10 ."
+  let lang  = Lang (M.fromList primitives) [] ["10", "20"] "" REPL
       lang' = ioTest lang
   print "done"
   print $ result lang'
