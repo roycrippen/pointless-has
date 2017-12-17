@@ -81,10 +81,31 @@ printVal lang@(Lang{ stack = []}) = lang { result = result', display = "" }
                         then result lang
                         else result lang ++ lines (display lang)
 --
--- ioTest :: Lang -> Lang
--- ioTest lang = unsafePerformIO  $ do
---   print (result lang)
+
+-- printVal :: Lang -> Lang
+-- printVal lang@(Lang{ stack = c:cs, mode = m }) = if m == REPL
+--   then txRepl lang
+--   else txWebsocket lang'
+--     where
+--       result' = result lang ++ lines (display lang ++ formatV c)
+--       lang'   = lang { stack = cs, result = result', display = "" }
+
+-- printVal lang@(Lang{ stack = [], mode = m }) = if m == REPL
+--   then txRepl lang
+--   else txWebsocket lang'
+--     where
+--       result' = if display lang == ""
+--                   then result lang
+--                   else result lang ++ lines (display lang)
+--       lang'  = lang { result = result', display = "" }
+
+-- -- | immediately transmit output to console
+-- txRepl :: Lang -> Lang
+-- txRepl lang = unsafePerformIO  $ do
+--   mapM_ putStrLn (result lang)
+--   -- return lang { result = [] }
 --   return lang
+
 
 put :: Lang -> Lang
 put lang = case stack lang of

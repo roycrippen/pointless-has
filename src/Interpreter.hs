@@ -4,6 +4,10 @@ import           Data.Char (chr)
 import qualified Data.Map  as M (Map, lookup)
 import           Numeric   (showFFloat)
 
+data Mode = REPL
+          | WEBSOCKET
+          deriving (Eq, Ord, Show)
+
 data ValueP = Symbol String
             | NumP Double
             | Chr Char
@@ -15,6 +19,7 @@ data Lang = Lang { vocab   :: Vocabulary
                  , stack   :: [ValueP]
                  , result  :: [String]
                  , display :: String
+                 , mode    :: Mode
                  }
                  deriving (Show)
 

@@ -1,22 +1,23 @@
 module Repl (startRepl) where
 
-import           Control.Monad   (forever)
-import           CoreLibrary     (coreDefinitions, getQuotations)
-import qualified Data.Map        as M (fromList)
-import           Interpreter     (Lang (..), runQuotation)
-import           Parser          (parse)
-import           PointlessParser (nakedQuotations)
-import           Primitives      (primitives)
-import           System.Exit     (exitSuccess)
-import           System.IO       (hFlush, stdout)
+import           Control.Monad    (forever)
+import           CoreLibrary      (coreDefinitions, getQuotations)
+import qualified Data.Map         as M (fromList)
+import           Interpreter      (Lang (..), Mode (..), runQuotation)
+import           Parser           (parse)
+import           PointlessParser  (nakedQuotations)
+import           Primitives       (primitives)
+import           System.Exit      (exitSuccess)
+import           System.IO        (hFlush, stdout)
+import           System.IO.Unsafe (unsafeDupablePerformIO, unsafePerformIO)
+
 
 startRepl :: IO ()
 startRepl = do
-  putStrLn "Welcome to the Pointless repl"
-  putStrLn "Enter a valid Pointless expression or :h for help"
+  putStrLn "Welcome to the Pointless repl    (:h for help)"
   putStrLn "Pointless> "
   let defs = getQuotations coreDefinitions ++ primitives
-      lang = Lang (M.fromList defs) [] [] ""
+      lang = Lang (M.fromList defs) [] [] "" REPL
   runPointless lang
 
 runQuot :: String -> Lang -> Lang
@@ -28,8 +29,6 @@ runPointless lang = forever $ do
   putStr "Pointless> "
   hFlush stdout
   quoteStr' <- getLine
-  -- putStr "quotation before = "
-  -- putStrLn quoteStr'
   let quoteStr = replaceStr "\\n" "\n" quoteStr'
   runCommand quoteStr
     where
@@ -42,11 +41,20 @@ runPointless lang = forever $ do
           lang' <- loadAndRunFile s lang
           runPointless lang' { result = [] }
         ":r" -> showHelp >> runPointless lang
+        ""   -> runPointless lang
         _    -> do
           let lang' = runQuot s lang
-          -- mapM_ putStrLn (errors lang')
           mapM_ putStrLn (result lang')
-          runPointless $ lang' { result = [] }
+          runPointless lang' { result = [] }
+
+
+-- -- | immediately transmit output to console
+-- {-# NOINLINE ioTest #-}
+-- ioTest :: Lang -> Lang
+-- ioTest lang = unsafePerformIO  $ do
+--   mapM_ putStrLn (result lang)
+--   return lang { result = [] }
+-- --
 
 loadAndRunFile :: String -> Lang -> IO Lang
 loadAndRunFile file lang = do
@@ -54,7 +62,6 @@ loadAndRunFile file lang = do
   source' <- readFile file'
   let source = replaceStr  "\\n" "\n" source'
       lang' = runQuot source lang
-  -- mapM_ putStrLn (errors lang')
   mapM_ putStrLn (result lang')
   return lang'
 
@@ -77,8 +84,7 @@ replaceStr old new str = go str
       let (prefix, rest) = splitAt n str'
       in
         if old == prefix
-        then new ++ go rest
-        else x : go xs
+          then new ++ go rest
+          else x : go xs
     n = length old
-
 

@@ -16,7 +16,8 @@ import           Data.Text          (Text)
 import qualified Data.Text          as T (isPrefixOf, pack, replace, stripPrefix, unpack)
 import qualified Data.Text.IO       as T (putStrLn)
 import qualified Data.Text.Lazy     as TL (toStrict)
-import           Interpreter        (Lang (..), Vocabulary, formatStack, formatWordP, runQuotation)
+import           Interpreter        (Lang (..), Mode (..), Vocabulary, formatStack, formatWordP,
+                                     runQuotation)
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest, forkPingThread,
                                            receiveData, sendTextData)
 import           Parser             (parse)
@@ -40,7 +41,7 @@ application pending = do
                     vcab        = M.fromList $ primitives ++ coreLibrary
 
                 -- listen for commands forever
-                talk (Lang vcab [] [] "") conn
+                talk (Lang vcab [] [] "" WEBSOCKET) conn
             | otherwise -> do
                 let err = "incorrect connection topic: '" `mappend` msg `mappend` "'" :: Text
                 WS.sendTextData conn err
@@ -71,7 +72,7 @@ talk lang conn = forever $ do
                 WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang') :: Text)
 
                 -- re-start talk with new vocabulary
-                talk (Lang (vocab lang') [] [] "") conn
+                talk (Lang (vocab lang') [] [] "" WEBSOCKET) conn
 
             | T.isPrefixOf "run:" msg -> do
                 T.putStrLn msg
@@ -90,7 +91,7 @@ talk lang conn = forever $ do
                 WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang') :: Text)
 
                 -- re-start talk with new vocabulary
-                talk (Lang (vocab lang') [] [] "") conn
+                talk (Lang (vocab lang') [] [] "" WEBSOCKET) conn
 
             | otherwise -> WS.sendTextData conn ("unknown topic" :: Text)
 
