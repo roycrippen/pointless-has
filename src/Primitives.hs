@@ -63,13 +63,28 @@ concatP lang = case stack lang of
     (Str s:Str t:cs)   -> lang { stack = Str (t ++ s) : cs }
     _                  -> lang { result = "ERROR(concatP): two quotations expected" : result lang }
 
+-- printVal :: Lang -> Lang
+-- printVal lang = case stack lang of
+--     (c:cs) -> lang { stack = cs, result = result', display = "" }
+--       where result' = result lang ++ lines (display lang ++ formatV c)
+--     []     -> lang { result = result', display = "" }
+--       where result' = if display lang == ""
+--                         then result lang
+--                         else result lang ++ lines (display lang)
+--
 printVal :: Lang -> Lang
-printVal lang = case stack lang of
-    (c:cs) -> lang { stack = cs, result = result', display = "" }
+printVal lang@(Lang{ stack = c:cs}) = lang { stack = cs, result = result', display = "" }
       where result' = result lang ++ lines (display lang ++ formatV c)
-    []     -> lang { result = result', display = "" }
+
+printVal lang@(Lang{ stack = []}) = lang { result = result', display = "" }
       where result' = if display lang == ""
-                        then result lang else result lang ++ lines (display lang)
+                        then result lang
+                        else result lang ++ lines (display lang)
+--
+-- ioTest :: Lang -> Lang
+-- ioTest lang = unsafePerformIO  $ do
+--   print (result lang)
+--   return lang
 
 put :: Lang -> Lang
 put lang = case stack lang of

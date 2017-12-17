@@ -1,14 +1,14 @@
 module Main where
 
 import           CoreLibrary
--- import           Data.Aeson
 import qualified Data.Map         as M
--- import qualified Data.Text        as T
 import qualified Data.Text.IO     as T
 import           Interpreter
 import           Parser
 import           PointlessParser
 import           Primitives
+import           SocketServer
+import           System.IO.Unsafe (unsafePerformIO)
 import           Test.Tasty
 import           Test.Tasty.HUnit
 
@@ -23,12 +23,18 @@ sKeep02 = "\"a\\\n\\\nz\" putchars ."
 s1 :: String
 s1 = " \"aaa\" [10] define . aaa "
 
+ioTest :: Lang -> Lang
+ioTest lang = unsafePerformIO  $ do
+  print (result lang)
+  return lang
+
+
 runQuot :: String -> Lang
 runQuot s = runQuotation qs lang
   where
     (qs, _):_ = parse nakedQuotations s
     defs    = getQuotations coreDefinitions ++ primitives
-    lang    = Lang (M.fromList defs) [] [] [] ""
+    lang    = Lang (M.fromList defs) [] [] ""
 
 main :: IO ()
 main = do
@@ -46,6 +52,11 @@ main = do
   putStrLn "\njson results : "
   T.putStr $ jsonResultsShow res
   putStrLn "\n"
+
+  let lang  = runQuot "10 ."
+      lang' = ioTest lang
+  print "done"
+  print $ result lang'
 
   defaultMain unitTests
 

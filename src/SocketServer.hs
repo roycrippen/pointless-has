@@ -1,6 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module SocketServer ( application ) where
+module SocketServer
+( application
+, jsonVocabShow
+, jsonResultsShow
+) where
 
 import           Control.Monad      (forever)
 import           CoreLibrary        (coreDefinitions, getQuotations)
