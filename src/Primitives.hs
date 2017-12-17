@@ -1,8 +1,9 @@
 module Primitives where
 
-import           Data.Map    as M
-import           Data.Maybe  (fromJust, isJust)
+import           Data.Map         as M
+import           Data.Maybe       (fromJust, isJust)
 import           Interpreter
+import           System.IO.Unsafe (unsafePerformIO)
 -- import           Debug.Trace
 
 --
@@ -72,40 +73,42 @@ concatP lang = case stack lang of
 --                         then result lang
 --                         else result lang ++ lines (display lang)
 --
-printVal :: Lang -> Lang
-printVal lang@(Lang{ stack = c:cs}) = lang { stack = cs, result = result', display = "" }
-      where result' = result lang ++ lines (display lang ++ formatV c)
-
-printVal lang@(Lang{ stack = []}) = lang { result = result', display = "" }
-      where result' = if display lang == ""
-                        then result lang
-                        else result lang ++ lines (display lang)
---
-
 -- printVal :: Lang -> Lang
--- printVal lang@(Lang{ stack = c:cs, mode = m }) = if m == REPL
---   then txRepl lang
---   else txWebsocket lang'
---     where
---       result' = result lang ++ lines (display lang ++ formatV c)
---       lang'   = lang { stack = cs, result = result', display = "" }
+-- printVal lang@(Lang{ stack = c:cs}) = lang { stack = cs, result = result', display = "" }
+--       where result' = result lang ++ lines (display lang ++ formatV c)
 
--- printVal lang@(Lang{ stack = [], mode = m }) = if m == REPL
---   then txRepl lang
---   else txWebsocket lang'
---     where
---       result' = if display lang == ""
---                   then result lang
---                   else result lang ++ lines (display lang)
---       lang'  = lang { result = result', display = "" }
+-- printVal lang@(Lang{ stack = []}) = lang { result = result', display = "" }
+--       where result' = if display lang == ""
+--                         then result lang
+--                         else result lang ++ lines (display lang)
+-- --
 
--- -- | immediately transmit output to console
--- txRepl :: Lang -> Lang
--- txRepl lang = unsafePerformIO  $ do
---   mapM_ putStrLn (result lang)
---   -- return lang { result = [] }
---   return lang
+printVal :: Lang -> Lang
+printVal lang@(Lang{ stack = c:cs, mode = m }) = if m == REPL
+  then txRepl lang
+  else txRepl lang'
+    where
+      result' = result lang ++ lines (display lang ++ formatV c)
+      lang'   = lang { stack = cs, result = result', display = "" }
 
+printVal lang@(Lang{ stack = [], mode = m }) = if m == REPL
+  then txRepl lang
+  else txRepl lang'
+    where
+      result' = if display lang == ""
+                  then result lang
+                  else result lang ++ lines (display lang)
+      lang'  = lang { result = result', display = "" }
+
+-- | immediately transmit output to console
+txRepl :: Lang -> Lang
+txRepl lang = unsafePerformIO  $ do
+  mapM_ putStrLn (result lang)
+  return lang { result = [] }
+
+-- | immediately transmit output to console
+-- txRepl :: Lang -> IO ()
+-- txRepl lang = mapM_ putStrLn (result lang)
 
 put :: Lang -> Lang
 put lang = case stack lang of

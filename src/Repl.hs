@@ -45,8 +45,15 @@ runPointless lang = forever $ do
         _    -> do
           let lang' = runQuot s lang
           mapM_ putStrLn (result lang')
+          -- txRepl lang'
           runPointless lang' { result = [] }
 
+
+-- -- | immediately transmit output to console
+-- txRepl :: Lang -> IO ()
+-- txRepl lang = do
+--   hFlush stdout
+--   mapM_ putStrLn (result lang)
 
 -- -- | immediately transmit output to console
 -- {-# NOINLINE ioTest #-}
