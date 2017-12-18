@@ -1,14 +1,14 @@
 module Main where
 
-import           CoreLibrary
--- import           Data.Aeson
+import           Core
 import qualified Data.Map         as M
--- import qualified Data.Text        as T
 import qualified Data.Text.IO     as T
 import           Interpreter
 import           Parser
 import           PointlessParser
 import           Primitives
+import           SocketServer
+import           System.IO.Unsafe (unsafeDupablePerformIO)
 import           Test.Tasty
 import           Test.Tasty.HUnit
 
@@ -18,17 +18,23 @@ sKeep01 :: String
 sKeep01 = "\"aaa\" [1.1] define aaa aaa [] cons cons dup "
 
 sKeep02 :: String
-sKeep02 = "\"a\\\n\\\nz\" putchars ."
+sKeep02 = "\"a\\\n\\\nz\" putchars "
 
 s1 :: String
 s1 = " \"aaa\" [10] define . aaa "
+
+ioTest :: Lang -> Lang
+ioTest lang = unsafeDupablePerformIO  $ do
+  putStrLn "ioTest:"
+  mapM_ putStrLn (result lang)
+  return lang { result = [] }
 
 runQuot :: String -> Lang
 runQuot s = runQuotation qs lang
   where
     (qs, _):_ = parse nakedQuotations s
-    defs    = getQuotations coreDefinitions ++ primitives
-    lang    = Lang (M.fromList defs) [] [] [] ""
+    defs    = coreDefinitions
+    lang    = Lang (M.fromList defs) [] [] "" REPL
 
 main :: IO ()
 main = do
@@ -46,6 +52,11 @@ main = do
   putStrLn "\njson results : "
   T.putStr $ jsonResultsShow res
   putStrLn "\n"
+
+  let lang  = Lang (M.fromList coreDefinitions) [] ["10", "20"] "" REPL
+      lang' = ioTest lang
+  print "done"
+  print $ result lang'
 
   defaultMain unitTests
 
@@ -148,7 +159,7 @@ escapeNewLine1 :: TestTree
 escapeNewLine1 = testCase "escapeNewLine parser test"
   $ assertEqual [] ["a","","z"] val
   where
-    val = result res
+    val = lines (display res)
     res = runQuot sKeep02
 
 

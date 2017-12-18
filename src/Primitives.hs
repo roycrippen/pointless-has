@@ -1,12 +1,18 @@
 module Primitives where
 
-import           Data.Map    as M
-import           Data.Maybe  (fromJust, isJust)
+import           Data.Aeson.Text  (encodeToLazyText)
+import           Data.Map         as M (insert)
+import           Data.Maybe       (fromJust, isJust)
+import           Data.Text        (Text)
+import qualified Data.Text        as T (pack)
+import qualified Data.Text.Lazy   as TL (toStrict)
 import           Interpreter
+import           System.IO.Unsafe (unsafePerformIO)
+-- import qualified Network.WebSockets as WS (sendTextData)
 -- import           Debug.Trace
 
 --
--- Primitives
+-- Implementation of primitive functions
 --
 pop :: Lang -> Lang
 pop lang = case stack lang of
@@ -27,7 +33,7 @@ dip lang = case stack lang of
 define :: Lang -> Lang
 define lang = case stack lang of
     (Quot q:Str s:cs) -> lang { vocab = vocab', stack = cs }
-        where vocab' = insert s (Quotation q) (vocab lang)
+        where vocab' = M.insert s (Quotation q) (vocab lang)
     _ -> lang { result = msg : result lang }
         where msg = "ERROR(def): string followed by quotation expected"
 
@@ -63,13 +69,44 @@ concatP lang = case stack lang of
     (Str s:Str t:cs)   -> lang { stack = Str (t ++ s) : cs }
     _                  -> lang { result = "ERROR(concatP): two quotations expected" : result lang }
 
+-- printVal :: Lang -> Lang
+-- printVal lang@(Lang{ stack = c:cs}) = lang { stack = cs, result = result', display = "" }
+--       where result' = result lang ++ lines (display lang ++ formatV c)
+
+-- printVal lang@(Lang{ stack = []}) = lang { result = result', display = "" }
+--       where result' = if display lang == ""
+--                         then result lang
+--                         else result lang ++ lines (display lang)
+--
 printVal :: Lang -> Lang
-printVal lang = case stack lang of
-    (c:cs) -> lang { stack = cs, result = result', display = "" }
-      where result' = result lang ++ lines (display lang ++ formatV c)
-    []     -> lang { result = result', display = "" }
+printVal lang@Lang{stack = c : cs} = do
+  let lang' = txMode (lang { stack = cs, result = result', display = "" })
+  lang'
+    where result' = result lang ++ lines (display lang ++ formatV c)
+
+printVal lang@Lang{stack = []} = do
+  let lang' = txMode (lang { result = result', display = "" })
+  lang'
       where result' = if display lang == ""
-                        then result lang else result lang ++ lines (display lang)
+                        then result lang
+                        else result lang ++ lines (display lang)
+
+
+-- | immediate output stream
+txMode :: Lang -> Lang
+txMode lang@Lang{mode = m} = unsafePerformIO  $
+  case m of
+    REPL -> do
+      mapM_ putStrLn (result lang)
+      return lang { result = [] }
+    WEBSOCKET _ -> return lang
+      -- does not work for WS, kills conn
+      -- WEBSOCKET conn -> do
+      -- let resultsJSON = jsonResultsShow lang
+      -- mapM_ putStrLn (result lang)
+      -- WS.sendTextData conn (resultsJSON :: Text)
+      -- return lang { result = [] }
+
 
 put :: Lang -> Lang
 put lang = case stack lang of
@@ -165,41 +202,28 @@ linrec lang = case stack lang of
     _ -> lang
         { result = "ERROR(linrec): argument on stack are incorrect" : result lang
         }
+--
+
+libload :: Lang -> Lang
+libload lang = lang
 
 truncMod :: (RealFrac a, RealFrac a1) => a1 -> a -> Double
 truncMod c y = fromInteger (truncate c `mod` truncate y) :: Double
 
-primitives :: [(String, WordP)]
-primitives =
-    [ ("pop"    , Function pop)
-    , ("dup"    , Function dup)
-    , ("cons"   , Function cons)
-    , ("uncons" , Function uncons)
-    , ("concat" , Function concatP)
-    , ("+"      , Function plus)
-    , ("-"      , Function minus)
-    , ("*"      , Function $ arithMulDiv (*))
-    , ("/"      , Function $ arithMulDiv (/))
-    , ("%"      , Function $ arithMulDiv truncMod)
-    , ("="      , Function $ comparison (==))
-    , ("<="     , Function $ comparison (<=))
-    , (">="     , Function $ comparison (>=))
-    , ("<"      , Function $ comparison (<))
-    , (">"      , Function $ comparison (>))
-    , ("and"    , Function $ logic (&&))
-    , ("or"     , Function $ logic (||))
-    , ("null"   , Function lnot)
-    , ("stack"  , Function stackP)
-    , ("unstack", Function unstack)
-    , ("."      , Function printVal)
-    , ("put"    , Function put)
-    , ("putch"  , Function putch)
-    , ("dip"    , Function dip)
-    , ("x"      , Function xP)
-    , ("i"      , Function iP)
-    , ("ifte"   , Function ifThenElse)
-    , ("list"   , Function list)
-    , ("linrec" , Function linrec)
-    , ("define" , Function define)
-    ]
+-- | Serializes a Lang to JSON.
+jsonResultsShow :: Lang -> Text
+jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
+  where
+    stackT   = encodeP "\"stack\":" (formatStack $ stack lang)
+    resultT  = encodeP "\"result\":" (result lang)
+    displayT = encodeP "\"display\":" [display lang]
+    newline  = T.pack ",\n"
+    text     = stackT `mappend` newline
+                      `mappend` resultT
+                      `mappend` newline
+                      `mappend` displayT
+
+encodeP :: String -> [String] -> Text
+encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
+
 
