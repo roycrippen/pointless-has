@@ -1,7 +1,7 @@
 module Main where
 
 import qualified Network.WebSockets as WS (runServer)
--- import           Repl               (startRepl)
+import           Repl               (startRepl)
 import           SocketServer       (application)
 import           System.Environment (getArgs)
 import           System.Exit        (exitSuccess)
@@ -20,6 +20,4 @@ main = do
         putStrLn "invalid arg(s), use \"web\" for wesocket server or no arg for repl"
         exitSuccess
     _ -> do
-      putStrLn "repl eventually..."
-      exitSuccess
-      -- startRepl
+        startRepl

@@ -6,7 +6,6 @@ import qualified Data.Text.IO     as T
 import           Interpreter
 import           Parser
 import           PointlessParser
-import           Primitives
 import           SocketServer
 import           System.IO.Unsafe (unsafePerformIO)
 import           Test.Tasty
@@ -35,7 +34,7 @@ runQuot s = runQuotation qs lang
   where
     (qs, _):_ = parse nakedQuotations s
     defs    = coreDefinitions
-    lang    = Lang (M.fromList defs) [] [] "" REPL
+    lang    = Lang (M.fromList defs) [] [] ""
 
 main :: IO ()
 main = do
@@ -54,7 +53,7 @@ main = do
   T.putStr $ jsonResultsShow res
   putStrLn "\n"
 
-  let lang  = Lang (M.fromList coreDefinitions) [] ["10", "20"] "" REPL
+  let lang  = Lang (M.fromList coreDefinitions) [] ["10", "20"] ""
       lang' = ioTest lang
   print "done"
   print $ result lang'

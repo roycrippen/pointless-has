@@ -1,9 +1,8 @@
 module Primitives where
 
-import           Data.Map         as M
-import           Data.Maybe       (fromJust, isJust)
+import           Data.Map    as M
+import           Data.Maybe  (fromJust, isJust)
 import           Interpreter
-import           System.IO.Unsafe (unsafePerformIO)
 -- import           Debug.Trace
 
 --
@@ -64,47 +63,14 @@ concatP lang = case stack lang of
     (Str s:Str t:cs)   -> lang { stack = Str (t ++ s) : cs }
     _                  -> lang { result = "ERROR(concatP): two quotations expected" : result lang }
 
--- printVal :: Lang -> Lang
--- printVal lang = case stack lang of
---     (c:cs) -> lang { stack = cs, result = result', display = "" }
---       where result' = result lang ++ lines (display lang ++ formatV c)
---     []     -> lang { result = result', display = "" }
---       where result' = if display lang == ""
---                         then result lang
---                         else result lang ++ lines (display lang)
---
--- printVal :: Lang -> Lang
--- printVal lang@(Lang{ stack = c:cs}) = lang { stack = cs, result = result', display = "" }
---       where result' = result lang ++ lines (display lang ++ formatV c)
-
--- printVal lang@(Lang{ stack = []}) = lang { result = result', display = "" }
---       where result' = if display lang == ""
---                         then result lang
---                         else result lang ++ lines (display lang)
--- --
-
 printVal :: Lang -> Lang
-printVal lang@(Lang{ stack = c:cs, mode = m }) = if m == REPL
-  then lang'
-  else txWebsocket lang'
-    where
-      result' = result lang ++ lines (display lang ++ formatV c)
-      lang'   = lang { stack = cs, result = result', display = "" }
+printVal lang@(Lang{ stack = c:cs}) = lang { stack = cs, result = result', display = "" }
+      where result' = result lang ++ lines (display lang ++ formatV c)
 
-printVal lang@(Lang{ stack = [], mode = m }) = if m == REPL
-  then lang'
-  else txWebsocket lang'
-    where
-      result' = if display lang == ""
-                  then result lang
-                  else result lang ++ lines (display lang)
-      lang'  = lang { result = result', display = "" }
-
--- | immediately transmit output to console
-txWebsocket :: Lang -> Lang
-txWebsocket lang = unsafePerformIO  $ do
-  mapM_ putStrLn (result lang)
-  return lang { result = [] }
+printVal lang@(Lang{ stack = []}) = lang { result = result', display = "" }
+      where result' = if display lang == ""
+                        then result lang
+                        else result lang ++ lines (display lang)
 
 put :: Lang -> Lang
 put lang = case stack lang of
@@ -203,4 +169,3 @@ linrec lang = case stack lang of
 
 truncMod :: (RealFrac a, RealFrac a1) => a1 -> a -> Double
 truncMod c y = fromInteger (truncate c `mod` truncate y) :: Double
-
