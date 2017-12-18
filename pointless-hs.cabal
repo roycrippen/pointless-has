@@ -19,7 +19,7 @@ library
                      , Parser
                      , PointlessParser
                      , Primitives
-                     , CoreLibrary
+                     , Core
                      , SocketServer
                      , Repl
   build-depends:       base >= 4.7 && < 5

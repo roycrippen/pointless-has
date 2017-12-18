@@ -1,4 +1,4 @@
-module CoreLibrary ( coreDefinitions ) where
+module Core ( coreDefinitions ) where
 
 import           Interpreter     (WordP (..))
 import           Parser          (parse)
@@ -6,7 +6,7 @@ import           PointlessParser (nakedQuotations)
 import           Primitives
 
 coreDefinitions :: [(String, WordP)]
-coreDefinitions = (getQuotations coreLibrary) ++ CoreLibrary.primitives
+coreDefinitions = (getQuotations coreLibrary) ++ primitives
 
 getQuotation :: (String, String) -> (String, WordP)
 getQuotation (name, qs) = (name, Quotation q)

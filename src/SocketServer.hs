@@ -7,7 +7,7 @@ module SocketServer
 ) where
 
 import           Control.Monad      (forever)
-import           CoreLibrary        (coreDefinitions)
+import           Core               (coreDefinitions)
 import           Data.Aeson.Text    (encodeToLazyText)
 import           Data.Map           as M (fromList, toList)
 import           Data.Maybe         (fromJust)

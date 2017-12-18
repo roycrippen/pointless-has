@@ -2,7 +2,7 @@ module Repl where
 -- (startRepl) where
 
 import           Control.Monad   (forever)
-import           CoreLibrary     (coreDefinitions)
+import           Core            (coreDefinitions)
 import qualified Data.Map        as M (fromList)
 import           Interpreter     (Lang (..), Mode (..), runQuotation)
 import           Parser          (parse)

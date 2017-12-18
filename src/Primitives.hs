@@ -7,7 +7,7 @@ import           System.IO.Unsafe (unsafePerformIO)
 -- import           Debug.Trace
 
 --
--- Primitives
+-- Implementation of primitive functions
 --
 pop :: Lang -> Lang
 pop lang = case stack lang of
