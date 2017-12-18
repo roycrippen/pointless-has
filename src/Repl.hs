@@ -9,6 +9,7 @@ import           Parser          (parse)
 import           PointlessParser (nakedQuotations)
 import           System.Exit     (exitSuccess)
 import           System.IO       (hFlush, stdout)
+import           System.IO.Error (tryIOError)
 
 -- | wip, supports combined ouput only
 startRepl :: IO ()
@@ -49,11 +50,16 @@ runPointless lang = forever $ do
 loadAndRunFile :: String -> Lang -> IO Lang
 loadAndRunFile file lang = do
   let file' = replaceStr ":l " "" file ++ ".pless"
-  source' <- readFile file'
-  let source = replaceStr  "\\n" "\n" source'
-      lang' = runQuot source lang
-  mapM_ putStrLn (result lang')
-  return lang'
+  strOrExc <- tryIOError $ readFile file'
+  case strOrExc of
+    Left except -> do
+      print except
+      return lang
+    Right source' -> do
+      let source = replaceStr  "\\n" "\n" source'
+          lang' = runQuot source lang
+      mapM_ putStrLn (result lang')
+      return lang'
 
 showHelp :: IO ()
 showHelp = do
