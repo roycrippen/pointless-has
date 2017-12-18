@@ -1,12 +1,12 @@
-module CoreLibrary
-    ( getQuotation
-    , getQuotations
-    , coreDefinitions
-    ) where
+module CoreLibrary ( coreDefinitions ) where
 
-import           Interpreter
+import           Interpreter     (WordP (..))
 import           Parser          (parse)
 import           PointlessParser (nakedQuotations)
+import           Primitives
+
+coreDefinitions :: [(String, WordP)]
+coreDefinitions = (getQuotations coreLibrary) ++ CoreLibrary.primitives
 
 getQuotation :: (String, String) -> (String, WordP)
 getQuotation (name, qs) = (name, Quotation q)
@@ -15,8 +15,42 @@ getQuotation (name, qs) = (name, Quotation q)
 getQuotations :: [(String, String)] -> [(String, WordP)]
 getQuotations = map getQuotation
 
-coreDefinitions :: [(String, String)]
-coreDefinitions =
+primitives :: [(String, WordP)]
+primitives =
+    [ ("pop"    , Function pop)
+    , ("dup"    , Function dup)
+    , ("cons"   , Function cons)
+    , ("uncons" , Function uncons)
+    , ("concat" , Function concatP)
+    , ("+"      , Function plus)
+    , ("-"      , Function minus)
+    , ("*"      , Function $ arithMulDiv (*))
+    , ("/"      , Function $ arithMulDiv (/))
+    , ("%"      , Function $ arithMulDiv truncMod)
+    , ("="      , Function $ comparison (==))
+    , ("<="     , Function $ comparison (<=))
+    , (">="     , Function $ comparison (>=))
+    , ("<"      , Function $ comparison (<))
+    , (">"      , Function $ comparison (>))
+    , ("and"    , Function $ logic (&&))
+    , ("or"     , Function $ logic (||))
+    , ("null"   , Function lnot)
+    , ("stack"  , Function stackP)
+    , ("unstack", Function unstack)
+    , ("."      , Function printVal)
+    , ("put"    , Function put)
+    , ("putch"  , Function putch)
+    , ("dip"    , Function dip)
+    , ("x"      , Function xP)
+    , ("i"      , Function iP)
+    , ("ifte"   , Function ifThenElse)
+    , ("list"   , Function list)
+    , ("linrec" , Function linrec)
+    , ("define" , Function define)
+    ]
+
+coreLibrary :: [(String, String)]
+coreLibrary =
   [ ("true"    , "1")
   , ("false"   , "0")
   , ("rem"     , "%")

@@ -7,7 +7,7 @@ module SocketServer
 ) where
 
 import           Control.Monad      (forever)
-import           CoreLibrary        (coreDefinitions, getQuotations)
+import           CoreLibrary        (coreDefinitions)
 import           Data.Aeson.Text    (encodeToLazyText)
 import           Data.Map           as M (fromList, toList)
 import           Data.Maybe         (fromJust)
@@ -22,7 +22,6 @@ import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest,
                                            receiveData, sendTextData)
 import           Parser             (parse)
 import           PointlessParser    (nakedQuotations)
-import           Primitives         (primitives)
 
 application :: WS.ServerApp
 application pending = do
@@ -37,8 +36,7 @@ application pending = do
                 T.putStrLn "editor connected"
 
                 -- create vocabulary
-                let coreLibrary = getQuotations coreDefinitions
-                    vcab        = M.fromList $ primitives ++ coreLibrary
+                let vcab = M.fromList coreDefinitions
 
                 -- listen for commands forever
                 talk (Lang vcab [] [] "" WEBSOCKET) conn
@@ -60,7 +58,7 @@ talk lang conn = forever $ do
                 let source  = fromJust $ T.stripPrefix "load:" msg
                     source' = T.unpack $ T.replace (T.pack "\\n") (T.pack  "\n") source
                     (qs, _):_ = parse nakedQuotations source'
-                    vcab' = M.fromList $  getQuotations coreDefinitions ++ primitives
+                    vcab' = M.fromList $  coreDefinitions
                     lang' = runQuotation qs (lang { vocab = vcab' })
                     resultsJSON' = jsonResultsShow lang'
 

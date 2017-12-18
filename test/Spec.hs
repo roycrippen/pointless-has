@@ -34,7 +34,7 @@ runQuot :: String -> Lang
 runQuot s = runQuotation qs lang
   where
     (qs, _):_ = parse nakedQuotations s
-    defs    = getQuotations coreDefinitions ++ primitives
+    defs    = coreDefinitions
     lang    = Lang (M.fromList defs) [] [] "" REPL
 
 main :: IO ()
@@ -54,7 +54,7 @@ main = do
   T.putStr $ jsonResultsShow res
   putStrLn "\n"
 
-  let lang  = Lang (M.fromList primitives) [] ["10", "20"] "" REPL
+  let lang  = Lang (M.fromList coreDefinitions) [] ["10", "20"] "" REPL
       lang' = ioTest lang
   print "done"
   print $ result lang'

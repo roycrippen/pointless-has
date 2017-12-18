@@ -1,28 +1,27 @@
-module Repl (startRepl) where
+module Repl where
+-- (startRepl) where
 
-import           Control.Monad    (forever)
-import           CoreLibrary      (coreDefinitions, getQuotations)
-import qualified Data.Map         as M (fromList)
-import           Interpreter      (Lang (..), Mode (..), runQuotation)
-import           Parser           (parse)
-import           PointlessParser  (nakedQuotations)
-import           Primitives       (primitives)
-import           System.Exit      (exitSuccess)
-import           System.IO        (hFlush, stdout)
-import           System.IO.Unsafe (unsafeDupablePerformIO, unsafePerformIO)
+import           Control.Monad   (forever)
+import           CoreLibrary     (coreDefinitions)
+import qualified Data.Map        as M (fromList)
+import           Interpreter     (Lang (..), Mode (..), runQuotation)
+import           Parser          (parse)
+import           PointlessParser (nakedQuotations)
+import           System.Exit     (exitSuccess)
+import           System.IO       (hFlush, stdout)
 
-
+-- | wip, supports combined ouput only
 startRepl :: IO ()
 startRepl = do
   putStrLn "Welcome to the Pointless repl    (:h for help)"
   putStrLn "Pointless> "
-  let defs = getQuotations coreDefinitions ++ primitives
+  let defs = coreDefinitions
       lang = Lang (M.fromList defs) [] [] "" REPL
   runPointless lang
 
 runQuot :: String -> Lang -> Lang
 runQuot s = runQuotation qs
- where (qs, _):_ = parse nakedQuotations s
+  where (qs, _):_ = parse nakedQuotations s
 
 runPointless :: Lang -> IO ()
 runPointless lang = forever $ do
@@ -45,23 +44,7 @@ runPointless lang = forever $ do
         _    -> do
           let lang' = runQuot s lang
           mapM_ putStrLn (result lang')
-          -- txRepl lang'
           runPointless lang' { result = [] }
-
-
--- -- | immediately transmit output to console
--- txRepl :: Lang -> IO ()
--- txRepl lang = do
---   hFlush stdout
---   mapM_ putStrLn (result lang)
-
--- -- | immediately transmit output to console
--- {-# NOINLINE ioTest #-}
--- ioTest :: Lang -> Lang
--- ioTest lang = unsafePerformIO  $ do
---   mapM_ putStrLn (result lang)
---   return lang { result = [] }
--- --
 
 loadAndRunFile :: String -> Lang -> IO Lang
 loadAndRunFile file lang = do

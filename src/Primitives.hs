@@ -85,15 +85,15 @@ concatP lang = case stack lang of
 
 printVal :: Lang -> Lang
 printVal lang@(Lang{ stack = c:cs, mode = m }) = if m == REPL
-  then txRepl lang
-  else txRepl lang'
+  then lang'
+  else txWebsocket lang'
     where
       result' = result lang ++ lines (display lang ++ formatV c)
       lang'   = lang { stack = cs, result = result', display = "" }
 
 printVal lang@(Lang{ stack = [], mode = m }) = if m == REPL
-  then txRepl lang
-  else txRepl lang'
+  then lang'
+  else txWebsocket lang'
     where
       result' = if display lang == ""
                   then result lang
@@ -101,14 +101,10 @@ printVal lang@(Lang{ stack = [], mode = m }) = if m == REPL
       lang'  = lang { result = result', display = "" }
 
 -- | immediately transmit output to console
-txRepl :: Lang -> Lang
-txRepl lang = unsafePerformIO  $ do
+txWebsocket :: Lang -> Lang
+txWebsocket lang = unsafePerformIO  $ do
   mapM_ putStrLn (result lang)
   return lang { result = [] }
-
--- | immediately transmit output to console
--- txRepl :: Lang -> IO ()
--- txRepl lang = mapM_ putStrLn (result lang)
 
 put :: Lang -> Lang
 put lang = case stack lang of
@@ -207,38 +203,4 @@ linrec lang = case stack lang of
 
 truncMod :: (RealFrac a, RealFrac a1) => a1 -> a -> Double
 truncMod c y = fromInteger (truncate c `mod` truncate y) :: Double
-
-primitives :: [(String, WordP)]
-primitives =
-    [ ("pop"    , Function pop)
-    , ("dup"    , Function dup)
-    , ("cons"   , Function cons)
-    , ("uncons" , Function uncons)
-    , ("concat" , Function concatP)
-    , ("+"      , Function plus)
-    , ("-"      , Function minus)
-    , ("*"      , Function $ arithMulDiv (*))
-    , ("/"      , Function $ arithMulDiv (/))
-    , ("%"      , Function $ arithMulDiv truncMod)
-    , ("="      , Function $ comparison (==))
-    , ("<="     , Function $ comparison (<=))
-    , (">="     , Function $ comparison (>=))
-    , ("<"      , Function $ comparison (<))
-    , (">"      , Function $ comparison (>))
-    , ("and"    , Function $ logic (&&))
-    , ("or"     , Function $ logic (||))
-    , ("null"   , Function lnot)
-    , ("stack"  , Function stackP)
-    , ("unstack", Function unstack)
-    , ("."      , Function printVal)
-    , ("put"    , Function put)
-    , ("putch"  , Function putch)
-    , ("dip"    , Function dip)
-    , ("x"      , Function xP)
-    , ("i"      , Function iP)
-    , ("ifte"   , Function ifThenElse)
-    , ("list"   , Function list)
-    , ("linrec" , Function linrec)
-    , ("define" , Function define)
-    ]
 
