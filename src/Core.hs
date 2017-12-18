@@ -157,6 +157,7 @@ coreLibrary =
   , ("mapr2"         , "[[null2] [pop2 []] [uncons2]] dip [dip cons] cons linrec")
   , ("foldr2"        , "[[ [null2] ] dip [] cons [pop2] swoncat [uncons2] ] dip linrec")
   , ("interleave2"   , "[cons cons] foldr2")
+  , ("interleave2list", "[] interleave2 ")
   , ("average"       , "[ sum ] [ size ] cleave / ")
   , ( "variance"     , "0.0 swap dup [sum] [size] cleave dup [/ [- dup * +] cons step] dip pred /")
   , ("while"         , "swap [not] concat [] rolldown tailrec")
@@ -221,7 +222,7 @@ coreLibrary =
   -- , ("filter"           , "[] rollup [[swons] [pop] ifte] cons step reverse")
   -- , ("unary2"           , "[unary] cons dup dip dip")
   -- , ("negate"  , "[[false] [true] ifte] cons")
-  -- , ("interleave2list", "[] interleave2 ")
+  --
 
 
 
