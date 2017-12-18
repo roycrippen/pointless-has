@@ -1,8 +1,9 @@
 module Primitives where
 
-import           Data.Map    as M
-import           Data.Maybe  (fromJust, isJust)
+import           Data.Map         as M
+import           Data.Maybe       (fromJust, isJust)
 import           Interpreter
+import           System.IO.Unsafe (unsafeDupablePerformIO)
 -- import           Debug.Trace
 
 --
@@ -63,14 +64,33 @@ concatP lang = case stack lang of
     (Str s:Str t:cs)   -> lang { stack = Str (t ++ s) : cs }
     _                  -> lang { result = "ERROR(concatP): two quotations expected" : result lang }
 
-printVal :: Lang -> Lang
-printVal lang@(Lang{ stack = c:cs}) = lang { stack = cs, result = result', display = "" }
-      where result' = result lang ++ lines (display lang ++ formatV c)
+-- printVal :: Lang -> Lang
+-- printVal lang@(Lang{ stack = c:cs}) = lang { stack = cs, result = result', display = "" }
+--       where result' = result lang ++ lines (display lang ++ formatV c)
 
-printVal lang@(Lang{ stack = []}) = lang { result = result', display = "" }
+-- printVal lang@(Lang{ stack = []}) = lang { result = result', display = "" }
+--       where result' = if display lang == ""
+--                         then result lang
+--                         else result lang ++ lines (display lang)
+--
+printVal :: Lang -> Lang
+printVal lang@(Lang{ stack = c:cs}) = do
+  let lang' = ioTest (lang { stack = cs, result = result', display = "" })
+  lang'
+    where result' = result lang ++ lines (display lang ++ formatV c)
+
+printVal lang@(Lang{ stack = []}) = do
+  let lang' = ioTest (lang { result = result', display = "" })
+  lang'
       where result' = if display lang == ""
                         then result lang
                         else result lang ++ lines (display lang)
+
+
+ioTest :: Lang -> Lang
+ioTest lang = unsafeDupablePerformIO  $ do
+  mapM_ putStrLn $ (result lang)
+  return lang { result = [] }
 
 put :: Lang -> Lang
 put lang = case stack lang of

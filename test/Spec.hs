@@ -7,7 +7,7 @@ import           Interpreter
 import           Parser
 import           PointlessParser
 import           SocketServer
-import           System.IO.Unsafe (unsafePerformIO)
+import           System.IO.Unsafe (unsafeDupablePerformIO)
 import           Test.Tasty
 import           Test.Tasty.HUnit
 
@@ -23,7 +23,7 @@ s1 :: String
 s1 = " \"aaa\" [10] define . aaa "
 
 ioTest :: Lang -> Lang
-ioTest lang = unsafePerformIO  $ do
+ioTest lang = unsafeDupablePerformIO  $ do
   putStrLn "ioTest:"
   mapM_ putStrLn $ (result lang)
   return lang { result = [] }
