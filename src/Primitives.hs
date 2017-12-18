@@ -202,6 +202,10 @@ linrec lang = case stack lang of
     _ -> lang
         { result = "ERROR(linrec): argument on stack are incorrect" : result lang
         }
+--
+
+libload :: Lang -> Lang
+libload lang = lang
 
 truncMod :: (RealFrac a, RealFrac a1) => a1 -> a -> Double
 truncMod c y = fromInteger (truncate c `mod` truncate y) :: Double
