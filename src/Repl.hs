@@ -4,7 +4,7 @@ module Repl where
 import           Control.Monad   (forever)
 import           Core            (coreDefinitions)
 import qualified Data.Map        as M (fromList)
-import           Interpreter     (Lang (..), runQuotation)
+import           Interpreter     (Lang (..), Mode (..), runQuotation)
 import           Parser          (parse)
 import           PointlessParser (nakedQuotations)
 import           System.Exit     (exitSuccess)
@@ -16,7 +16,7 @@ startRepl = do
   putStrLn "Welcome to the Pointless repl    (:h for help)"
   putStrLn "Pointless> "
   let defs = coreDefinitions
-      lang = Lang (M.fromList defs) [] [] ""
+      lang = Lang (M.fromList defs) [] [] "" REPL
   runPointless lang
 
 runQuot :: String -> Lang -> Lang

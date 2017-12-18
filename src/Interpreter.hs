@@ -1,8 +1,9 @@
 module Interpreter where
 
-import           Data.Char (chr)
-import qualified Data.Map  as M (Map, lookup)
-import           Numeric   (showFFloat)
+import           Data.Char          (chr)
+import qualified Data.Map           as M (Map, lookup)
+import qualified Network.WebSockets as WS (Connection)
+import           Numeric            (showFFloat)
 
 data ValueP = Symbol String
             | NumP Double
@@ -15,11 +16,15 @@ data Lang = Lang { vocab   :: Vocabulary
                  , stack   :: [ValueP]
                  , result  :: [String]
                  , display :: String
+                 , mode    :: Mode
                  }
                  deriving (Show)
 
 data WordP = Quotation [ValueP] | Function (Lang -> Lang)
 instance Show WordP where show = formatWordP
+
+data Mode = REPL | WEBSOCKET WS.Connection
+instance Show Mode where show = formatMode
 
 type Vocabulary = M.Map String WordP
 
@@ -87,4 +92,9 @@ isInteger d = abs realFrac < 0.0000001
   where (_, realFrac) = properFraction' d
         properFraction' :: Double -> (Integer, Double)
         properFraction' = properFraction
+
+formatMode :: Mode -> String
+formatMode REPL          = "REPL mode"
+formatMode (WEBSOCKET _) = "Websocket mode"
+
 

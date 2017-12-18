@@ -3,7 +3,6 @@
 module SocketServer
 ( application
 , jsonVocabShow
-, jsonResultsShow
 ) where
 
 import           Control.Monad      (forever)
@@ -16,11 +15,13 @@ import           Data.Text          (Text)
 import qualified Data.Text          as T (isPrefixOf, pack, replace, stripPrefix, unpack)
 import qualified Data.Text.IO       as T (putStrLn)
 import qualified Data.Text.Lazy     as TL (toStrict)
-import           Interpreter        (Lang (..), Vocabulary, formatStack, formatWordP, runQuotation)
+import           Interpreter        (Lang (..), Mode (..), Vocabulary, formatStack, formatWordP,
+                                     runQuotation)
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest, forkPingThread,
                                            receiveData, sendTextData)
 import           Parser             (parse)
 import           PointlessParser    (nakedQuotations)
+import           Primitives         (jsonResultsShow)
 
 application :: WS.ServerApp
 application pending = do
@@ -38,7 +39,7 @@ application pending = do
                 let vcab = M.fromList coreDefinitions
 
                 -- listen for commands forever
-                talk (Lang vcab [] [] "") conn
+                talk (Lang vcab [] [] "" (WEBSOCKET conn)) conn
             | otherwise -> do
                 let err = "incorrect connection topic: '" `mappend` msg `mappend` "'" :: Text
                 WS.sendTextData conn err
@@ -57,7 +58,7 @@ talk lang conn = forever $ do
                 let source  = fromJust $ T.stripPrefix "load:" msg
                     source' = T.unpack $ T.replace (T.pack "\\n") (T.pack  "\n") source
                     (qs, _):_ = parse nakedQuotations source'
-                    vcab' = M.fromList $  coreDefinitions
+                    vcab' = M.fromList coreDefinitions
                     lang' = runQuotation qs (lang { vocab = vcab' })
                     resultsJSON' = jsonResultsShow lang'
 
@@ -69,7 +70,7 @@ talk lang conn = forever $ do
                 WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang') :: Text)
 
                 -- re-start talk with new vocabulary
-                talk (Lang (vocab lang') [] [] "")  conn
+                talk (Lang (vocab lang') [] [] ""(WEBSOCKET conn))  conn
 
             | T.isPrefixOf "run:" msg -> do
                 T.putStrLn msg
@@ -88,26 +89,26 @@ talk lang conn = forever $ do
                 WS.sendTextData conn  (T.pack $ jsonVocabShow (vocab lang') :: Text)
 
                 -- re-start talk with new vocabulary
-                talk (Lang (vocab lang') [] [] "") conn
+                talk (Lang (vocab lang') [] [] ""(WEBSOCKET conn)) conn
 
             | otherwise -> WS.sendTextData conn ("unknown topic" :: Text)
 
 
--- | Serializes a Lang to JSON.
-jsonResultsShow :: Lang -> Text
-jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
-  where
-    stackT   = encodeP "\"stack\":" (formatStack $ stack lang)
-    resultT  = encodeP "\"result\":" (result lang)
-    displayT = encodeP "\"display\":" [display lang]
-    newline  = T.pack ",\n"
-    text     = stackT `mappend` newline
-                      `mappend` resultT
-                      `mappend` newline
-                      `mappend` displayT
+-- -- | Serializes a Lang to JSON.
+-- jsonResultsShow :: Lang -> Text
+-- jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
+--   where
+--     stackT   = encodeP "\"stack\":" (formatStack $ stack lang)
+--     resultT  = encodeP "\"result\":" (result lang)
+--     displayT = encodeP "\"display\":" [display lang]
+--     newline  = T.pack ",\n"
+--     text     = stackT `mappend` newline
+--                       `mappend` resultT
+--                       `mappend` newline
+--                       `mappend` displayT
 
-encodeP :: String -> [String] -> Text
-encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
+-- encodeP :: String -> [String] -> Text
+-- encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
 
 jsonVocabElementShow :: Vocabulary -> String
 jsonVocabElementShow vcab = jsonArrayElementShow "vocab" vocab'
