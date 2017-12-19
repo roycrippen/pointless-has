@@ -12,8 +12,7 @@ startRepl :: IO ()
 startRepl = do
   putStrLn "Welcome to the Pointless repl    (:h for help)"
   putStrLn "Pointless> "
-  let defs = coreDefinitions
-      lang = Lang (M.fromList defs) [] [] "" REPL
+  let lang = Lang coreDefinitions [] [] "" REPL
   runPointless lang
 
 runPointless :: Lang -> IO ()

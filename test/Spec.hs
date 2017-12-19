@@ -30,11 +30,8 @@ ioTest lang = unsafeDupablePerformIO  $ do
   return lang { result = [] }
 
 runQuot :: String -> Lang
-runQuot s = runQuotation qs lang
-  where
-    (qs, _):_ = parse nakedQuotations s
-    defs    = coreDefinitions
-    lang    = Lang (M.fromList defs) [] [] "" REPL
+runQuot s = runQuotation qs (Lang coreDefinitions [] [] "" REPL)
+  where (qs, _):_ = parse nakedQuotations s
 
 main :: IO ()
 main = do
@@ -53,7 +50,7 @@ main = do
   T.putStr $ jsonResultsShow res
   putStrLn "\n"
 
-  let lang  = Lang (M.fromList coreDefinitions) [] ["10", "20"] "" REPL
+  let lang  = Lang coreDefinitions [] ["10", "20"] "" REPL
       lang' = ioTest lang
   print "done"
   print $ result lang'

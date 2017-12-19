@@ -1,12 +1,13 @@
 module Core ( coreDefinitions ) where
 
+import qualified Data.Map        as M (Map, fromList)
 import           Interpreter     (WordP (..))
 import           Parser          (parse)
 import           PointlessParser (nakedQuotations)
 import           Primitives
 
-coreDefinitions :: [(String, WordP)]
-coreDefinitions = getQuotations coreLibrary ++ primitives
+coreDefinitions :: M.Map String WordP
+coreDefinitions = M.fromList $ getQuotations coreLibrary ++ primitives
 
 getQuotation :: (String, String) -> (String, WordP)
 getQuotation (name, qs) = (name, Quotation q)
@@ -47,7 +48,7 @@ primitives =
     , ("list"     , Function list)
     , ("linrec"   , Function linrec)
     , ("define"   , Function define)
-    , ("libload"  , Function libload)
+    , ("libopen"  , Function libopen)
     ]
 
 coreLibrary :: [(String, String)]
@@ -179,8 +180,8 @@ coreLibrary =
   , ("defines"       , "dup size 2 / [ dup dup first swap second define 2 drop ] times pop")
   , ("putchars"      , "[putch] step")
   , ("putstrings"    , "[putchars] step")
-  , (""  , "")
-  , (""  , "")
+  , ("current-path"  , " \"\" ")
+  , ("libload"       , "current-path swap concat \".pless\" concat libopen")
   , (""  , "")
   , (""  , "")
   , (""  , "")

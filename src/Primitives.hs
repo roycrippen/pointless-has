@@ -1,7 +1,7 @@
 module Primitives where
 
 import           Data.Aeson.Text  (encodeToLazyText)
-import           Data.Map         as M (insert)
+import           Data.Map         as M (insert, lookup)
 import           Data.Maybe       (fromJust, isJust)
 import           Data.Text        (Text)
 import qualified Data.Text        as T (pack)
@@ -14,9 +14,9 @@ import           System.IO.Unsafe (unsafePerformIO)
 -- import qualified Network.WebSockets as WS (sendTextData)
 -- import           Debug.Trace
 
---
--- Implementation of primitive functions
---
+-- |
+-- | Implementation of primitive functions
+-- |
 pop :: Lang -> Lang
 pop lang = case stack lang of
     (_:cs) -> lang { stack = cs }
@@ -177,11 +177,11 @@ linrec lang = case stack lang of
         }
 --
 
-libload :: Lang -> Lang
-libload lang = case stack lang of
+libopen :: Lang -> Lang
+libopen lang = case stack lang of
   (Str  s:cs) -> rxFile s (lang { stack = cs })
   _           -> lang { result = msg : result lang }
-      where msg = "ERROR(libload): string file name expected"
+    where msg = "ERROR(libopen): string file name expected"
 
 truncMod :: (RealFrac a, RealFrac a1) => a1 -> a -> Double
 truncMod c y = fromInteger (truncate c `mod` truncate y) :: Double
@@ -210,8 +210,8 @@ runQuotStr s = runQuotation qs
 
 
 -- | limited unsafe IO actions
-
--- | immediate output stream
+-- |
+-- | transmit output (UNSAFE)
 txMode :: Lang -> Lang
 txMode lang@Lang{mode = m} = unsafePerformIO  $
   case m of
@@ -226,10 +226,10 @@ txMode lang@Lang{mode = m} = unsafePerformIO  $
       -- WS.sendTextData conn (resultsJSON :: Text)
       -- return lang { result = [] }
 
--- | read
+-- | read source from file (UNSAFE)
 rxFile :: String -> Lang -> Lang
 rxFile file lang = unsafePerformIO $ do
-  strOrExc <- tryIOError $ readFile (file ++ ".pless")
+  strOrExc <- tryIOError $ readFile file
   case strOrExc of
     Left except -> do
       print except
@@ -237,5 +237,5 @@ rxFile file lang = unsafePerformIO $ do
     Right source' -> do
       let source = replaceStr  "\\n" "\n" source'
           lang' = runQuotStr source lang
-      mapM_ putStrLn (result lang')
+      -- mapM_ putStrLn (result lang')
       return lang'

@@ -7,16 +7,15 @@ module SocketServer
 
 import           Control.Monad      (forever)
 import           Core               (coreDefinitions)
-import           Data.Aeson.Text    (encodeToLazyText)
-import           Data.Map           as M (fromList, toList)
+-- import           Data.Aeson.Text    (encodeToLazyText)
+import           Data.Map           as M (toList)
 import           Data.Maybe         (fromJust)
 import           Data.Monoid        (mappend)
 import           Data.Text          (Text)
 import qualified Data.Text          as T (isPrefixOf, pack, replace, stripPrefix, unpack)
 import qualified Data.Text.IO       as T (putStrLn)
-import qualified Data.Text.Lazy     as TL (toStrict)
-import           Interpreter        (Lang (..), Mode (..), Vocabulary, formatStack, formatWordP,
-                                     runQuotation)
+-- import qualified Data.Text.Lazy     as TL (toStrict)
+import           Interpreter        (Lang (..), Mode (..), Vocabulary, formatWordP, runQuotation)
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest, forkPingThread,
                                            receiveData, sendTextData)
 import           Parser             (parse)
@@ -35,11 +34,8 @@ application pending = do
                 WS.sendTextData conn ("pointless" :: Text)
                 T.putStrLn "editor connected"
 
-                -- create vocabulary
-                let vcab = M.fromList coreDefinitions
-
                 -- listen for commands forever
-                talk (Lang vcab [] [] "" (WEBSOCKET conn)) conn
+                talk (Lang coreDefinitions [] [] "" (WEBSOCKET conn)) conn
             | otherwise -> do
                 let err = "incorrect connection topic: '" `mappend` msg `mappend` "'" :: Text
                 WS.sendTextData conn err
@@ -58,8 +54,7 @@ talk lang conn = forever $ do
                 let source  = fromJust $ T.stripPrefix "load:" msg
                     source' = T.unpack $ T.replace (T.pack "\\n") (T.pack  "\n") source
                     (qs, _):_ = parse nakedQuotations source'
-                    vcab' = M.fromList coreDefinitions
-                    lang' = runQuotation qs (lang { vocab = vcab' })
+                    lang' = runQuotation qs (lang { vocab = coreDefinitions })
                     resultsJSON' = jsonResultsShow lang'
 
                 -- T.putStrLn results
