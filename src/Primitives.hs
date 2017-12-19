@@ -7,6 +7,9 @@ import           Data.Text        (Text)
 import qualified Data.Text        as T (pack)
 import qualified Data.Text.Lazy   as TL (toStrict)
 import           Interpreter
+import           Parser           (parse)
+import           PointlessParser  (nakedQuotations)
+import           System.IO.Error  (tryIOError)
 import           System.IO.Unsafe (unsafePerformIO)
 -- import qualified Network.WebSockets as WS (sendTextData)
 -- import           Debug.Trace
@@ -69,44 +72,14 @@ concatP lang = case stack lang of
     (Str s:Str t:cs)   -> lang { stack = Str (t ++ s) : cs }
     _                  -> lang { result = "ERROR(concatP): two quotations expected" : result lang }
 
--- printVal :: Lang -> Lang
--- printVal lang@(Lang{ stack = c:cs}) = lang { stack = cs, result = result', display = "" }
---       where result' = result lang ++ lines (display lang ++ formatV c)
-
--- printVal lang@(Lang{ stack = []}) = lang { result = result', display = "" }
---       where result' = if display lang == ""
---                         then result lang
---                         else result lang ++ lines (display lang)
---
 printVal :: Lang -> Lang
-printVal lang@Lang{stack = c : cs} = do
-  let lang' = txMode (lang { stack = cs, result = result', display = "" })
-  lang'
+printVal lang = case stack lang of
+  (c : cs) -> txMode (lang { stack = cs, result = result', display = "" })
     where result' = result lang ++ lines (display lang ++ formatV c)
-
-printVal lang@Lang{stack = []} = do
-  let lang' = txMode (lang { result = result', display = "" })
-  lang'
-      where result' = if display lang == ""
-                        then result lang
-                        else result lang ++ lines (display lang)
-
-
--- | immediate output stream
-txMode :: Lang -> Lang
-txMode lang@Lang{mode = m} = unsafePerformIO  $
-  case m of
-    REPL -> do
-      mapM_ putStrLn (result lang)
-      return lang { result = [] }
-    WEBSOCKET _ -> return lang
-      -- does not work for WS, kills conn
-      -- WEBSOCKET conn -> do
-      -- let resultsJSON = jsonResultsShow lang
-      -- mapM_ putStrLn (result lang)
-      -- WS.sendTextData conn (resultsJSON :: Text)
-      -- return lang { result = [] }
-
+  []       ->  txMode (lang { result = result', display = "" })
+    where result' = if display lang == ""
+                      then result lang
+                      else result lang ++ lines (display lang)
 
 put :: Lang -> Lang
 put lang = case stack lang of
@@ -205,7 +178,10 @@ linrec lang = case stack lang of
 --
 
 libload :: Lang -> Lang
-libload lang = lang
+libload lang = case stack lang of
+  (Str  s:cs) -> rxFile s (lang { stack = cs })
+  _           -> lang { result = msg : result lang }
+      where msg = "ERROR(libload): string file name expected"
 
 truncMod :: (RealFrac a, RealFrac a1) => a1 -> a -> Double
 truncMod c y = fromInteger (truncate c `mod` truncate y) :: Double
@@ -227,3 +203,39 @@ encodeP :: String -> [String] -> Text
 encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
 
 
+-- | run a quotation string
+runQuotStr :: String -> Lang -> Lang
+runQuotStr s = runQuotation qs
+  where (qs, _):_ = parse nakedQuotations s
+
+
+-- | limited unsafe IO actions
+
+-- | immediate output stream
+txMode :: Lang -> Lang
+txMode lang@Lang{mode = m} = unsafePerformIO  $
+  case m of
+    REPL -> do
+      mapM_ putStrLn (result lang)
+      return lang { result = [] }
+    WEBSOCKET _ -> return lang
+      -- does not work for WS, kills conn
+      -- WEBSOCKET conn -> do
+      -- let resultsJSON = jsonResultsShow lang
+      -- mapM_ putStrLn (result lang)
+      -- WS.sendTextData conn (resultsJSON :: Text)
+      -- return lang { result = [] }
+
+-- | read
+rxFile :: String -> Lang -> Lang
+rxFile file lang = unsafePerformIO $ do
+  strOrExc <- tryIOError $ readFile (file ++ ".pless")
+  case strOrExc of
+    Left except -> do
+      print except
+      return lang
+    Right source' -> do
+      let source = replaceStr  "\\n" "\n" source'
+          lang' = runQuotStr source lang
+      mapM_ putStrLn (result lang')
+      return lang'
