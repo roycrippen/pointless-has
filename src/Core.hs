@@ -225,5 +225,3 @@ coreLibrary =
   -- , ("negate"  , "[[false] [true] ifte] cons")
   --
 
-
-
