@@ -97,4 +97,16 @@ formatMode :: Mode -> String
 formatMode REPL          = "REPL mode"
 formatMode (WEBSOCKET _) = "Websocket mode"
 
+replaceStr :: String -> String -> String -> String
+replaceStr _ _ [] = []
+replaceStr old new str = go str
+  where
+    go [] = []
+    go str'@(x:xs) =
+      let (prefix, rest) = splitAt n str'
+      in
+        if old == prefix
+          then new ++ go rest
+          else x : go xs
+    n = length old
 
