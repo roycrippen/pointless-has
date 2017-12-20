@@ -49,6 +49,7 @@ primitives =
     , ("linrec"   , Function linrec)
     , ("define"   , Function define)
     , ("libopen"  , Function libopen)
+    , ("show"     , Function showP)
     ]
 
 coreLibrary :: [(String, String)]
@@ -91,11 +92,10 @@ coreLibrary =
   , ("size"          , "0 swap [pop succ] step")
   , ("map"           , "swap [[]] [\"\"] iflist swap rolldown [swons] concat step reverse")
   , ("fold"          , "swapd step")
-  , ( "filter"       , "swap [[]] [\"\"] iflist swap rolldown [[swons] [pop] ifte] cons step reverse")
+  , ("filter"        , "swap [[]] [\"\"] iflist swap rolldown [[swons] [pop] ifte] cons step reverse")
   , ("even"          , "2 % 0 =")
   , ("odd"           , "even not")
   , ("swoncat"       , "swap concat")
-  , ("tailrec"       , "dup3 [tailrec] cons cons cons concat ifte")
   , ("when"          , "[] ifte")
   , ("unles"         , "[] swap ifte")
   , ("neg"           , "-1 *")
@@ -108,6 +108,7 @@ coreLibrary =
   , ("shunt"         , "[swons] step")
   , ("reverse"       , "[[]] [\"\"] iflist swap shunt")
   , ("reversed"      , "[reverse] dip")
+  , ("last"          , "reverse first")
   , ("sum"           , "0 [+] fold")
   , ("product"       , "1 [*] fold")
   , ("succ"          , "1 +")
@@ -160,7 +161,7 @@ coreLibrary =
   , ("interleave2"   , "[cons cons] foldr2")
   , ("interleave2list", "[] interleave2 ")
   , ("average"       , "[ sum ] [ size ] cleave / ")
-  , ( "variance"     , "0.0 swap dup [sum] [size] cleave dup [/ [- dup * +] cons step] dip pred /")
+  , ("variance"      , "0.0 swap dup [sum] [size] cleave dup [/ [- dup * +] cons step] dip pred /")
   , ("while"         , "swap [not] concat [] rolldown tailrec")
   , ("to-upper"      , "['a' >= ] [32 -] when")
   , ("to-lower"      , "['a' <  ] [32 +] when")
@@ -182,7 +183,8 @@ coreLibrary =
   , ("putstrings"    , "[putchars] step")
   , ("current-path"  , " \"\" ")
   , ("libload"       , "current-path swap concat \".pless\" concat libopen")
-  , (""  , "")
+  , ("s-to-list"     ,
+  "dup size [uncons] times pop stack dup size 1 - [rolldown pop] times swap pop reverse")
   , (""  , "")
   , (""  , "")
   , (""  , "")
@@ -223,5 +225,6 @@ coreLibrary =
   -- , ("filter"           , "[] rollup [[swons] [pop] ifte] cons step reverse")
   -- , ("unary2"           , "[unary] cons dup dip dip")
   -- , ("negate"  , "[[false] [true] ifte] cons")
-  --
+  -- , ("tailrec"       , "dup3 [tailrec] cons cons cons concat ifte")
+
 

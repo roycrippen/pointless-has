@@ -175,13 +175,18 @@ linrec lang = case stack lang of
     _ -> lang
         { result = "ERROR(linrec): argument on stack are incorrect" : result lang
         }
---
 
 libopen :: Lang -> Lang
 libopen lang = case stack lang of
   (Str  s:cs) -> rxFile s (lang { stack = cs })
   _           -> lang { result = msg : result lang }
     where msg = "ERROR(libopen): string file name expected"
+
+showP :: Lang -> Lang
+showP lang = case stack lang of
+    (c:cs) -> lang { stack = s : cs }
+      where s = Str (formatV c)
+    _      -> lang { result = "ERROR(dup): stack empty" : result lang }
 
 truncMod :: (RealFrac a, RealFrac a1) => a1 -> a -> Double
 truncMod c y = fromInteger (truncate c `mod` truncate y) :: Double
