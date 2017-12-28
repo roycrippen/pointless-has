@@ -50,6 +50,7 @@ primitives =
     , ("define"   , Function define)
     , ("libopen"  , Function libopen)
     , ("show"     , Function showP)
+    , ("sqrt"     , Function sqrtP)
     ]
 
 coreLibrary :: [(String, String)]

@@ -121,6 +121,12 @@ plus lang = case stack lang of
     _ -> lang { result = msg : result lang }
         where msg = "ERROR(plus): two numbers or a char then an integer expected"
 
+sqrtP :: Lang -> Lang
+sqrtP lang = case stack lang of
+    (NumP y:cs) -> lang { stack = NumP (sqrt y) : cs }
+    _ -> lang { result = msg : result lang }
+        where msg = "ERROR(sqrt): a number expected"
+
 minus :: Lang -> Lang
 minus lang = case stack lang of
     (NumP y:NumP c:cs) -> lang { stack = NumP (c - y) : cs }
