@@ -98,7 +98,7 @@ coreLibrary =
   , ("odd"           , "even not")
   , ("swoncat"       , "swap concat")
   , ("when"          , "[] ifte")
-  , ("unles"         , "[] swap ifte")
+  , ("unless"        , "[] swap ifte")
   , ("neg"           , "-1 *")
   , ("abs"           , "[0 <] [neg] when")
   , ("keep"          , "dupd dip")
