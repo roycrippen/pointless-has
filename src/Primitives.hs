@@ -1,7 +1,7 @@
 module Primitives where
 
 import           Data.Aeson.Text  (encodeToLazyText)
-import           Data.Map         as M (insert, lookup)
+import           Data.Map         as M (insert)
 import           Data.Maybe       (fromJust, isJust)
 import           Data.Text        (Text)
 import qualified Data.Text        as T (pack)
