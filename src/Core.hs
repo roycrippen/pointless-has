@@ -148,7 +148,7 @@ coreLibrary =
   , ("swons2"        , "swapd swons swonsd")
   , ("unswons2"      , "[unswons] dip unswons swapd")
   , ("zip"           , "[null2] [pop2 []] [uncons2] [[pairlist] dip cons] linrec")
-  , ( "from-to"      , "[] cons [pop pop] swoncat [>] swap [[dup succ] dip] [cons] linrec")
+  , ("from-to"       , "[] cons [pop pop] swoncat [>] swap [[dup succ] dip] [cons] linrec")
   , ("from-to-list"  , "[] from-to")
   , ("from-to-string", "\"\" from-to")
   , ("tailrec"       , "[] linrec")
