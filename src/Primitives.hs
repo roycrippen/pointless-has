@@ -40,15 +40,15 @@ define lang = case stack lang of
     _ -> lang { result = msg : result lang }
         where msg = "ERROR(def): string followed by quotation expected"
 
-xP :: Lang -> Lang
-xP lang = case stack lang of
+eval :: Lang -> Lang
+eval lang = case stack lang of
     (Quot q:cs) -> rLang { stack = stack rLang ++ [Quot q] ++ cs }
         where rLang = runQuotation q (lang { stack = [] })
     _ -> lang { result = msg : result lang }
         where msg = "ERROR(x): quotation must be executable without a stack"
 
-iP :: Lang -> Lang
-iP lang = case stack lang of
+exec :: Lang -> Lang
+exec lang = case stack lang of
     (Quot q:cs) -> runQuotation q (lang { stack = cs })
     _           -> lang { result = "ERROR(i): quotation must be executable" : result lang }
 
@@ -72,8 +72,8 @@ concatP lang = case stack lang of
     (Str s:Str t:cs)   -> lang { stack = Str (t ++ s) : cs }
     _                  -> lang { result = "ERROR(concatP): two quotations expected" : result lang }
 
-printVal :: Lang -> Lang
-printVal lang = case stack lang of
+tx :: Lang -> Lang
+tx lang = case stack lang of
   (c : cs) -> txMode (lang { stack = cs, result = result', display = "" })
     where result' = result lang ++ lines (display lang ++ formatV c)
   []       ->  txMode (lang { result = result', display = "" })
@@ -127,6 +127,25 @@ sqrtP lang = case stack lang of
     _ -> lang { result = msg : result lang }
         where msg = "ERROR(sqrt): a number expected"
 
+sinP :: Lang -> Lang
+sinP lang = case stack lang of
+    (NumP y:cs) -> lang { stack = NumP (sin y) : cs }
+    _ -> lang { result = msg : result lang }
+        where msg = "ERROR(sqrt): a number expected"
+
+
+cosP :: Lang -> Lang
+cosP lang = case stack lang of
+    (NumP y:cs) -> lang { stack = NumP (cos y) : cs }
+    _ -> lang { result = msg : result lang }
+        where msg = "ERROR(sqrt): a number expected"
+
+tanP :: Lang -> Lang
+tanP lang = case stack lang of
+    (NumP y:cs) -> lang { stack = NumP (tan y) : cs }
+    _ -> lang { result = msg : result lang }
+        where msg = "ERROR(sqrt): a number expected"
+
 minus :: Lang -> Lang
 minus lang = case stack lang of
     (NumP y:NumP c:cs) -> lang { stack = NumP (c - y) : cs }
@@ -161,11 +180,23 @@ unstack lang = case stack lang of
     (Quot ys:_) -> lang { stack = ys }
     _           -> lang { result = "ERROR(unstack): quotation expected" : result lang }
 
-list :: Lang -> Lang
-list lang = case stack lang of
+isList :: Lang -> Lang
+isList lang = case stack lang of
     (Quot _:cs) -> lang { stack = toTruth True : cs }
     (_     :cs) -> lang { stack = toTruth False : cs }
-    _           -> lang { result = "ERROR(list): stack empty" : result lang }
+    _           -> lang { result = "ERROR(list?): stack empty" : result lang }
+
+isString :: Lang -> Lang
+isString lang = case stack lang of
+    (Str _:cs)  -> lang { stack = toTruth True : cs }
+    (_     :cs) -> lang { stack = toTruth False : cs }
+    _           -> lang { result = "ERROR(string?): stack empty" : result lang }
+
+isNumber :: Lang -> Lang
+isNumber lang = case stack lang of
+    (NumP _:cs) -> lang { stack = toTruth True : cs }
+    (_     :cs) -> lang { stack = toTruth False : cs }
+    _           -> lang { result = "ERROR(number?): stack empty" : result lang }
 
 linrec :: Lang -> Lang
 linrec lang = case stack lang of
