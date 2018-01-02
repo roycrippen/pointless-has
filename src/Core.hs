@@ -196,7 +196,7 @@ coreLibrary =
   , ("sindeg"        , "radians sin")
   , ("cosdeg"        , "radians cos")
   , ("tandeg"        , "radians tan")
-  , (""  , "")
+  , ("assert"        , "swap eval rolldown [=] [pop2 \"TEST OK = \" putchars show put tx] [\"TEST FAILED (expected value = \" putchars show put \", actual value = \" putchars show put \")\n\" putchars     \"Failed expression = \" putchars show put tx ] ifte")
   , (""  , "")
   , (""  , "")
   , (""  , "")
