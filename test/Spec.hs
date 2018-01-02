@@ -33,6 +33,9 @@ runQuot :: String -> Lang
 runQuot s = runQuotation qs (Lang coreDefinitions [] [] "" REPL)
   where (qs, _):_ = parse nakedQuotations s
 
+fName :: String
+fName = "/home/roy/dev/joy/eulerJoy/scratch-pad.pless"
+
 main :: IO ()
 main = do
 

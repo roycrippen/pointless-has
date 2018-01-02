@@ -277,7 +277,11 @@ rxFile file lang = unsafePerformIO $ do
       print except
       return lang
     Right source' -> do
-      let source = replaceStr  "\\n" "\n" source'
+      let source = replaceStr  "\\n" "\n" (removeDocLines source')
           lang' = runQuotStr source lang
       -- mapM_ putStrLn (result lang')
       return lang'
+
+removeDocLines :: String -> String
+removeDocLines str = unlines xs
+      where xs = filter (\x -> (take 8 x) == "        ") $ lines str
