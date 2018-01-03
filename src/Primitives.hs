@@ -8,7 +8,7 @@ import qualified Data.Text        as T (pack)
 import qualified Data.Text.Lazy   as TL (toStrict)
 import           Interpreter
 import           Parser           (parse)
-import           PointlessParser  (nakedQuotations)
+import           PointlessParser  (nakedQuotations, tests)
 import           System.IO.Error  (tryIOError)
 import           System.IO.Unsafe (unsafePerformIO)
 -- import qualified Network.WebSockets as WS (sendTextData)
@@ -213,55 +213,20 @@ linrec lang = case stack lang of
         { result = "ERROR(linrec): argument on stack are incorrect" : result lang
         }
 
-libopen :: Lang -> Lang
-libopen lang = case stack lang of
+_libopen :: Lang -> Lang
+_libopen lang = case stack lang of
   (Str  s:cs) -> runQuotStr (rxFile s) (lang { stack = cs })
   _           -> lang { result = msg : result lang }
     where msg = "ERROR(libopen): string file name expected"
 
-runTests :: Lang -> Lang
-runTests lang = do
-  let lang' = loadLibForTests lang
-  trace ("FFF = " ++  show lang' ) lang'
-
-loadLibForTests :: Lang -> Lang
-loadLibForTests lang = case trace ("AAA = " ++ show (stack lang)) stack lang of
-  [Str s] ->  do
-    let source = rxFile (s ++ ".pless")
-        (qs, _):_ = parse nakedQuotations source
-        qs' =  keepDefines qs
-        qs'' = getDefinesFromLibLoad lang qs'
-        lang' = runQuotation qs'' lang { stack = [] }
-        lang'' =  lang' { result = result lang' ++ result lang }
-        trace ("GGG = " ++ show lang'') lang''
-  _            ->  trace ("DDD = " ++ show (stack lang)) lang { result = msg : result lang }
+_runtests :: Lang -> Lang
+_runtests lang = case stack lang of
+  [Str s] -> do
+    let lang' = loadLibForTests lang
+        qs = testQuots $ rxFile s
+    runQuotation qs lang' { stack = [] }
+  _       ->  lang { result = msg : result lang }
     where msg = "ERROR(runTests): string file name expected"
-
-getDefinesFromLibLoad :: Lang -> [ValueP] -> [ValueP]
-getDefinesFromLibLoad _ [] = []
-getDefinesFromLibLoad lang (Str s : Symbol sym : vs) =
-  if trace ("BBB = " ++  s ++ ", " ++ sym ++ ", " ++ show (sym == "libload")) sym == "libload"
-    then do
-      let lang' = trace ("EEE = " ++  s ++ ", " ++ sym) loadLibForTests (lang { stack = [Str s] })
-      getDefinesFromLibLoad lang' vs
-    else vs
-getDefinesFromLibLoad lang vs = trace ("CCC = " ++ show (stack lang)) vs
-
-keepDefines ::[ValueP] -> [ValueP]
-keepDefines [] = []
-keepDefines (Str s : Quot q : Symbol sym : vs) =
-  if sym == "define"
-    then Str s : Quot q : Symbol sym : keepDefines vs
-    else keepDefines vs
-keepDefines (Quot q : Symbol sym : vs) =
-  if sym == "defines" || sym == "dictionary"
-    then Quot q : Symbol sym : keepDefines vs
-    else keepDefines vs
-keepDefines (Str s : Symbol sym : vs) =
-  if sym == "libload"
-    then Str s :  Symbol sym : keepDefines vs
-    else keepDefines vs
-keepDefines (_:vs) = keepDefines vs
 
 showP :: Lang -> Lang
 showP lang = case stack lang of
@@ -287,7 +252,6 @@ jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
 
 encodeP :: String -> [String] -> Text
 encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
-
 
 -- | run a quotation string
 runQuotStr :: String -> Lang -> Lang
@@ -322,22 +286,65 @@ rxFile file = unsafePerformIO $ do
       return ""
     Right source -> do
       let source' = replaceStr  "\\n" "\n" (removeDocLines source)
-      -- putStrLn source'
       return source'
---
--- rxFile :: String -> Lang -> Lang
--- rxFile file lang = unsafePerformIO $ do
---   strOrExc <- tryIOError $ readFile file
---   case strOrExc of
---     Left except -> do
---       print except
---       return lang
---     Right source' -> do
---       let source = replaceStr  "\\n" "\n" (removeDocLines source')
---           lang' = runQuotStr source lang
---       -- mapM_ putStrLn (result lang')
---       return lang'
 
+-- | strip away col 1 to 8 comment lines
 removeDocLines :: String -> String
 removeDocLines str = unlines xs
       where xs = filter (\x -> take 8 x == "        ") $ lines str
+
+-- | helper functions to get inline tests from inside {}
+loadLibForTests :: Lang -> Lang
+loadLibForTests lang = case stack lang of
+  [Str s] ->  do
+    let qs = inlineSource $ getQuotsFromFile s
+        qs' =  keepDefines qs
+        lang' = runQuotation qs' lang { stack = [] }
+        lang'' =  lang' { result = result lang' ++ result lang }
+    lang''
+  _       ->  lang { result = msg : result lang }
+    where msg = "ERROR(runTests): string file name expected"
+
+-- | load and parse source string from a file
+getQuotsFromFile :: String -> [ValueP]
+getQuotsFromFile s =  qs
+  where (qs, _):_ = parse nakedQuotations $ rxFile s
+
+-- add argument to prevent circular references
+-- this will crash if a libloads b and b libloads a
+-- | replace libload commends with actual source from a file
+inlineSource :: [ValueP] -> [ValueP]
+inlineSource [] = []
+inlineSource (Str s : Symbol sym : vs) = case sym of
+  "libload" -> inlineSource (getQuotsFromFile (s ++ ".pless")) ++ inlineSource vs
+  "libopen" -> inlineSource (getQuotsFromFile s) ++ inlineSource vs
+  _         -> Str s : Symbol sym : inlineSource vs
+inlineSource (s : vs) = s : inlineSource vs
+
+-- | throw away all commands that are not a kind of define, libload or libopen
+keepDefines ::[ValueP] -> [ValueP]
+keepDefines [] = []
+keepDefines (Str s : Quot q : Symbol sym : vs) =
+  if sym == "define"
+    then Str s : Quot q : Symbol sym : keepDefines vs
+    else keepDefines vs
+keepDefines (Quot q : Symbol sym : vs) =
+  if sym == "defines" || sym == "dictionary"
+    then Quot q : Symbol sym : keepDefines vs
+    else keepDefines vs
+keepDefines (Str s : Symbol sym : vs) =
+  if sym == "libload" || sym == "libopen"
+    then Str s :  Symbol sym : keepDefines vs
+    else keepDefines vs
+keepDefines (_:vs) = keepDefines vs
+
+-- | parse a source string returning just the test code inside of {}
+testQuots :: String -> [ValueP]
+testQuots s = do
+  (ts, _) <- parse tests s
+  if not (null ts)
+    then do
+      let (qs, _):_ = parse nakedQuotations $ unlines ts
+      qs
+    else []
+

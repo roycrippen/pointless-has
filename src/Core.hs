@@ -51,13 +51,13 @@ primitives =
     , ("linrec"   , Function linrec)
     -- , ("binrec"   , Function binrec)
     , ("define"   , Function define)
-    , ("libopen"  , Function libopen)
+    , ("_libopen" , Function _libopen)
     , ("show"     , Function showP)
     , ("sqrt"     , Function sqrtP)
     , ("sin"      , Function sinP)
     , ("cos"      , Function cosP)
     , ("tan"      , Function tanP)
-    , ("runTests" , Function runTests)
+    , ("_runtests", Function _runtests)
     ]
 
 coreLibrary :: [(String, String)]
@@ -189,7 +189,8 @@ coreLibrary =
   , ("putchars"      , "[putch] step")
   , ("putstrings"    , "[putchars] step")
   , ("current-path"  , " \"\" ")
-  , ("libload"       , "current-path swap concat \".pless\" concat libopen")
+  , ("libload"       , "current-path swap concat \".pless\" concat _libopen")
+  , ("run-tests"     , "current-path swap concat \".pless\" concat _runtests")
   , ("s-to-list"     , "dup size [uncons] times pop stack dup size 1 - [rolldown pop] times swap pop reverse")
   , ("flatten"       , "[null] [] [uncons] [concat] linrec ")
   , ("cartproduct"   , "[[]] dip2 [pairlist swap [swons] dip] pairstep ")

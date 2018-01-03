@@ -48,47 +48,19 @@ quotation = do
     _ <- char ']'
     return (Quot q)
 
-definitionHeader :: Parser String
-definitionHeader = do
-    name <- word
-    _    <- spaces
-    _    <- string "=="
-    _    <- spaces
-    case name of
-        Symbol x -> return x
-        _        -> return "INVALID_DEFINITION_NAME"
+lineComment :: Parser ()
+lineComment = string "$" >> manyTill anyChar newline >> spaces >> return ()
 
--- definition :: Parser (String, WordP)
--- definition = do
---     _    <- spacesCommentsSpecifications
---     _    <- string "DEFINE"
---     _    <- spaces
---     name <- definitionHeader
---     q    <- nakedQuotations
---     _    <- spaces
---     _    <- char ';'
---     _    <- spacesCommentsSpecifications
---     return (name, Quotation q)
-
--- program :: Parser ([(String, WordP)], [ValueP])
--- program = do
---     _  <- spacesCommentsSpecifications
---     ds <- many definition
---     _  <- spaces
---     _  <- comments
---     qs <- nakedQuotations
---     _  <- spacesCommentsSpecifications
---     return (ds, qs)
-
-comment :: Parser ()
-comment =
-    (string "$" >> manyTill anyChar newline >> spaces >> return ())
-        <|> (  char '{'
+blockComment :: Parser ()
+blockComment =
+            char '{'
             >> manyTill anyChar (char '}')
             >> char '}'
             >> spaces
             >> return ()
-            )
+
+comment :: Parser ()
+comment = lineComment <|> blockComment
 
 comments :: Parser [()]
 comments = many comment
@@ -107,4 +79,39 @@ specifications = many specification
 spacesCommentsSpecifications :: Parser ()
 spacesCommentsSpecifications = spaces >> comments >> specifications >> return ()
 
+
+-- parsers to get inline test from inside {}
+lineComments :: Parser [()]
+lineComments = many lineComment
+
+spacesLineCommentsSpecifications :: Parser ()
+spacesLineCommentsSpecifications = spaces >> lineComments >> specifications >> return ()
+
+nonTest :: Parser ()
+nonTest = do
+  _ <- spacesLineCommentsSpecifications
+  _ <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
+  _ <- spacesLineCommentsSpecifications
+  return ()
+
+nonTests :: Parser [()]
+nonTests = many nonTest
+
+testBlock :: Parser String
+testBlock = do
+  _ <- char '{'
+  s <- manyTill anyChar (char '}')
+  _ <- char '}'
+  _ <- spaces
+  return s
+
+test :: Parser String
+test = do
+  _ <- many nonTest
+  t <- testBlock
+  _ <- many nonTest
+  return t
+
+tests :: Parser [String]
+tests = many test
 
