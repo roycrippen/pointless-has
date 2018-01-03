@@ -12,7 +12,7 @@ import           PointlessParser  (nakedQuotations)
 import           System.IO.Error  (tryIOError)
 import           System.IO.Unsafe (unsafePerformIO)
 -- import qualified Network.WebSockets as WS (sendTextData)
--- import           Debug.Trace
+import           Debug.Trace
 
 -- |
 -- | Implementation of primitive functions
@@ -215,9 +215,53 @@ linrec lang = case stack lang of
 
 libopen :: Lang -> Lang
 libopen lang = case stack lang of
-  (Str  s:cs) -> rxFile s (lang { stack = cs })
+  (Str  s:cs) -> runQuotStr (rxFile s) (lang { stack = cs })
   _           -> lang { result = msg : result lang }
     where msg = "ERROR(libopen): string file name expected"
+
+runTests :: Lang -> Lang
+runTests lang = do
+  let lang' = loadLibForTests lang
+  trace ("FFF = " ++  show lang' ) lang'
+
+loadLibForTests :: Lang -> Lang
+loadLibForTests lang = case trace ("AAA = " ++ show (stack lang)) stack lang of
+  [Str s] ->  do
+    let source = rxFile (s ++ ".pless")
+        (qs, _):_ = parse nakedQuotations source
+        qs' =  keepDefines qs
+        qs'' = getDefinesFromLibLoad lang qs'
+        lang' = runQuotation qs'' lang { stack = [] }
+        lang'' =  lang' { result = result lang' ++ result lang }
+        trace ("GGG = " ++ show lang'') lang''
+  _            ->  trace ("DDD = " ++ show (stack lang)) lang { result = msg : result lang }
+    where msg = "ERROR(runTests): string file name expected"
+
+getDefinesFromLibLoad :: Lang -> [ValueP] -> [ValueP]
+getDefinesFromLibLoad _ [] = []
+getDefinesFromLibLoad lang (Str s : Symbol sym : vs) =
+  if trace ("BBB = " ++  s ++ ", " ++ sym ++ ", " ++ show (sym == "libload")) sym == "libload"
+    then do
+      let lang' = trace ("EEE = " ++  s ++ ", " ++ sym) loadLibForTests (lang { stack = [Str s] })
+      getDefinesFromLibLoad lang' vs
+    else vs
+getDefinesFromLibLoad lang vs = trace ("CCC = " ++ show (stack lang)) vs
+
+keepDefines ::[ValueP] -> [ValueP]
+keepDefines [] = []
+keepDefines (Str s : Quot q : Symbol sym : vs) =
+  if sym == "define"
+    then Str s : Quot q : Symbol sym : keepDefines vs
+    else keepDefines vs
+keepDefines (Quot q : Symbol sym : vs) =
+  if sym == "defines" || sym == "dictionary"
+    then Quot q : Symbol sym : keepDefines vs
+    else keepDefines vs
+keepDefines (Str s : Symbol sym : vs) =
+  if sym == "libload"
+    then Str s :  Symbol sym : keepDefines vs
+    else keepDefines vs
+keepDefines (_:vs) = keepDefines vs
 
 showP :: Lang -> Lang
 showP lang = case stack lang of
@@ -269,19 +313,31 @@ txMode lang@Lang{mode = m} = unsafePerformIO  $
       -- return lang { result = [] }
 
 -- | read source from file (UNSAFE)
-rxFile :: String -> Lang -> Lang
-rxFile file lang = unsafePerformIO $ do
+rxFile :: String -> String
+rxFile file = unsafePerformIO $ do
   strOrExc <- tryIOError $ readFile file
   case strOrExc of
     Left except -> do
       print except
-      return lang
-    Right source' -> do
-      let source = replaceStr  "\\n" "\n" (removeDocLines source')
-          lang' = runQuotStr source lang
-      -- mapM_ putStrLn (result lang')
-      return lang'
+      return ""
+    Right source -> do
+      let source' = replaceStr  "\\n" "\n" (removeDocLines source)
+      -- putStrLn source'
+      return source'
+--
+-- rxFile :: String -> Lang -> Lang
+-- rxFile file lang = unsafePerformIO $ do
+--   strOrExc <- tryIOError $ readFile file
+--   case strOrExc of
+--     Left except -> do
+--       print except
+--       return lang
+--     Right source' -> do
+--       let source = replaceStr  "\\n" "\n" (removeDocLines source')
+--           lang' = runQuotStr source lang
+--       -- mapM_ putStrLn (result lang')
+--       return lang'
 
 removeDocLines :: String -> String
 removeDocLines str = unlines xs
-      where xs = filter (\x -> (take 8 x) == "        ") $ lines str
+      where xs = filter (\x -> take 8 x == "        ") $ lines str

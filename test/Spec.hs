@@ -23,6 +23,52 @@ sKeep02 = "\"a\\\n\\\nz\" putchars "
 s1 :: String
 s1 = " \"aaa\" [10] define . aaa "
 
+testSource :: String
+testSource =
+  "        \"pl-test\" libload                                                        \
+  \                                                                                   \
+  \         { [zipped-list last] ['j' 9] assert }                                     \
+  \         \"zipped-list\" [ 'a' 'j' from-to-string 0 9 from-to-list zip ] define    \
+  \                                                                                   \
+  \         { [dt] 0.01 assert                                                        \
+  \           [springCoeff] 39.47 assert                                              \
+  \           [func] 0.3947 assert                                                    \
+  \         }                                                                         \
+  \         [ \"dampCoeff\"      [[8.88 12.0 11.11]]                                  \
+  \           \"dt\"             [0.01]                                               \
+  \           \"gravity\"        [-9.88]                                              \
+  \           \"mass\"           [1.00]                                               \
+  \           \"springCoeff\"    [39.47]                                              \
+  \           \"func\"           [springCoeff dt *]                                   \
+  \         ] defines                                                                 \
+  \                                                                                   \
+  \         { [test-defs pop3 pop2] [8.88 12.0 11.11] assert }                        \
+  \         \"test-defs\" [ dampCoeff dt gravity mass springCoeff func ] define       \
+  \                                                                                   \
+  \         { [maxValue minValue +] 0 assert }                                        \
+  \         [ \"maxValue\"  100                                                       \
+  \           \"minValue\" -100                                                       \
+  \         ] dictionary                                                              \
+  \                                                                                   \
+  \         10 \"abc_\" set-var tx                                                    \
+  \                                                                                   \
+  \         $ \"small\" [dup size [2 <] exec] define                                  \
+  \                                                                                   \
+  \         $ \"qsort\"                                                               \
+  \         $   [ [small]                                                             \
+  \         $     []                                                                  \
+  \         $     [uncons [>] split]                                                  \
+  \         $     [swapd cons concat]                                                 \
+  \         $     binrec                                                              \
+  \         $   ] define   $ slow "
+
+testSource2 :: String
+testSource2 = "\"scratch-pad\" runTests"
+
+getAst :: [ValueP]
+getAst = ast
+  where (ast, _) = head $ parse nakedQuotations testSource2
+
 ioTest :: Lang -> Lang
 ioTest lang = unsafeDupablePerformIO  $ do
   putStrLn "ioTest:"
@@ -32,9 +78,6 @@ ioTest lang = unsafeDupablePerformIO  $ do
 runQuot :: String -> Lang
 runQuot s = runQuotation qs (Lang coreDefinitions [] [] "" REPL)
   where (qs, _):_ = parse nakedQuotations s
-
-fName :: String
-fName = "/home/roy/dev/joy/eulerJoy/scratch-pad.pless"
 
 main :: IO ()
 main = do

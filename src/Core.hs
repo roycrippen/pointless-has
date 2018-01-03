@@ -57,6 +57,7 @@ primitives =
     , ("sin"      , Function sinP)
     , ("cos"      , Function cosP)
     , ("tan"      , Function tanP)
+    , ("runTests" , Function runTests)
     ]
 
 coreLibrary :: [(String, String)]
