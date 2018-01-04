@@ -7,13 +7,16 @@ import           Data.Text        (Text)
 import qualified Data.Text        as T (pack)
 import qualified Data.Text.Lazy   as TL (toStrict)
 import           Interpreter
+import           Parser           (parse)
+import           PointlessParser  (nakedQuotations, tests)
+import           System.IO.Error  (tryIOError)
 import           System.IO.Unsafe (unsafePerformIO)
 -- import qualified Network.WebSockets as WS (sendTextData)
 -- import           Debug.Trace
 
---
--- Implementation of primitive functions
---
+-- |
+-- | Implementation of primitive functions
+-- |
 pop :: Lang -> Lang
 pop lang = case stack lang of
     (_:cs) -> lang { stack = cs }
@@ -37,15 +40,15 @@ define lang = case stack lang of
     _ -> lang { result = msg : result lang }
         where msg = "ERROR(def): string followed by quotation expected"
 
-xP :: Lang -> Lang
-xP lang = case stack lang of
+eval :: Lang -> Lang
+eval lang = case stack lang of
     (Quot q:cs) -> rLang { stack = stack rLang ++ [Quot q] ++ cs }
         where rLang = runQuotation q (lang { stack = [] })
     _ -> lang { result = msg : result lang }
         where msg = "ERROR(x): quotation must be executable without a stack"
 
-iP :: Lang -> Lang
-iP lang = case stack lang of
+exec :: Lang -> Lang
+exec lang = case stack lang of
     (Quot q:cs) -> runQuotation q (lang { stack = cs })
     _           -> lang { result = "ERROR(i): quotation must be executable" : result lang }
 
@@ -69,44 +72,14 @@ concatP lang = case stack lang of
     (Str s:Str t:cs)   -> lang { stack = Str (t ++ s) : cs }
     _                  -> lang { result = "ERROR(concatP): two quotations expected" : result lang }
 
--- printVal :: Lang -> Lang
--- printVal lang@(Lang{ stack = c:cs}) = lang { stack = cs, result = result', display = "" }
---       where result' = result lang ++ lines (display lang ++ formatV c)
-
--- printVal lang@(Lang{ stack = []}) = lang { result = result', display = "" }
---       where result' = if display lang == ""
---                         then result lang
---                         else result lang ++ lines (display lang)
---
-printVal :: Lang -> Lang
-printVal lang@Lang{stack = c : cs} = do
-  let lang' = txMode (lang { stack = cs, result = result', display = "" })
-  lang'
+tx :: Lang -> Lang
+tx lang = case stack lang of
+  (c : cs) -> txMode (lang { stack = cs, result = result', display = "" })
     where result' = result lang ++ lines (display lang ++ formatV c)
-
-printVal lang@Lang{stack = []} = do
-  let lang' = txMode (lang { result = result', display = "" })
-  lang'
-      where result' = if display lang == ""
-                        then result lang
-                        else result lang ++ lines (display lang)
-
-
--- | immediate output stream
-txMode :: Lang -> Lang
-txMode lang@Lang{mode = m} = unsafePerformIO  $
-  case m of
-    REPL -> do
-      mapM_ putStrLn (result lang)
-      return lang { result = [] }
-    WEBSOCKET _ -> return lang
-      -- does not work for WS, kills conn
-      -- WEBSOCKET conn -> do
-      -- let resultsJSON = jsonResultsShow lang
-      -- mapM_ putStrLn (result lang)
-      -- WS.sendTextData conn (resultsJSON :: Text)
-      -- return lang { result = [] }
-
+  []       ->  txMode (lang { result = result', display = "" })
+    where result' = if display lang == ""
+                      then result lang
+                      else result lang ++ lines (display lang)
 
 put :: Lang -> Lang
 put lang = case stack lang of
@@ -148,6 +121,31 @@ plus lang = case stack lang of
     _ -> lang { result = msg : result lang }
         where msg = "ERROR(plus): two numbers or a char then an integer expected"
 
+sqrtP :: Lang -> Lang
+sqrtP lang = case stack lang of
+    (NumP y:cs) -> lang { stack = NumP (sqrt y) : cs }
+    _ -> lang { result = msg : result lang }
+        where msg = "ERROR(sqrt): a number expected"
+
+sinP :: Lang -> Lang
+sinP lang = case stack lang of
+    (NumP y:cs) -> lang { stack = NumP (sin y) : cs }
+    _ -> lang { result = msg : result lang }
+        where msg = "ERROR(sqrt): a number expected"
+
+
+cosP :: Lang -> Lang
+cosP lang = case stack lang of
+    (NumP y:cs) -> lang { stack = NumP (cos y) : cs }
+    _ -> lang { result = msg : result lang }
+        where msg = "ERROR(sqrt): a number expected"
+
+tanP :: Lang -> Lang
+tanP lang = case stack lang of
+    (NumP y:cs) -> lang { stack = NumP (tan y) : cs }
+    _ -> lang { result = msg : result lang }
+        where msg = "ERROR(sqrt): a number expected"
+
 minus :: Lang -> Lang
 minus lang = case stack lang of
     (NumP y:NumP c:cs) -> lang { stack = NumP (c - y) : cs }
@@ -182,11 +180,23 @@ unstack lang = case stack lang of
     (Quot ys:_) -> lang { stack = ys }
     _           -> lang { result = "ERROR(unstack): quotation expected" : result lang }
 
-list :: Lang -> Lang
-list lang = case stack lang of
+isList :: Lang -> Lang
+isList lang = case stack lang of
     (Quot _:cs) -> lang { stack = toTruth True : cs }
     (_     :cs) -> lang { stack = toTruth False : cs }
-    _           -> lang { result = "ERROR(list): stack empty" : result lang }
+    _           -> lang { result = "ERROR(list?): stack empty" : result lang }
+
+isString :: Lang -> Lang
+isString lang = case stack lang of
+    (Str _:cs)  -> lang { stack = toTruth True : cs }
+    (_     :cs) -> lang { stack = toTruth False : cs }
+    _           -> lang { result = "ERROR(string?): stack empty" : result lang }
+
+isNumber :: Lang -> Lang
+isNumber lang = case stack lang of
+    (NumP _:cs) -> lang { stack = toTruth True : cs }
+    (_     :cs) -> lang { stack = toTruth False : cs }
+    _           -> lang { result = "ERROR(number?): stack empty" : result lang }
 
 linrec :: Lang -> Lang
 linrec lang = case stack lang of
@@ -202,10 +212,27 @@ linrec lang = case stack lang of
     _ -> lang
         { result = "ERROR(linrec): argument on stack are incorrect" : result lang
         }
---
 
-libload :: Lang -> Lang
-libload lang = lang
+_libopen :: Lang -> Lang
+_libopen lang = case stack lang of
+  (Str  s:cs) -> runQuotStr (rxFile s) (lang { stack = cs })
+  _           -> lang { result = msg : result lang }
+    where msg = "ERROR(libopen): string file name expected"
+
+_runtests :: Lang -> Lang
+_runtests lang = case stack lang of
+  [Str s] -> do
+    let lang' = loadLibForTests lang
+        qs = testQuots $ rxFile s
+    runQuotation qs lang' { stack = [] }
+  _       ->  lang { result = msg : result lang }
+    where msg = "ERROR(runTests): string file name expected"
+
+showP :: Lang -> Lang
+showP lang = case stack lang of
+    (c:cs) -> lang { stack = s : cs }
+      where s = Str (formatV c)
+    _      -> lang { result = "ERROR(dup): stack empty" : result lang }
 
 truncMod :: (RealFrac a, RealFrac a1) => a1 -> a -> Double
 truncMod c y = fromInteger (truncate c `mod` truncate y) :: Double
@@ -226,4 +253,97 @@ jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
 encodeP :: String -> [String] -> Text
 encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
 
+-- | run a quotation string
+runQuotStr :: String -> Lang -> Lang
+runQuotStr s = runQuotation qs
+  where (qs, _):_ = parse nakedQuotations s
+
+-- | limited unsafe IO actions
+-- |
+-- | transmit output (UNSAFE)
+txMode :: Lang -> Lang
+txMode lang@Lang{mode = m} = unsafePerformIO  $
+  case m of
+    REPL -> do
+      mapM_ putStrLn (result lang)
+      return lang { result = [] }
+    WEBSOCKET _ -> return lang
+      -- does not work for WS, kills conn
+      -- WEBSOCKET conn -> do
+      -- let resultsJSON = jsonResultsShow lang
+      -- mapM_ putStrLn (result lang)
+      -- WS.sendTextData conn (resultsJSON :: Text)
+      -- return lang { result = [] }
+
+-- | read source from file (UNSAFE)
+rxFile :: String -> String
+rxFile file = unsafePerformIO $ do
+  strOrExc <- tryIOError $ readFile file
+  case strOrExc of
+    Left except -> do
+      print except
+      return ""
+    Right source -> do
+      let source' = replaceStr  "\\n" "\n" (removeDocLines source)
+      return source'
+
+-- | strip away col 1 to 8 comment lines
+removeDocLines :: String -> String
+removeDocLines str = unlines xs
+      where xs = filter (\x -> take 8 x == "        ") $ lines str
+
+-- | helper functions to get inline tests from inside {}
+loadLibForTests :: Lang -> Lang
+loadLibForTests lang = case stack lang of
+  [Str s] ->  do
+    let qs = inlineSource $ getQuotsFromFile s
+        qs' =  keepDefines qs
+        lang' = runQuotation qs' lang { stack = [] }
+        lang'' =  lang' { result = result lang' ++ result lang }
+    lang''
+  _       ->  lang { result = msg : result lang }
+    where msg = "ERROR(runTests): string file name expected"
+
+-- | load and parse source string from a file
+getQuotsFromFile :: String -> [ValueP]
+getQuotsFromFile s =  qs
+  where (qs, _):_ = parse nakedQuotations $ rxFile s
+
+-- add argument to prevent circular references
+-- this will crash if a libloads b and b libloads a
+-- | replace libload commends with actual source from a file
+inlineSource :: [ValueP] -> [ValueP]
+inlineSource [] = []
+inlineSource (Str s : Symbol sym : vs) = case sym of
+  "libload" -> inlineSource (getQuotsFromFile (s ++ ".pless")) ++ inlineSource vs
+  "libopen" -> inlineSource (getQuotsFromFile s) ++ inlineSource vs
+  _         -> Str s : Symbol sym : inlineSource vs
+inlineSource (s : vs) = s : inlineSource vs
+
+-- | throw away all commands that are not a kind of define, libload or libopen
+keepDefines ::[ValueP] -> [ValueP]
+keepDefines [] = []
+keepDefines (Str s : Quot q : Symbol sym : vs) =
+  if sym == "define"
+    then Str s : Quot q : Symbol sym : keepDefines vs
+    else keepDefines vs
+keepDefines (Quot q : Symbol sym : vs) =
+  if sym == "defines" || sym == "dictionary"
+    then Quot q : Symbol sym : keepDefines vs
+    else keepDefines vs
+keepDefines (Str s : Symbol sym : vs) =
+  if sym == "libload" || sym == "libopen"
+    then Str s :  Symbol sym : keepDefines vs
+    else keepDefines vs
+keepDefines (_:vs) = keepDefines vs
+
+-- | parse a source string returning just the test code inside of {}
+testQuots :: String -> [ValueP]
+testQuots s = do
+  (ts, _) <- parse tests s
+  if not (null ts)
+    then do
+      let (qs, _):_ = parse nakedQuotations $ unlines ts
+      qs
+    else []
 

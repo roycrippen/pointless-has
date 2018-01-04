@@ -19,5 +19,4 @@ main = do
         print args
         putStrLn "invalid arg(s), use \"web\" for wesocket server or no arg for repl"
         exitSuccess
-    _ -> do
-        startRepl
+    _ -> startRepl
