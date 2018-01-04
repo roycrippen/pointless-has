@@ -12,7 +12,7 @@ import           PointlessParser  (nakedQuotations, tests)
 import           System.IO.Error  (tryIOError)
 import           System.IO.Unsafe (unsafePerformIO)
 -- import qualified Network.WebSockets as WS (sendTextData)
-import           Debug.Trace
+-- import           Debug.Trace
 
 -- |
 -- | Implementation of primitive functions
@@ -257,7 +257,6 @@ encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
 runQuotStr :: String -> Lang -> Lang
 runQuotStr s = runQuotation qs
   where (qs, _):_ = parse nakedQuotations s
-
 
 -- | limited unsafe IO actions
 -- |
