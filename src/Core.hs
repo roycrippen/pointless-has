@@ -198,7 +198,7 @@ coreLibrary =
   , ("sindeg"        , "radians sin")
   , ("cosdeg"        , "radians cos")
   , ("tandeg"        , "radians tan")
-  , ("assert"        , "swap eval rolldown [=] [pop2 \"TEST OK = \" putchars show put tx] [\"TEST FAILED (expected value = \" putchars show put \", actual value = \" putchars show put \")\n\" putchars     \"Failed expression = \" putchars show put tx ] ifte")
+  , ("assert"        , "\"_testSB\" set-var \"_testCase\" set-var _testCase eval \"_testResult\" set-var newstack [ _testSB _testResult = ] [ \"TEST OK = \" putchars _testCase put tx ] [ \"TEST FAILED (expected value = \" putchars _testSB put \", actual value = \" putchars _testResult put \")\n\" putchars \"Failed expression = \" putchars _testCase put tx ] ifte")
   , (""  , "")
   , (""  , "")
   , (""  , "")
