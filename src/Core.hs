@@ -1,12 +1,12 @@
 module Core ( coreDefinitions ) where
 
 import qualified Data.Map        as M (Map, fromList)
-import           Interpreter     (WordP (..))
+import           Interpreter     (WordP (..), Vocabulary)
 import           Parser          (parse)
 import           PointlessParser (nakedQuotations)
 import           Primitives
 
-coreDefinitions :: M.Map String WordP
+coreDefinitions :: Vocabulary
 coreDefinitions = M.fromList $ getQuotations coreLibrary ++ primitives
 
 getQuotation :: (String, String) -> (String, WordP)
@@ -94,12 +94,14 @@ coreLibrary =
   , ("cleave"  , "[dup] dip2 swap dip2 exec")
   , ("branch"  , "[] rollup ifte")
   , ("in", "swap [=] cons filter size [1 >=] [true] [false] ifte swap pop")
-  , ("times"   , "[pop] [[pred] dip dup dip2 times] [pop2] ifte")
-  , ("repeat"  , "[swons] cons [] rollup times")
-  , ("step"    , "[null2] [pop2] [[uncons] dip dup dip2] tailrec")
-  , ("size"    , "0 swap [pop succ] step")
+  , ( "times"
+    , "\"_qTimes\" set-var \"_nTimes\" set-var [_nTimes not] [] [_quot exec _counter pred \"_nTimes\" set-var] tailrec"
+    )
+  , ("repeat", "[swons] cons [] rollup times")
+  , ("step"  , "[null2] [pop2] [[uncons] dip dup dip2] tailrec")
+  , ("size"  , "0 swap [pop succ] step")
   , ("map", "swap [[]] [\"\"] iflist swap rolldown [swons] concat step reverse")
-  , ("fold"    , "swapd step")
+  , ("fold"  , "swapd step")
   , ( "filter"
     , "swap [[]] [\"\"] iflist swap rolldown [[swons] [pop] ifte] cons step reverse"
     )
@@ -267,6 +269,16 @@ coreLibrary =
   -- , ("unary2"           , "[unary] cons dup dip dip")
   -- , ("negate"  , "[[false] [true] ifte] cons")
   -- , ("tailrec"       , "dup3 [tailrec] cons cons cons concat ifte")
+  -- , ("times"   , "[pop] [[pred] dip dup dip2 times] [pop2] ifte")
+
+
+
+
+
+
+
+
+
 
 
 
