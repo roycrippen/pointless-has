@@ -262,6 +262,20 @@ encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
 runQuotStr :: String -> Lang -> Lang
 runQuotStr s = runQuotation qs where (qs, _):_ = parse nakedQuotations s
 
+primitiveAST :: Vocabulary -> [ValueP] -> [ValueP]
+primitiveAST vocab []           = []
+primitiveAST vocab (Str  s :vs) = Str s : primitiveAST vocab vs
+primitiveAST vocab (NumP n :vs) = NumP n : primitiveAST vocab vs
+primitiveAST vocab (Chr  c :vs) = Chr c : primitiveAST vocab vs
+primitiveAST vocab (Quot qs:vs) = case qs of
+  [] -> Quot qs : primitiveAST vocab vs
+  _  -> Quot (primitiveAST vocab qs) : primitiveAST vocab vs
+primitiveAST vocab (Symbol sym:vs) = case getWord sym vocab of
+  Nothing   -> Symbol sym : primitiveAST vocab vs
+  Just word -> case word of
+    Function  f  -> Symbol sym : primitiveAST vocab vs
+    Quotation qs -> primitiveAST vocab qs ++ primitiveAST vocab vs
+    
 -- | limited unsafe IO actions
 -- |
 -- | transmit output (UNSAFE)
@@ -347,6 +361,15 @@ testQuots s = do
       let (qs, _):_ = parse nakedQuotations $ unlines ts
       qs
     else []
+
+
+
+
+
+
+
+
+
 
 
 

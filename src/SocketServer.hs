@@ -18,9 +18,9 @@ import qualified Data.Text.IO       as T (putStrLn)
 import           Interpreter        (Lang (..), Mode (..), Vocabulary, formatWordP, runQuotation)
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest, forkPingThread,
                                            receiveData, sendTextData)
-import           Parser             (parse)
-import           PointlessParser    (nakedQuotations)
-import           Primitives         (jsonResultsShow)
+-- import           Parser             (parse)
+-- import           PointlessParser    (nakedQuotations)
+import           Primitives         (jsonResultsShow, runQuotStr)
 
 application :: WS.ServerApp
 application pending = do
@@ -55,11 +55,9 @@ talk lang conn = forever $ do
         -- process request
         let source       = fromJust $ T.stripPrefix "load:" msg
             source' = T.unpack $ T.replace (T.pack "\\n") (T.pack "\n") source
-            (qs, _):_    = parse nakedQuotations source'
-            lang'        = runQuotation qs (lang { vocab = coreDefinitions })
+            lang'        = runQuotStr source' (lang { vocab = coreDefinitions })
             resultsJSON' = jsonResultsShow lang'
 
-        -- T.putStrLn results
         WS.sendTextData conn (resultsJSON' :: Text)
 
         -- always send updated vocabulary
@@ -72,12 +70,9 @@ talk lang conn = forever $ do
         T.putStrLn msg
         let source      = fromJust $ T.stripPrefix "run:" msg
             source' = T.unpack $ T.replace (T.pack "\\n") (T.pack "\n") source
-            (qs, _):_   = parse nakedQuotations source'
-            -- T.putStrLn $ T.unlines $ Prelude.map (T.pack . formatV) qs
-            lang'       = runQuotation qs lang
+            lang'       = runQuotStr source' lang
             resultsJSON = jsonResultsShow lang'
 
-        -- T.putStrLn results
         WS.sendTextData conn (resultsJSON :: Text)
 
         -- always send updated vocabulary
@@ -88,22 +83,6 @@ talk lang conn = forever $ do
         talk            (Lang (vocab lang') [] [] "" (WEBSOCKET conn)) conn
       | otherwise -> WS.sendTextData conn ("unknown topic" :: Text)
 
-
--- -- | Serializes a Lang to JSON.
--- jsonResultsShow :: Lang -> Text
--- jsonResultsShow lang = T.pack "{\n" `mappend` text `mappend` T.pack "\n}"
---   where
---     stackT   = encodeP "\"stack\":" (formatStack $ stack lang)
---     resultT  = encodeP "\"result\":" (result lang)
---     displayT = encodeP "\"display\":" [display lang]
---     newline  = T.pack ",\n"
---     text     = stackT `mappend` newline
---                       `mappend` resultT
---                       `mappend` newline
---                       `mappend` displayT
-
--- encodeP :: String -> [String] -> Text
--- encodeP s xs = T.pack s `mappend` TL.toStrict (encodeToLazyText xs)
 
 jsonVocabElementShow :: Vocabulary -> String
 jsonVocabElementShow vcab = jsonArrayElementShow "vocab" vocab'
@@ -120,6 +99,11 @@ jsonArrayElementShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
 
 jsonWrapElement :: String -> String
 jsonWrapElement s = "{\n" ++ s ++ "\n}"
+
+
+
+
+
 
 
 

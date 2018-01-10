@@ -21,7 +21,26 @@ sKeep02 :: String
 sKeep02 = "\"a\\\n\\\nz\" putchars "
 
 s1 :: String
-s1 = " \"aaa\" [10] define . aaa "
+s1 = " 10 \"aaa\" set-var 3 dup "
+
+s1' :: String
+s1' = "10 \"aaa\" [ ] cons dip [ ] cons define 3 dup"
+
+s2  = " 25 fib "
+
+s1AstFull :: [ValueP]
+s1AstFull =
+  [ NumP 10.0
+  , Str "aaa"
+  , Quot []
+  , Symbol "cons"
+  , Symbol "dip"
+  , Quot []
+  , Symbol "cons"
+  , Symbol "define"
+  , NumP 3.0
+  , Symbol "dup"
+  ]
 
 testSource :: String
 testSource
@@ -65,8 +84,8 @@ testSource
 testSource2 :: String
 testSource2 = "\"scratch-pad\" runTests"
 
-getAst :: [ValueP]
-getAst = ast where (ast, _) = head $ parse nakedQuotations testSource2
+getAst :: String -> [ValueP]
+getAst s = ast where (ast, _) = head $ parse nakedQuotations s
 
 ioTest :: Lang -> Lang
 ioTest lang = unsafeDupablePerformIO $ do
@@ -81,24 +100,21 @@ runQuot s = runQuotation qs (Lang coreDefinitions [] [] "" REPL)
 main :: IO ()
 main = do
 
-  let (qs, _):_ = parse nakedQuotations s1
-      xs        = map formatV qs
+  let xs  = getAst s2
+      xs' = primitiveAST coreDefinitions xs
+
   print xs
-  print qs
+  print xs'
+  print s1AstFull
+  putStrLn $ "xs' == s1AstFull: " ++ show (xs' == s1AstFull)
+  putStrLn ""
 
-  let res = runQuot s1
 
-  putStrLn "\nafter result: = "
-  print (result res)
 
-  putStrLn "\njson results : "
-  T.putStr $ jsonResultsShow res
-  putStrLn "\n"
-
-  let lang  = Lang coreDefinitions [] ["10", "20"] "" REPL
-      lang' = ioTest lang
-  print "done"
-  print $ result lang'
+  -- let lang  = Lang coreDefinitions [] ["10", "20"] "" REPL
+  --     lang' = ioTest lang
+  -- print "done"
+  -- print $ result lang'
 
   defaultMain unitTests
 
@@ -203,6 +219,36 @@ escapeNewLine1 = testCase "escapeNewLine parser test"
  where
   val = lines (display res)
   res = runQuot sKeep02
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
