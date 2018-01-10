@@ -5,5 +5,26 @@
         "data": true
     },
     "editor.tabSize": 2,
-    "editor.formatOnSave": true
-}
+    "editor.formatOnSave": true,
+    "cSpell.enabledLanguageIds": [
+      "c",
+      "cpp",
+      "csharp",
+      "go",
+      "handlebars",
+      "haskell",
+      "javascript",
+      "javascriptreact",
+      "json",
+      "latex",
+      "markdown",
+      "php",
+      "plaintext",
+      "python",
+      "restructuredtext",
+      "text",
+      "typescript",
+      "typescriptreact",
+      "yml"
+    ]
+  }
