@@ -24,8 +24,8 @@ s1 :: String
 s1 = " \"aaa\" [10] define . aaa "
 
 testSource :: String
-testSource =
-  "        \"pl-test\" libload                                                        \
+testSource
+  = "        \"pl-test\" libload                                                        \
   \                                                                                   \
   \         { [zipped-list last] ['j' 9] assert }                                     \
   \         \"zipped-list\" [ 'a' 'j' from-to-string 0 9 from-to-list zip ] define    \
@@ -66,11 +66,10 @@ testSource2 :: String
 testSource2 = "\"scratch-pad\" runTests"
 
 getAst :: [ValueP]
-getAst = ast
-  where (ast, _) = head $ parse nakedQuotations testSource2
+getAst = ast where (ast, _) = head $ parse nakedQuotations testSource2
 
 ioTest :: Lang -> Lang
-ioTest lang = unsafeDupablePerformIO  $ do
+ioTest lang = unsafeDupablePerformIO $ do
   putStrLn "ioTest:"
   mapM_ putStrLn (result lang)
   return lang { result = [] }
@@ -83,7 +82,7 @@ main :: IO ()
 main = do
 
   let (qs, _):_ = parse nakedQuotations s1
-      xs = map formatV qs
+      xs        = map formatV qs
   print xs
   print qs
 
@@ -200,10 +199,11 @@ formatStack1 = testCase "formatStack after running"
 
 escapeNewLine1 :: TestTree
 escapeNewLine1 = testCase "escapeNewLine parser test"
-  $ assertEqual [] ["a","","z"] val
-  where
-    val = lines (display res)
-    res = runQuot sKeep02
+  $ assertEqual [] ["a", "", "z"] val
+ where
+  val = lines (display res)
+  res = runQuot sKeep02
+
 
 
 

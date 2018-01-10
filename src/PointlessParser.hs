@@ -7,57 +7,53 @@ import           Parser      (Parser, anyChar, char, firstLetter, many, manyTill
 
 numberP :: Parser ValueP
 numberP = do
-    d <- numberDouble
-    return (NumP d)
+  d <- numberDouble
+  return (NumP d)
 
 charP :: Parser ValueP
 charP = do
-    _ <- char '\''
-    c <- newline <|> firstLetter
-    _ <- char '\''
-    return (Chr c)
+  _ <- char '\''
+  c <- newline <|> firstLetter
+  _ <- char '\''
+  return (Chr c)
 
 quotedStringP :: Parser ValueP
 quotedStringP = do
-    str <- quotedString
-    return (Str str)
+  str <- quotedString
+  return (Str str)
 
 word :: Parser ValueP
 word = do
-    c  <- firstLetter
-    cs <- many wordLetter
-    return (Symbol (c : cs))
+  c  <- firstLetter
+  cs <- many wordLetter
+  return (Symbol (c : cs))
 
 instruction :: Parser ValueP
 instruction = do
-    _   <- spacesCommentsSpecifications
-    res <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
-    _   <- spacesCommentsSpecifications
-    return res
+  _   <- spacesCommentsSpecifications
+  res <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
+  _   <- spacesCommentsSpecifications
+  return res
 
 nakedQuotations :: Parser [ValueP]
 nakedQuotations = many instruction
 
 quotation :: Parser ValueP
 quotation = do
-    _ <- char '['
-    _ <- spaces
-    q <- nakedQuotations
-    -- traceM $ "\nq: " ++ show q
-    _ <- spaces
-    _ <- char ']'
-    return (Quot q)
+  _ <- char '['
+  _ <- spaces
+  q <- nakedQuotations
+  -- traceM $ "\nq: " ++ show q
+  _ <- spaces
+  _ <- char ']'
+  return (Quot q)
 
 lineComment :: Parser ()
 lineComment = string "$" >> manyTill anyChar newline >> spaces >> return ()
 
 blockComment :: Parser ()
 blockComment =
-            char '{'
-            >> manyTill anyChar (char '}')
-            >> char '}'
-            >> spaces
-            >> return ()
+  char '{' >> manyTill anyChar (char '}') >> char '}' >> spaces >> return ()
 
 comment :: Parser ()
 comment = lineComment <|> blockComment
@@ -67,17 +63,14 @@ comments = many comment
 
 specification :: Parser ()
 specification =
-            char '('
-            >> manyTill anyChar (char ')')
-            >> char ')'
-            >> spaces
-            >> return ()
+  char '(' >> manyTill anyChar (char ')') >> char ')' >> spaces >> return ()
 
 specifications :: Parser [()]
 specifications = many specification
 
 spacesCommentsSpecifications :: Parser ()
-spacesCommentsSpecifications = spaces >> comments >> specifications >> return ()
+spacesCommentsSpecifications =
+  spaces >> comments >> specifications >> return ()
 
 
 -- parsers to get inline test from inside {}
@@ -85,7 +78,8 @@ lineComments :: Parser [()]
 lineComments = many lineComment
 
 spacesLineCommentsSpecifications :: Parser ()
-spacesLineCommentsSpecifications = spaces >> lineComments >> specifications >> return ()
+spacesLineCommentsSpecifications =
+  spaces >> lineComments >> specifications >> return ()
 
 nonTest :: Parser ()
 nonTest = do
@@ -114,4 +108,5 @@ test = do
 
 tests :: Parser [String]
 tests = many test
+
 

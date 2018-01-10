@@ -22,17 +22,16 @@ runPointless lang = forever $ do
   quoteStr' <- getLine
   let quoteStr = replaceStr "\\n" "\n" quoteStr'
   runCommand quoteStr
-    where
-      runCommand :: String -> IO ()
-      runCommand s =
-        case take 2 s of
-        ":q" -> exitSuccess
-        ":h" -> showHelp >> runPointless lang
-        ""   -> runPointless lang
-        _    -> do
-          let lang' = runQuotStr s lang
-          mapM_ putStrLn (result lang')
-          runPointless lang' { result = [] }
+ where
+  runCommand :: String -> IO ()
+  runCommand s = case take 2 s of
+    ":q" -> exitSuccess
+    ":h" -> showHelp >> runPointless lang
+    ""   -> runPointless lang
+    _    -> do
+      let lang' = runQuotStr s lang
+      mapM_ putStrLn (result lang')
+      runPointless lang' { result = [] }
 
 showHelp :: IO ()
 showHelp = do
@@ -42,4 +41,5 @@ showHelp = do
   putStrLn "<filename> libload  -> load external Pointless source file"
   putStrLn "<expression>        -> for example enter: 1 2 + ."
   putStrLn "Pointless> "
+
 
