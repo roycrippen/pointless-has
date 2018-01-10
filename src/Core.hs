@@ -94,14 +94,12 @@ coreLibrary =
   , ("cleave"  , "[dup] dip2 swap dip2 exec")
   , ("branch"  , "[] rollup ifte")
   , ("in", "swap [=] cons filter size [1 >=] [true] [false] ifte swap pop")
-  , ( "times"
-    , "\"_qTimes\" set-var \"_nTimes\" set-var [_nTimes not] [] [_quot exec _counter pred \"_nTimes\" set-var] tailrec"
-    )
-  , ("repeat", "[swons] cons [] rollup times")
-  , ("step"  , "[null2] [pop2] [[uncons] dip dup dip2] tailrec")
-  , ("size"  , "0 swap [pop succ] step")
+  , ("times"   , "[ pop not ] [ pop2 ] [ [ pred ] dip dup dip2 ] tailrec")
+  , ("repeat"  , "[swons] cons [] rollup times")
+  , ("step"    , "[null2] [pop2] [[uncons] dip dup dip2] tailrec")
+  , ("size"    , "0 swap [pop succ] step")
   , ("map", "swap [[]] [\"\"] iflist swap rolldown [swons] concat step reverse")
-  , ("fold"  , "swapd step")
+  , ("fold"    , "swapd step")
   , ( "filter"
     , "swap [[]] [\"\"] iflist swap rolldown [[swons] [pop] ifte] cons step reverse"
     )
@@ -270,6 +268,14 @@ coreLibrary =
   -- , ("negate"  , "[[false] [true] ifte] cons")
   -- , ("tailrec"       , "dup3 [tailrec] cons cons cons concat ifte")
   -- , ("times"   , "[pop] [[pred] dip dup dip2 times] [pop2] ifte")
+
+
+
+
+
+
+
+
 
 
 
