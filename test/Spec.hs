@@ -26,7 +26,7 @@ s1 = " 10 \"aaa\" set-var 3 dup "
 s1' :: String
 s1' = "10 \"aaa\" [ ] cons dip [ ] cons define 3 dup"
 
-s2  = " \"current-path\" [ \"/home/crippenre/dev/joy/eulerJoy/euler/\" ] define  \"euler_p001_020\" libload "
+s2  = " [1 2 3] size "
 
 s1AstFull :: [ValueP]
 s1AstFull =

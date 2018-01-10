@@ -209,9 +209,9 @@ coreLibrary =
   , ( "s-to-list"
     , "dup size [uncons] times pop stack dup size 1 - [rolldown pop] times swap pop reverse"
     )
-  , ("unlist", "dup size \"_size\" set-var _size [ uncons ] times pop _size")
+  , ("unlist", "dup size dup \"_sizeUnlist\" set-var [ uncons ] times pop _sizeUnlist")
   , ( "_flatten"
-    , "dup size \"_xsSize\" set-var [ [ unlist ] [ 1 ] iflist ] step [ ] _xsSize [ swap [ cons ] times ] times"
+    , "dup size \"_sizeFlatten\" set-var [ [ unlist ] [ 1 ] iflist ] step [ ] _sizeFlatten [ swap [ cons ] times ] times"
     )
   , ("flatten"    , "[ [ list? ] filter size 0 = ] [ ] [ _flatten ] tailrec")
   , ("cartproduct", "[[]] dip2 [pairlist swap [swons] dip] pairstep ")
