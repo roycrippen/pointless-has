@@ -235,7 +235,7 @@ _runtests lang = case stack lang of
         qs    = testQuots $ rxFile s
     runQuotation qs lang' { stack = [] }
   _ -> lang { result = msg : result lang }
-    where msg = "ERROR(runTests): string file name expected"
+    where msg = "ERROR(_runtests): string file name expected"
 
 showP :: Lang -> Lang
 showP lang = case stack lang of

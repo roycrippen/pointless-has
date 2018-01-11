@@ -26,7 +26,7 @@ s1 = " 10 \"aaa\" set-var 3 dup "
 s1' :: String
 s1' = "10 \"aaa\" [ ] cons dip [ ] cons define 3 dup"
 
-s2  = " [1 2 3] size "
+s2 = " [1 2 3] size "
 
 s1AstFull :: [ValueP]
 s1AstFull =
@@ -82,7 +82,7 @@ testSource
   \         $   ] define   $ slow "
 
 testSource2 :: String
-testSource2 = "\"scratch-pad\" runTests"
+testSource2 = "\"scratch-pad\" run-tests"
 
 getAst :: String -> [ValueP]
 getAst s = ast where (ast, _) = head $ parse nakedQuotations s
@@ -219,6 +219,7 @@ escapeNewLine1 = testCase "escapeNewLine parser test"
  where
   val = lines (display res)
   res = runQuot sKeep02
+
 
 
 
