@@ -71,9 +71,14 @@ uncons lang = case stack lang of
 concatP :: Lang -> Lang
 concatP lang = case stack lang of
   (Quot s:Quot t:cs) -> lang { stack = Quot (t ++ s) : cs }
-  (Str  s:Str  t:cs) -> lang { stack = Str (t ++ s) : cs }
-  _ ->
-    lang { result = "ERROR(concatP): two quotations expected" : result lang }
+  (Str s:Str t:cs) -> lang { stack = Str (t ++ s) : cs }
+  _ -> lang { result = "ERROR(concat): two quotations expected" : result lang }
+
+size :: Lang -> Lang
+size lang = case stack lang of
+  (Quot a:cs) -> lang { stack = NumP (fromIntegral $ length a) : cs }
+  (Str s:cs) -> lang { stack = NumP (fromIntegral $ length s) : cs }
+  _ -> lang { result = "ERROR(concat): two quotations expected" : result lang }
 
 tx :: Lang -> Lang
 tx lang = case stack lang of
@@ -105,10 +110,10 @@ putch lang = case stack lang of
 
 ifThenElse :: Lang -> Lang
 ifThenElse lang = case stack lang of
-  (Quot qelse:Quot qthen:Quot qif:cs) -> if isTrue res
-    then runQuotation qthen (lang { stack = cs })
-    else runQuotation qelse (lang { stack = cs })
-    where (res:_) = stack $ runQuotation qif (lang { stack = cs })
+  (Quot f:Quot t:Quot b:cs) -> if isTrue res
+    then runQuotation t (lang { stack = cs })
+    else runQuotation f (lang { stack = cs })
+    where (res:_) = stack $ runQuotation b (lang { stack = cs })
   _ -> lang { result = "ERROR(ifte): three quotations expected" : result lang }
 
 arithMulDiv :: (Double -> Double -> Double) -> Lang -> Lang
@@ -135,20 +140,20 @@ sinP :: Lang -> Lang
 sinP lang = case stack lang of
   (NumP y:cs) -> lang { stack = NumP (sin y) : cs }
   _           -> lang { result = msg : result lang }
-    where msg = "ERROR(sqrt): a number expected"
+    where msg = "ERROR(sin): a number expected"
 
 
 cosP :: Lang -> Lang
 cosP lang = case stack lang of
   (NumP y:cs) -> lang { stack = NumP (cos y) : cs }
   _           -> lang { result = msg : result lang }
-    where msg = "ERROR(sqrt): a number expected"
+    where msg = "ERROR(cos): a number expected"
 
 tanP :: Lang -> Lang
 tanP lang = case stack lang of
   (NumP y:cs) -> lang { stack = NumP (tan y) : cs }
   _           -> lang { result = msg : result lang }
-    where msg = "ERROR(sqrt): a number expected"
+    where msg = "ERROR(tan): a number expected"
 
 minus :: Lang -> Lang
 minus lang = case stack lang of
@@ -235,7 +240,7 @@ _runtests lang = case stack lang of
 showP :: Lang -> Lang
 showP lang = case stack lang of
   (c:cs) -> lang { stack = s : cs } where s = Str (formatV c)
-  _      -> lang { result = "ERROR(dup): stack empty" : result lang }
+  _      -> lang { result = "ERROR(show): stack empty" : result lang }
 
 truncMod :: (RealFrac a, RealFrac a1) => a1 -> a -> Double
 truncMod c y = fromInteger (truncate c `mod` truncate y) :: Double
@@ -275,7 +280,7 @@ primitiveAST vocab (Symbol sym:vs) = case getWord sym vocab of
   Just word -> case word of
     Function  f  -> Symbol sym : primitiveAST vocab vs
     Quotation qs -> primitiveAST vocab qs ++ primitiveAST vocab vs
-    
+
 -- | limited unsafe IO actions
 -- |
 -- | transmit output (UNSAFE)
@@ -361,6 +366,11 @@ testQuots s = do
       let (qs, _):_ = parse nakedQuotations $ unlines ts
       qs
     else []
+
+
+
+
+
 
 
 

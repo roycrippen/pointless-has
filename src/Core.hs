@@ -24,6 +24,7 @@ primitives =
   , ("cons"     , Function cons)
   , ("uncons"   , Function uncons)
   , ("concat"   , Function concatP)
+  , ("size"     , Function size)
   , ("+"        , Function plus)
   , ("-"        , Function minus)
   , ("*"        , Function $ arithMulDiv (*))
@@ -97,7 +98,7 @@ coreLibrary =
   , ("times"   , "[ pop not ] [ pop2 ] [ [ pred ] dip dup dip2 ] tailrec")
   , ("repeat"  , "[swons] cons [] rollup times")
   , ("step"    , "[null2] [pop2] [[uncons] dip dup dip2] tailrec")
-  , ("size"    , "0 swap [pop succ] step")
+  -- , ("size"    , "0 swap [pop succ] step")
   , ("map", "swap [[]] [\"\"] iflist swap rolldown [swons] concat step reverse")
   , ("fold"    , "swapd step")
   , ( "filter"
