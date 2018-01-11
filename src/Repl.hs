@@ -1,14 +1,12 @@
 module Repl where
 
-import           Control.Monad   (forever)
-import           Core            (coreDefinitions)
-import qualified Data.Map        as M (fromList)
-import           Interpreter     (Lang (..), Mode (..), replaceStr, runQuotation)
-import           Primitives      (runQuotStr, primitiveAST)
-import           System.Exit     (exitSuccess)
-import           System.IO       (hFlush, stdout)
-import           Parser          (parse)
-import           PointlessParser (nakedQuotations)
+import           Control.Monad (forever)
+import qualified Data.Map      as M (fromList)
+import           Interpreter   (Lang (..), Mode (..), replaceStr, runQuotation)
+import           Parser        (nakedQuotations, parse)
+import           Primitives    (coreDefinitions, primitiveAST, runQuotStr)
+import           System.Exit   (exitSuccess)
+import           System.IO     (hFlush, stdout)
 
 startRepl :: IO ()
 startRepl = do
@@ -34,7 +32,7 @@ runPointless lang = forever $ do
       let (qs, _):_ = parse nakedQuotations s
           lang'     = runQuotation qs lang
       mapM_ putStrLn (result lang')
-      -- this will infinite loop if pointless function recursively calls its self 
+      -- this will infinite loop if pointless function recursively calls its self
       -- mapM_ print $ primitiveAST (vocab lang') qs
       runPointless lang' { result = [] }
 
@@ -46,6 +44,8 @@ showHelp = do
   putStrLn "<filename> libload  -> load external Pointless source file"
   putStrLn "<expression>        -> for example enter: 1 2 + ."
   putStrLn "Pointless> "
+
+
 
 
 

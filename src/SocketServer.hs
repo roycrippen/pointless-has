@@ -6,21 +6,16 @@ module SocketServer
 ) where
 
 import           Control.Monad      (forever)
-import           Core               (coreDefinitions)
--- import           Data.Aeson.Text    (encodeToLazyText)
 import           Data.Map           as M (toList)
 import           Data.Maybe         (fromJust)
 import           Data.Monoid        (mappend)
 import           Data.Text          (Text)
 import qualified Data.Text          as T (isPrefixOf, pack, replace, stripPrefix, unpack)
 import qualified Data.Text.IO       as T (putStrLn)
--- import qualified Data.Text.Lazy     as TL (toStrict)
 import           Interpreter        (Lang (..), Mode (..), Vocabulary, formatWordP, runQuotation)
 import qualified Network.WebSockets as WS (Connection, ServerApp, acceptRequest, forkPingThread,
                                            receiveData, sendTextData)
--- import           Parser             (parse)
--- import           PointlessParser    (nakedQuotations)
-import           Primitives         (jsonResultsShow, runQuotStr)
+import           Primitives         (coreDefinitions, jsonResultsShow, runQuotStr)
 
 application :: WS.ServerApp
 application pending = do
@@ -35,7 +30,7 @@ application pending = do
         T.putStrLn "editor connected"
 
         -- listen for commands forever
-        talk (Lang coreDefinitions [] [] "" (WEBSOCKET conn)) conn
+        talk (Lang coreDefinitions [] [] "" WEBSOCKET) conn
       | otherwise -> do
         let
           err =
@@ -65,7 +60,7 @@ talk lang conn = forever $ do
         WS.sendTextData conn (T.pack $ jsonVocabShow (vocab lang') :: Text)
 
         -- re-start talk with new vocabulary
-        talk            (Lang (vocab lang') [] [] "" (WEBSOCKET conn)) conn
+        talk            (Lang (vocab lang') [] [] "" WEBSOCKET) conn
       | T.isPrefixOf "run:" msg -> do
         T.putStrLn msg
         let source      = fromJust $ T.stripPrefix "run:" msg
@@ -80,7 +75,7 @@ talk lang conn = forever $ do
         WS.sendTextData conn (T.pack $ jsonVocabShow (vocab lang') :: Text)
 
         -- re-start talk with new vocabulary
-        talk            (Lang (vocab lang') [] [] "" (WEBSOCKET conn)) conn
+        talk            (Lang (vocab lang') [] [] "" WEBSOCKET) conn
       | otherwise -> WS.sendTextData conn ("unknown topic" :: Text)
 
 
@@ -99,6 +94,10 @@ jsonArrayElementShow name xs = "\"" ++ name ++ "\":[ " ++ bodyTrimmed ++ " ]"
 
 jsonWrapElement :: String -> String
 jsonWrapElement s = "{\n" ++ s ++ "\n}"
+
+
+
+
 
 
 

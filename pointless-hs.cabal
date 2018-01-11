@@ -17,9 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Interpreter
                      , Parser
-                     , PointlessParser
                      , Primitives
-                     , Core
                      , SocketServer
                      , Repl
   build-depends:       base >= 4.7 && < 5
@@ -49,9 +47,7 @@ test-suite pointless-hs-test
   main-is:             Spec.hs
   other-modules:      Interpreter
                      , Parser
-                     , PointlessParser
                      , Primitives
-                     , Core
                      , SocketServer
                      , Repl
   build-depends:       base

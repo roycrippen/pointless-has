@@ -33,13 +33,13 @@ s1AstFull =
   [ NumP 10.0
   , Str "aaa"
   , Quot []
-  , Symbol "cons"
-  , Symbol "dip"
+  , Sym "cons"
+  , Sym "dip"
   , Quot []
-  , Symbol "cons"
-  , Symbol "define"
+  , Sym "cons"
+  , Sym "define"
   , NumP 3.0
-  , Symbol "dup"
+  , Sym "dup"
   ]
 
 testSource :: String
@@ -171,7 +171,7 @@ parseNumberP2 = testCase "parse numberP -23.4"
 parseNakedQuotation1 :: TestTree
 parseNakedQuotation1 =
   testCase "parse nakedQuotaions \"-10 10 +\" "
-    $ assertEqual [] [NumP (-10.0), NumP 10.0, Symbol "+"] val
+    $ assertEqual [] [NumP (-10.0), NumP 10.0, Sym "+"] val
   where (val, _):_ = parse nakedQuotations "-10 10 +"
 
 parseNakedQuotation2 :: TestTree
@@ -184,7 +184,7 @@ parseNakedQuotation3 :: TestTree
 parseNakedQuotation3 =
   testCase "parse nakedQuotaions \"'a' [dup 'z'] i 'b'\" " $ assertEqual
     []
-    [Chr 'a', Quot [Symbol "dup", Chr 'z'], Symbol "i", Chr 'b']
+    [Chr 'a', Quot [Sym "dup", Chr 'z'], Sym "i", Chr 'b']
     val
   where (val, _):_ = parse nakedQuotations "'a' [dup 'z'] i 'b'"
 

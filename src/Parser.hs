@@ -1,9 +1,21 @@
 module Parser where
 
-import           Control.Applicative (pure)
-import           Control.Monad       (ap, liftM, void)
-import           Data.List           (find)
+import           CLaSH.Prelude       hiding (many, (++), (<|>))
+
+import           Interpreter
+
+import           Control.Applicative (Applicative (..), pure)
+import           Control.Monad       (Functor (..), Monad (..), ap, liftM, void)
+import           Data.Bool
+import           Data.Char
+import           Data.Eq
+import           Data.Function
+import           Data.Int
+import           Data.List           as L
 import           Data.Maybe          (isJust)
+import           Data.String
+import           Text.Read
+
 -- import           Debug.Trace
 
 newtype Parser a = Parser (String -> [(a, String)])
@@ -163,16 +175,16 @@ numberInt = do
   digits <- many1 digit
   return (read (sign ++ digits) :: Int)
 
-numberDouble :: Parser Double
-numberDouble = do
-  sign     <- string "-" <|> string ""
-  digits   <- many1 digit
-  _        <- string "." <|> string ""
-  mantissa <- many digit
-  _        <- spaces
-  let mantissa' = if mantissa == "" then "0" else mantissa
-      double    = sign ++ digits ++ "." ++ mantissa'
-  return (read double :: Double)
+-- numberDouble :: Parser Double
+-- numberDouble = do
+--   sign     <- string "-" <|> string ""
+--   digits   <- many1 digit
+--   _        <- string "." <|> string ""
+--   mantissa <- many digit
+--   _        <- spaces
+--   let mantissa' = if mantissa == "" then "0" else mantissa
+--       double    = sign ++ digits ++ "." ++ mantissa'
+--   return (read double :: Double)
 
 letter :: Parser Char
 letter = satisfies isAlpha
@@ -223,4 +235,134 @@ quotedString = do
   strings <- many (escapeNewLine <|> nonEscape)
   char '"'
   return strings
+
+numberP :: Parser ValueP
+numberP = do
+  d <- numberInt
+  -- d <- numberDouble
+  return (NumP d)
+
+charP :: Parser ValueP
+charP = do
+  _ <- char '\''
+  c <- newline <|> firstLetter
+  _ <- char '\''
+  return (Chr c)
+
+quotedStringP :: Parser ValueP
+quotedStringP = do
+  str <- quotedString
+  return (Str str)
+
+word :: Parser ValueP
+word = do
+  c  <- firstLetter
+  cs <- many wordLetter
+  return (Sym (c : cs))
+
+instruction :: Parser ValueP
+instruction = do
+  _   <- spacesCommentsSpecifications
+  res <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
+  _   <- spacesCommentsSpecifications
+  return res
+
+nakedQuotations :: Parser [ValueP]
+nakedQuotations = many instruction
+
+quotation :: Parser ValueP
+quotation = do
+  _ <- char '['
+  _ <- spaces
+  q <- nakedQuotations
+  -- traceM $ "\nq: " ++ show q
+  _ <- spaces
+  _ <- char ']'
+  return (Quot q)
+
+lineComment :: Parser ()
+lineComment = string "$" >> manyTill anyChar newline >> spaces >> return ()
+
+blockComment :: Parser ()
+blockComment =
+  char '{' >> manyTill anyChar (char '}') >> char '}' >> spaces >> return ()
+
+comment :: Parser ()
+comment = lineComment <|> blockComment
+
+comments :: Parser [()]
+comments = many comment
+
+specification :: Parser ()
+specification =
+  char '(' >> manyTill anyChar (char ')') >> char ')' >> spaces >> return ()
+
+specifications :: Parser [()]
+specifications = many specification
+
+spacesCommentsSpecifications :: Parser ()
+spacesCommentsSpecifications =
+  spaces >> comments >> specifications >> return ()
+
+
+-- parsers to get inline test from inside {}
+lineComments :: Parser [()]
+lineComments = many lineComment
+
+spacesLineCommentsSpecifications :: Parser ()
+spacesLineCommentsSpecifications =
+  spaces >> lineComments >> specifications >> return ()
+
+nonTest :: Parser ()
+nonTest = do
+  _ <- spacesLineCommentsSpecifications
+  _ <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
+  _ <- spacesLineCommentsSpecifications
+  return ()
+
+nonTests :: Parser [()]
+nonTests = many nonTest
+
+testBlock :: Parser String
+testBlock = do
+  _ <- char '{'
+  s <- manyTill anyChar (char '}')
+  _ <- char '}'
+  _ <- spaces
+  return s
+
+test :: Parser String
+test = do
+  _ <- many nonTest
+  t <- testBlock
+  _ <- many nonTest
+  return t
+
+tests :: Parser [String]
+tests = many test
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
