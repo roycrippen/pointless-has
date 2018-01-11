@@ -1,11 +1,9 @@
 module Main where
 
-import           Core
 import qualified Data.Map         as M
 import qualified Data.Text.IO     as T
 import           Interpreter
 import           Parser
-import           PointlessParser
 import           Primitives
 import           SocketServer
 import           System.IO.Unsafe (unsafeDupablePerformIO)

@@ -1,16 +1,25 @@
 module Primitives where
 
+import           CLaSH.Prelude    hiding (length, many, (++), (<|>))
 import           Data.Aeson.Text  (encodeToLazyText)
+import           Data.Bool
+import           Data.Char
+import           Data.Eq
+import           Data.Function
+import           Data.Int
+import           Data.List        as L
 import           Data.Map         as M (fromList, insert)
 import           Data.Maybe       (fromJust, isJust)
+import           Data.String
 import           Data.Text        (Text)
 import qualified Data.Text        as T (pack)
 import qualified Data.Text.Lazy   as TL (toStrict)
 import           Interpreter
 import           Parser           (nakedQuotations, parse, tests)
+import           Prelude          as P
 import           System.IO.Error  (tryIOError)
 import           System.IO.Unsafe (unsafePerformIO)
--- import qualified Network.WebSockets as WS (sendTextData)
+import           Text.Read
 -- import           Debug.Trace
 
 -- |
@@ -60,8 +69,8 @@ cons lang = case stack lang of
    where
     msg = "ERROR(cons): value then quotation or char then string expected"
 
-uncons :: Lang -> Lang
-uncons lang = case stack lang of
+unconsP :: Lang -> Lang
+unconsP lang = case stack lang of
   (Quot (i:is):cs) -> lang { stack = Quot is : i : cs }
   (Str  (i:is):cs) -> lang { stack = Str is : Chr i : cs }
   _                -> lang { result = msg : result lang }
@@ -121,8 +130,8 @@ arithMulDiv operator lang = case (operator, stack lang) of
   (_ , _               ) -> lang { result = msg : result lang }
     where msg = "ERROR(arithMulDiv): two numbers expected"
 
-plus :: Lang -> Lang
-plus lang = case stack lang of
+plusP :: Lang -> Lang
+plusP lang = case stack lang of
   (NumP y:NumP c:cs) -> lang { stack = NumP (c + y) : cs }
   (NumP y:Chr  c:cs) -> lang { stack = Chr chr : cs }
     where chr = toEnum (fromEnum c + y) :: Char
@@ -154,8 +163,8 @@ plus lang = case stack lang of
 --   _           -> lang { result = msg : result lang }
 --     where msg = "ERROR(tan): a number expected"
 
-minus :: Lang -> Lang
-minus lang = case stack lang of
+minusP :: Lang -> Lang
+minusP lang = case stack lang of
   (NumP y:NumP c:cs) -> lang { stack = NumP (c - y) : cs }
   (NumP y:Chr  c:cs) -> lang { stack = Chr chr : cs }
     where chr = toEnum (fromEnum c - y) :: Char
@@ -206,8 +215,8 @@ isString lang = case stack lang of
   (_    :cs) -> lang { stack = toTruth False : cs }
   _          -> lang { result = "ERROR(string?): stack empty" : result lang }
 
-isNumber :: Lang -> Lang
-isNumber lang = case stack lang of
+isNumberP :: Lang -> Lang
+isNumberP lang = case stack lang of
   (NumP _:cs) -> lang { stack = toTruth True : cs }
   (_     :cs) -> lang { stack = toTruth False : cs }
   _           -> lang { result = "ERROR(number?): stack empty" : result lang }
@@ -311,7 +320,7 @@ rxFile file = unsafePerformIO $ do
 -- | strip away col 1 to 8 comment lines
 removeDocLines :: String -> String
 removeDocLines str = unlines xs
-  where xs = filter (\x -> take 8 x == "        ") $ lines str
+  where xs = filter (\x -> L.take 8 x == "        ") $ lines str
 
 -- | helper functions to get inline tests from inside {}
 loadLibForTests :: Lang -> Lang
@@ -374,7 +383,7 @@ getQuotation (name, qs) = (name, Quotation q)
   where (q, _):_ = parse nakedQuotations qs
 
 getQuotations :: [(String, String)] -> [(String, WordP)]
-getQuotations = map getQuotation
+getQuotations = L.map getQuotation
 
 primitives :: [(String, WordP)]
 primitives =
@@ -382,11 +391,11 @@ primitives =
   , ("dup"      , Function dup)
   , ("dip"      , Function dip)
   , ("cons"     , Function cons)
-  , ("uncons"   , Function uncons)
+  , ("uncons"   , Function unconsP)
   , ("concat"   , Function concatP)
   , ("size"     , Function size)
-  , ("+"        , Function plus)
-  , ("-"        , Function minus)
+  , ("+"        , Function plusP)
+  , ("-"        , Function minusP)
   , ("*"        , Function $ arithMulDiv (*))
   , ("/"        , Function $ arithMulDiv div)
   , ("%"        , Function modP)
@@ -401,7 +410,7 @@ primitives =
   , ("null"     , Function lnot)
   , ("list?"    , Function isList)
   , ("string?"  , Function isString)
-  , ("number?"  , Function isNumber)
+  , ("number?"  , Function isNumberP)
   , ("stack"    , Function stackP)
   , ("unstack"  , Function unstack)
   , ("show"     , Function showP)

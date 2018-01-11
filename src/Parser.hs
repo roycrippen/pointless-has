@@ -1,9 +1,6 @@
 module Parser where
 
 import           CLaSH.Prelude       hiding (many, (++), (<|>))
-
-import           Interpreter
-
 import           Control.Applicative (Applicative (..), pure)
 import           Control.Monad       (Functor (..), Monad (..), ap, liftM, void)
 import           Data.Bool
@@ -14,7 +11,16 @@ import           Data.Int
 import           Data.List           as L
 import           Data.Maybe          (isJust)
 import           Data.String
+import           Interpreter
+import qualified Prelude             as P
 import           Text.Read
+
+-- hints from other libraries
+-- import CLaSH.Prelude
+-- import qualified GHC.Base as B
+-- import Prelude hiding ((!!), head)
+-- import Text.Printf
+
 
 -- import           Debug.Trace
 

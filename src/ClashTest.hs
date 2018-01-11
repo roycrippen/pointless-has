@@ -13,6 +13,7 @@ import           Data.Maybe          (isJust)
 import           Data.String
 import           Interpreter
 import           Parser
+import           Prelude             as P
 import           Text.Read
 
 

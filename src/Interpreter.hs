@@ -1,7 +1,6 @@
 module Interpreter where
 
 import           CLaSH.Prelude       hiding (concat, length, many, map, splitAt, (++), (<|>))
-
 import           Control.Applicative (Applicative (..), pure)
 import           Control.Monad       (Functor (..), Monad (..), ap, liftM, void)
 import           Data.Bool
@@ -13,8 +12,10 @@ import           Data.List           as L
 import qualified Data.Map            as M (Map, lookup)
 import           Data.Maybe          (isJust)
 import           Data.String
+import           Prelude             as P
 import           Text.Read
 import           Text.Show
+
 
 data ValueP = Sym String
             | NumP Int

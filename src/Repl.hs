@@ -1,12 +1,25 @@
 module Repl where
 
-import           Control.Monad (forever)
-import qualified Data.Map      as M (fromList)
-import           Interpreter   (Lang (..), Mode (..), replaceStr, runQuotation)
-import           Parser        (nakedQuotations, parse)
-import           Primitives    (coreDefinitions, primitiveAST, runQuotStr)
-import           System.Exit   (exitSuccess)
-import           System.IO     (hFlush, stdout)
+import           CLaSH.Prelude       hiding (many, (++), (<|>))
+import           Control.Applicative (Applicative (..), pure)
+import           Control.Monad       (forever)
+import           Control.Monad       (Functor (..), Monad (..), ap, liftM, void)
+import           Data.Bool
+import           Data.Char
+import           Data.Eq
+import           Data.Function
+import           Data.Int
+import qualified Data.List           as L
+import qualified Data.Map            as M (fromList)
+import           Data.Maybe          (isJust)
+import           Data.String
+import           Interpreter
+import           Parser
+import qualified Prelude             as P
+import           Primitives          (coreDefinitions, primitiveAST, runQuotStr)
+import           System.Exit         (exitSuccess)
+import           System.IO           (hFlush, stdout)
+import           Text.Read
 
 startRepl :: IO ()
 startRepl = do
@@ -24,7 +37,7 @@ runPointless lang = forever $ do
   runCommand quoteStr
  where
   runCommand :: String -> IO ()
-  runCommand s = case take 2 s of
+  runCommand s = case L.take 2 s of
     ":q" -> exitSuccess
     ":h" -> showHelp >> runPointless lang
     ""   -> runPointless lang
