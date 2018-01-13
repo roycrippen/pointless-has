@@ -4,3 +4,4 @@
 Link to pointless-hs-exe
 pointless-hs-exe
 .vscode/*.log
+.build
