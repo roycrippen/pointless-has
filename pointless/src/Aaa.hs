@@ -3,44 +3,50 @@
 module Main where
 
 import           Clash.Prelude
-import           Control.Monad
 -- import qualified Data.Foldable as F
 import           Data.String
 -- import qualified Data.Text     as T
-import qualified GHC.Base      as B
-import qualified Prelude       as P
+-- import qualified GHC.Base      as B
+import           Control.Monad (ap, liftM)
+import qualified Prelude       as P hiding (Monad)
 
-newtype Parser a = Parser (String -> Vec 1 (a, String))
+newtype Parser a = Parser (String -> Maybe (a, String))
 
-parse :: Parser t -> String -> Vec 1 (t, String)
+parse :: Parser t -> String -> Maybe (t, String)
 parse (Parser p) = p
 
--- instance Functor Parser where
---   fmap = liftM
+instance Functor Parser where
+  fmap = liftM
 
--- instance Applicative Parser where
---   pure  = return
---   (<*>) = ap
+instance Applicative Parser where
+  pure  = return
+  (<*>) = ap
 
--- instance Monad Parser where
---    return a = Parser (\s -> (a,s):>Nil)
---   --  p >>= f = Parser (concatMap (\ (a, s') -> parse (f a) s') . parse p)
---    p >>= f = Parser (foldr (++) (singleton Nil) (map (\ (a, s') -> parse (f a) s')) . parse p)
+instance Monad Parser where
+   return a = Parser (\s -> Just (a,s))
+   p >>= f  = Parser (\s -> do (v, s') <- parse p s
+                               parse (f v) s')
 
--- item :: Parser Char
--- item = Parser item'
---  where
---   item' s = case s of
---     ""     -> []
---     (c:cs) -> [(c, cs)]
+class Monad m => MonadPlus m where
+  mzero :: m a
+  mplus :: m a -> m a -> m a
 
--- class Monad m => MonadPlus m where
---   mzero :: m a
---   mplus :: m a -> m a -> m a
+instance MonadPlus Parser where
+  mzero = Parser (\_ -> Nothing)
+  mplus p q = Parser (\s -> case parse p s of
+                              Nothing -> parse q s
+                              Just x  -> Just x)
+--
+failure :: Parser a
+failure = mzero
 
--- instance MonadPlus Parser where
---   mzero = Parser (const [])
---   mplus p q = Parser (\s -> parse p s ++ parse q s)
+item :: Parser Char
+item = Parser item'
+ where
+  item' s = case s of
+    ""     -> Nothing
+    (c:cs) -> Just (c, cs)
+
 
 -- option :: Parser a -> Parser a -> Parser a
 -- option p q = Parser
@@ -49,21 +55,21 @@ parse (Parser p) = p
 --     (x:_) -> [x]
 --   )
 
--- (<|>) :: Parser a -> Parser a -> Parser a
--- (<|>) = option
+(<|>) :: Parser a -> Parser a -> Parser a
+p <|> q = p `mplus` q
 
--- satisfies :: (Char -> Bool) -> Parser Char
--- satisfies p = item >>= \c -> if p c then return c else mzero
+satisfies :: (Char -> Bool) -> Parser Char
+satisfies p = item >>= \c -> if p c then return c else failure
 
--- char :: Char -> Parser Char
--- char c = satisfies (c ==)
+char :: Char -> Parser Char
+char c = satisfies (c ==)
 
--- string :: String -> Parser String
--- string ""     = return ""
--- string (c:cs) = do
---   _ <- char c
---   _ <- string cs
---   return (c : cs)
+string :: String -> Parser String
+string ""     = return ""
+string (c:cs) = do
+  _ <- char c
+  _ <- string cs
+  return (c : cs)
 
 -- many :: Parser a -> Parser [a]
 -- many p = many1 p <|> return []
