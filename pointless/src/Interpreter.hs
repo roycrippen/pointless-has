@@ -1,6 +1,6 @@
 module Interpreter where
 
-import           CLaSH.Prelude       hiding (concat, length, many, map, splitAt, (++), (<|>))
+import           Clash.Prelude       hiding (concat, length, many, map, splitAt, (++), (<|>))
 import           Control.Applicative (Applicative (..), pure)
 import           Control.Monad       (Functor (..), Monad (..), ap, liftM, void)
 import           Data.Bool

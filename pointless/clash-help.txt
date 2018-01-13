@@ -1,0 +1,10 @@
+stack exec --resolver=nightly-2017-08-15 -- clash --interactive Aaa.hs
+
+
+# install latest clash
+git clone https://github.com/clash-lang/clash-compiler.git
+cd clash-compiler
+# remove empty directory
+rmdir clash-prelude    
+git clone https://github.com/clash-lang/clash-prelude.git
+stack install

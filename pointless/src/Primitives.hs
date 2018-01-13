@@ -1,6 +1,6 @@
 module Primitives where
 
-import           CLaSH.Prelude    hiding (length, many, (++), (<|>))
+import           Clash.Prelude    hiding (length, many, (++), (<|>))
 import           Data.Aeson.Text  (encodeToLazyText)
 import           Data.Bool
 import           Data.Char

@@ -1,0 +1,7 @@
+resolver: nightly-2017-08-15
+
+packages:
+- '.'
+
+extra-deps:
+- clash-prelude-0.99

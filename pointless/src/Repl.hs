@@ -1,6 +1,6 @@
 module Repl where
 
-import           CLaSH.Prelude       hiding (many, (++), (<|>))
+import           Clash.Prelude       hiding (many, (++), (<|>))
 import           Control.Applicative (Applicative (..), pure)
 import           Control.Monad       (forever)
 import           Control.Monad       (Functor (..), Monad (..), ap, liftM, void)

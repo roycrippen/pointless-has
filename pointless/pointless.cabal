@@ -1,4 +1,4 @@
-name:                pointless-hs
+name:                pointless
 version:             0.1.0.0
 synopsis:            pointless programming language
 description:         see README.md
@@ -11,7 +11,6 @@ category:            Language
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
-data-files:          data/*.joy
 
 library
   hs-source-dirs:      src
@@ -27,22 +26,23 @@ library
                      , tasty
                      , tasty-hunit
                      , aeson
-                     , clash-prelude
+                     , clash-prelude >= 0.9 && < 1.0
   default-language:    Haskell2010
 
-executable pointless-hs-exe
+executable pointless
   hs-source-dirs:      app
   main-is:             Main.hs
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , containers
-                     , pointless-hs
+                     , pointless
                      , text
                      , websockets
                      , aeson
+                     , clash-prelude >= 0.9 && < 1.0
   default-language:    Haskell2010
 
-test-suite pointless-hs-test
+test-suite pointless-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
@@ -54,7 +54,7 @@ test-suite pointless-hs-test
   build-depends:       base
                      , containers
                      , text
-                     , pointless-hs
+                     , pointless
                      , tasty
                      , tasty-hunit
                      , aeson

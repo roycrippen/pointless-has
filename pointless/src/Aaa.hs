@@ -2,24 +2,30 @@
 
 module Main where
 
-import           CLaSH.Prelude
+import           Clash.Prelude
+import           Control.Monad
+-- import qualified Data.Foldable as F
 import           Data.String
+-- import qualified Data.Text     as T
+import qualified GHC.Base      as B
+import qualified Prelude       as P
 
-newtype Parser a = Parser (String -> Vec 2048 (a, String))
+newtype Parser a = Parser (String -> Vec 1 (a, String))
 
-parse :: Parser t -> String -> Vec 2048 (t, String)
+parse :: Parser t -> String -> Vec 1 (t, String)
 parse (Parser p) = p
 
-instance Functor Parser where
-  fmap = liftA
+-- instance Functor Parser where
+--   fmap = liftM
 
-instance Applicative Parser where
-  pure  = return
-  (<*>) = ap
+-- instance Applicative Parser where
+--   pure  = return
+--   (<*>) = ap
 
 -- instance Monad Parser where
---    return a = Parser (\s -> [(a,s)])
---    p >>= f = Parser (concatMap (\ (a, s') -> parse (f a) s') . parse p)
+--    return a = Parser (\s -> (a,s):>Nil)
+--   --  p >>= f = Parser (concatMap (\ (a, s') -> parse (f a) s') . parse p)
+--    p >>= f = Parser (foldr (++) (singleton Nil) (map (\ (a, s') -> parse (f a) s')) . parse p)
 
 -- item :: Parser Char
 -- item = Parser item'
