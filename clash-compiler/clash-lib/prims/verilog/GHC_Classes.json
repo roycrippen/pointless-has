@@ -1,0 +1,85 @@
+[ { "BlackBox" :
+    { "name"      : "GHC.Classes.eqInt"
+    , "type"      : "eqInt :: Int -> Int -> Bool"
+    , "templateE" : "~ARG[0] == ~ARG[1]"
+    }
+  }
+, { "BlackBox" :
+    { "name"      : "GHC.Classes.neInt"
+    , "type"      : "neInt :: Int -> Int -> Bool"
+    , "templateE" : "~ARG[0] != ~ARG[1]"
+    }
+  }
+, { "BlackBox" :
+    { "name"      : "GHC.Classes.gtInt"
+    , "type"      : "gtInt :: Int -> Int -> Bool"
+    , "templateE" : "~ARG[0] > ~ARG[1]"
+    }
+  }
+, { "BlackBox" :
+    { "name"      : "GHC.Classes.geInt"
+    , "type"      : "geInt :: Int -> Int -> Bool"
+    , "templateE" : "~ARG[0] >= ~ARG[1]"
+    }
+  }
+, { "BlackBox" :
+    { "name"      : "GHC.Classes.ltInt"
+    , "type"      : "ltInt :: Int -> Int -> Bool"
+    , "templateE" : "~ARG[0] < ~ARG[1]"
+    }
+  }
+, { "BlackBox" :
+    { "name"      : "GHC.Classes.leInt"
+    , "type"      : "leInt :: Int -> Int -> Bool"
+    , "templateE" : "~ARG[0] <= ~ARG[1]"
+    }
+  }
+, { "BlackBox" :
+    { "name"      : "GHC.Classes.&&"
+    , "type"      : "(&&) :: Bool -> Bool -> Bool"
+    , "templateE" : "~ARG[0] & ~ARG[1]"
+    }
+  }
+, { "BlackBox" :
+    { "name"      : "GHC.Classes.||"
+    , "type"      : "(::) :: Bool -> Bool -> Bool"
+    , "templateE" : "~ARG[0] | ~ARG[1]"
+    }
+  }
+, { "BlackBox" :
+    { "name"      : "GHC.Classes.not"
+    , "type"      : "not :: Bool -> Bool"
+    , "templateE" : "~ ~ARG[0]"
+    }
+  }
+, { "BlackBox" :
+    { "name"      : "GHC.Classes.divInt#"
+    , "type"      : "divInt# :: Int# -> Int# -> Int#"
+    , "templateD" :
+"// divInt# begin
+// divide (rounds towards zero)
+wire ~SIGD[~GENSYM[quot_res][0]][0];
+assign ~SYM[0] = ~VAR[dividend][0] / ~VAR[divider][1];
+
+// round toward minus infinity
+assign ~RESULT = (~VAR[dividend][0][~SIZE[~TYPO]-1] == ~VAR[divider][1][~SIZE[~TYPO]-1]) ? ~SYM[0] : ~SYM[0] - ~SIZE[~TYPO]'sd1;
+// divInt# end"
+    }
+  }
+, { "BlackBox" :
+    { "name"      : "GHC.Classes.modInt#"
+    , "type"      : "modInt# :: Int# -> Int# -> Int#"
+    , "templateD" :
+"// modInt# begin
+// remainder
+wire ~SIGD[~GENSYM[rem_res][0]][0];
+assign ~SYM[0] = ~VAR[dividend][0] % ~VAR[divider][1];
+
+// modulo
+assign ~RESULT = (~VAR[dividend][0][~SIZE[~TYPO]-1] == ~VAR[divider][1][~SIZE[~TYPO]-1]) ?
+                 ~SYM[0] :
+                 ((~VAR[dividend][0] == ~SIZE[~TYPO]'sd0) ? ~SIZE[~TYPO]'sd0 : ~SYM[0] + ~VAR[divider][1]);
+// modInt# end"
+    }
+  }
+]
