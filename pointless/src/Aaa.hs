@@ -2,13 +2,12 @@
 
 module Main where
 
-import           Clash.Prelude
--- import qualified Data.Foldable as F
+import           Clash.Prelude hiding (many, (<|>))
+import           Control.Monad (ap, liftM, void)
+import qualified Data.List     as L
+import           Data.Maybe    (fromJust, isJust)
 import           Data.String
--- import qualified Data.Text     as T
--- import qualified GHC.Base      as B
-import           Control.Monad (ap, liftM)
-import qualified Prelude       as P hiding (Monad)
+import qualified Prelude       as P
 
 newtype Parser a = Parser (String -> Maybe (a, String))
 
@@ -71,108 +70,104 @@ string (c:cs) = do
   _ <- string cs
   return (c : cs)
 
--- many :: Parser a -> Parser [a]
--- many p = many1 p <|> return []
+many :: Parser a -> Parser [a]
+many p = many1 p <|> return []
 
--- many1 :: Parser a -> Parser [a]
--- many1 p = do
---   a  <- p
---   as <- many p
---   return (a : as)
+many1 :: Parser a -> Parser [a]
+many1 p = do
+  a  <- p
+  as <- many p
+  return (a : as)
 
--- sepBy :: Parser a -> Parser b -> Parser [a]
--- p `sepBy` sep = (p `sepBy1` sep) <|> return []
+sepBy :: Parser a -> Parser b -> Parser [a]
+p `sepBy` sep = (p `sepBy1` sep) <|> return []
 
--- sepBy1 :: Parser a -> Parser b -> Parser [a]
--- p `sepBy1` sep = do
---   a  <- p
---   as <- many
---     ( do
---       _ <- sep
---       p
---     )
---   return (a : as)
+sepBy1 :: Parser a -> Parser b -> Parser [a]
+p `sepBy1` sep = do
+  a  <- p
+  as <- many  $ ( do _ <- sep; p )
+  return (a : as)
 
--- chainl :: Parser a -> Parser (a -> a -> a) -> a -> Parser a
--- chainl p op a = (p `chainl1` op) <|> return a
+chainl :: Parser a -> Parser (a -> a -> a) -> a -> Parser a
+chainl p op a = (p `chainl1` op) <|> return a
 
--- chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
--- p `chainl1` op = do
---   a <- p
---   rest a
---  where
---   rest a =
---     ( do
---         f <- op
---         b <- p
---         rest (f a b)
---       )
---       <|> return a
+chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
+p `chainl1` op = do
+  a <- p
+  rest a
+ where
+  rest a =
+    ( do
+        f <- op
+        b <- p
+        rest (f a b)
+      )
+      <|> return a
 
--- oneOf :: String -> Parser Char
--- oneOf cs = satisfies (`elem` cs)
+oneOf :: String -> Parser Char
+oneOf cs = satisfies (`elem` cs)
 
--- noneOf :: String -> Parser Char
--- noneOf cs = satisfies (`notElem` cs)
+noneOf :: String -> Parser Char
+noneOf cs = satisfies (`notElem` cs)
 
--- manyN :: Parser a -> Int -> Parser [a]
--- manyN p 1 = do
---   c <- p
---   return [c]
--- manyN p n = do
---   c    <- p
---   rest <- manyN p (n - 1)
---   return (c : rest)
+manyN :: Parser a -> Int -> Parser [a]
+manyN p 1 = do
+  c <- p
+  return [c]
+manyN p n = do
+  c    <- p
+  rest <- manyN p (n - 1)
+  return (c : rest)
 
--- manyTill :: Parser a -> Parser b -> Parser [a]
--- manyTill p end = manyTill1 p end <|> return []
+manyTill :: Parser a -> Parser b -> Parser [a]
+manyTill p end = manyTill1 p end <|> return []
 
--- manyTill1 :: Parser a -> Parser b -> Parser [a]
--- manyTill1 p end = do
---   a <- p
---   b <- lookAhead end
---   if b
---     then return [a]
---     else do
---       as <- manyTill p end
---       return (a : as)
+manyTill1 :: Parser a -> Parser b -> Parser [a]
+manyTill1 p end = do
+  a <- p
+  b <- lookAhead end
+  if b
+    then return [a]
+    else do
+      as <- manyTill p end
+      return (a : as)
 
--- lookAhead :: Parser a -> Parser Bool
--- lookAhead p = Parser
---   ( \s -> case parse p s of
---     [] -> [(False, s)]
---     _  -> [(True, s)]
---   )
+lookAhead :: Parser a -> Parser Bool
+lookAhead p = Parser
+  ( \s -> case parse p s of
+    Nothing -> Just (False, s)
+    _       -> Just (True, s)
+  )
 
--- -- | Lexical combinators
--- -- |
--- spaces :: Parser ()
--- spaces = void (many (satisfies isSpace))
---  where
---   isSpace ' '  = True
---   isSpace '\n' = True
---   isSpace '\r' = True
---   isSpace '\t' = True
---   isSpace _    = False
+-- | Lexical combinators
+-- |
+spaces :: Parser ()
+spaces = void (many (satisfies isSpace))
+ where
+  isSpace ' '  = True
+  isSpace '\n' = True
+  isSpace '\r' = True
+  isSpace '\t' = True
+  isSpace _    = False
 
--- token :: Parser a -> Parser a
--- token p = do
---   _ <- spaces
---   a <- p
---   _ <- spaces
---   return a
+token :: Parser a -> Parser a
+token p = do
+  _ <- spaces
+  a <- p
+  _ <- spaces
+  return a
 
--- symb :: String -> Parser String
--- symb s = token $ string s
+symb :: String -> Parser String
+symb s = token $ string s
 
--- digit :: Parser Char
--- digit = satisfies isDigit where isDigit c = isJust (find (== c) ['0' .. '9'])
+digit :: Parser Char
+digit = satisfies isDigit where isDigit c = isJust (L.find (== c) ['0' .. '9'])
 
--- numberInt :: Parser Int
--- numberInt = do
---   sign   <- string "-" <|> string ""
---   digits <- many1 digit
---   return (read (sign ++ digits) :: Int)
+numberInt :: Parser Int
+numberInt = do
+  sign   <- string "-" <|> string ""
+  digits <- many1 digit
+  return (read (sign P.++ digits) :: Int)
 
 -- -- numberDouble :: Parser Double
 -- -- numberDouble = do
@@ -185,55 +180,55 @@ string (c:cs) = do
 -- --       double    = sign ++ digits ++ "." ++ mantissa'
 -- --   return (read double :: Double)
 
--- letter :: Parser Char
--- letter = satisfies isAlpha
---  where
---   isAlpha c = isJust (find (== c) letters)
---   letters = ['a' .. 'z'] ++ ['A' .. 'Z']
+letter :: Parser Char
+letter = satisfies isAlpha
+ where
+  isAlpha c = isJust (L.find (== c) letters)
+  letters = ['a' .. 'z'] P.++ ['A' .. 'Z']
 
--- firstLetter :: Parser Char
--- firstLetter = letter <|> oneOf "+-*/<>=!?§$%&@~´',:._"
+firstLetter :: Parser Char
+firstLetter = letter <|> oneOf "+-*/<>=!?§$%&@~´',:._"
 
--- wordLetter :: Parser Char
--- wordLetter = firstLetter <|> digit
+wordLetter :: Parser Char
+wordLetter = firstLetter <|> digit
 
--- newline :: Parser Char
--- newline = char '\n'
+newline :: Parser Char
+newline = char '\n'
 
--- crlf :: Parser Char
--- crlf = char '\r' *> char '\n'
+crlf :: Parser Char
+crlf = char '\r' *> char '\n'
 
--- endOfLine :: Parser Char
--- endOfLine = newline <|> crlf
+endOfLine :: Parser Char
+endOfLine = newline <|> crlf
 
--- anyChar :: Parser Char
--- anyChar = satisfies (const True)
+anyChar :: Parser Char
+anyChar = satisfies (const True)
 
--- emptyQuot :: Parser String
--- emptyQuot = string "[]"
+emptyQuot :: Parser String
+emptyQuot = string "[]"
 
--- escapeNewLine :: Parser Char
--- escapeNewLine = do
---   b <- lookAhead (string "\\\n")
---   -- traceM $ "\nb: " ++ show b
---   if b
---     then do
---       _ <- char '\\'
---       char '\n'
---     else mzero
+escapeNewLine :: Parser Char
+escapeNewLine = do
+  b <- lookAhead (string "\\\n")
+  -- traceM $ "\nb: " ++ show b
+  if b
+    then do
+      _ <- char '\\'
+      char '\n'
+    else mzero
 
--- nonEscape :: Parser Char
--- nonEscape = noneOf "\\\""
+nonEscape :: Parser Char
+nonEscape = noneOf "\\\""
 
--- -- character :: Parser Char
--- -- character = nonEscape <|> escapeNewLine
+-- character :: Parser Char
+-- character = nonEscape <|> escapeNewLine
 
--- quotedString :: Parser String
--- quotedString = do
---   char '"'
---   strings <- many (escapeNewLine <|> nonEscape)
---   char '"'
---   return strings
+quotedString :: Parser String
+quotedString = do
+  char '"'
+  strings <- many (escapeNewLine <|> nonEscape)
+  char '"'
+  return strings
 
 
 main :: IO ()
@@ -242,22 +237,19 @@ main = do
   parserTests
 
 parserTests :: IO ()
-parserTests = putStrLn "parserTests..."
-  -- let (a1, _):_ = parse numberInt "123 abc"
-  -- putStrLn $  "parse numberInt: " ++ if (a1 == 123) then "OK" else "ERROR"
-  -- putStrLn $ show a1 ++ "\n"
+parserTests = do
+  putStrLn "parserTests..."
+  let a1 = parse numberInt "123 abc" :: Maybe (Int, String)
+  putStrLn $  "parse numberInt: " P.++ show a1 P.++ "\n"
 
-  -- let (s1, _):_ = parse quotedString "\"hello world\" 123"
-  -- putStrLn $ "parse quotedString: " ++ if (s1 == "hello world") then "OK" else "ERROR"
-  -- putStrLn $ s1 ++ "\n"
+  let s1 = parse quotedString "\"hello world\" 123"
+  putStrLn $ "parse quotedString: " P.++ show s1 P.++ "\n"
 
-  -- let (c1, _):_ = parse firstLetter "abc"
-  -- putStrLn $ "parse firstLetter: " ++ if (c1 == 'a') then "OK" else "ERROR"
-  -- putStrLn $ show c1 ++ "\n"
+  let c1 = parse firstLetter "abc"
+  putStrLn $ "parse firstLetter: " P.++ show c1 P.++ "\n"
 
-  -- let (c2, _):_ = parse firstLetter "_abc"
-  -- putStrLn $ "parse firstLetter: " ++ if (c2 == '_') then "OK" else "ERROR"
-  -- putStrLn $ show c2 ++ "\n"
+  let c2 = parse firstLetter "_abc"
+  putStrLn $ "parse firstLetter: " P.++ show c2 P.++ "\n"
 
   -- let (c3, _):_ =  parse charP "'z'"
   -- putStrLn $ "parse charP: " ++ if (c3 == (Chr 'z')) then "OK" else "ERROR"
