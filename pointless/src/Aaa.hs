@@ -29,8 +29,11 @@ instance Applicative Parser where
 
 instance Monad Parser where
    return a = Parser (\s -> Just (a,s))
-   p >>= f  = Parser (\s -> do (v, s') <- parse p s
-                               parse (f v) s')
+   p >>= f  = Parser
+    (\s -> do
+      (v, s') <- parse p s
+      parse (f v) s'
+    )
 
 class Monad m => MonadPlus m where
   mzero :: m a
@@ -38,19 +41,14 @@ class Monad m => MonadPlus m where
 
 instance MonadPlus Parser where
   mzero = Parser (\_ -> Nothing)
-  mplus p q = Parser (\s -> case parse p s of
-                              Nothing -> parse q s
-                              Just x  -> Just x)
+  mplus p q = Parser
+    (\s -> case parse p s of
+      Nothing -> parse q s
+      Just x  -> Just x
+    )
 
 failure :: Parser a
 failure = mzero
-
-item :: Parser Char
-item = Parser item'
- where
-  item' vs = if  vs !! zero == '~'
-    then Nothing
-    else Just (vs !! zero, (replaceThenRotate '~' vs ))
 
 (<|>) :: Parser a -> Parser a -> Parser a
 p <|> q = p `mplus` q
@@ -61,18 +59,21 @@ satisfies p = item >>= \c -> if p c then return c else failure
 char :: Char -> Parser Char
 char c = satisfies (c ==)
 
-isStrMatch :: Vec 16 Char -> Vec 32 Char -> Bool
-isStrMatch xs vs = foldl (&&) (True) zipped
-  where zipped = zipWith (\x v  -> x == v || x == '~')  xs (takeI vs :: Vec 16 Char)
+item :: Parser Char
+item = Parser item'
+ where
+  item' vs = if  vs !! zero == '~'
+    then Nothing
+    else Just (vs !! zero, (replaceThenRotate '~' vs ))
 
 -- | Parse a fixed length string.
 -- | "abc" == <'a','b','c','~','~','~','~','~','~','~','~','~','~','~','~','~'>
 string :: Vec 16 Char -> Parser (Vec 16 Char)
 string vs = Parser
-    ( \s -> if isStrMatch vs s
+  ( \s -> if isStrMatch vs s
       then Just (vs, replaceThenRotateN (strCharCount vs) '~' s)
       else Nothing
-    )
+  )
 
 manyChar :: Parser Char -> Parser (Vec 32 Char)
 manyChar p = do
@@ -91,10 +92,10 @@ many1Char p = do
 getManyChar :: Parser Char -> Parser (Vec 32 Char)
 getManyChar p = Parser
   ( \vs -> do
-    let vs' = map (\x -> parseChar p (str32 x)) vs
-        cnt = cntConsecutive vs'
-        res = imap (\i x ->  if (fromIntegral i < cnt) then x else '~') vs'
-    Just (res, replaceThenRotateN cnt '~' vs)
+      let vs' = map (\x -> parseChar p (str32 x)) vs
+          cnt = cntConsecutive vs'
+          res = imap (\i x ->  if (fromIntegral i < cnt) then x else '~') vs'
+      Just (res, replaceThenRotateN cnt '~' vs)
   )
 
 parseChar :: Parser Char -> Vec 32 Char -> Char
@@ -141,8 +142,8 @@ manyTill1 p end = do
 lookAhead :: Parser a -> Parser Bool
 lookAhead p = Parser
   ( \s -> case parse p s of
-    Nothing -> Just (False, s)
-    _       -> Just (True, s)
+      Nothing -> Just (False, s)
+      _       -> Just (True, s)
   )
 
 -- | Lexical combinators
@@ -222,9 +223,6 @@ crlf = char '\r' *> char '\n'
 -- nonEscape :: Parser Char
 -- nonEscape = noneOf "\\\""
 
--- -- character :: Parser Char
--- -- character = nonEscape <|> escapeNewLine
-
 -- quotedString :: Parser String
 -- quotedString = do
 --   char '"'
@@ -235,27 +233,12 @@ crlf = char '\r' *> char '\n'
 
 -- | Helper functions.
 -- |
-str8 :: Char -> Vec 8 Char
-str8 = repeat
-
-str16 :: Char -> Vec 16 Char
-str16 = repeat
-
-str32 :: Char -> Vec 32 Char
-str32 = repeat
-
-str64 :: Char -> Vec 64 Char
-str64 = repeat
-
-str1024 :: Char -> Vec 1024 Char
-str1024 = repeat
-
 strCharCount :: Vec n Char -> Int
 strCharCount xs = foldl (\acc c -> if c /= '~' then acc + 1 else acc) 0 xs
 
-manyCharCnt :: Char -> Vec n Char -> Int
-manyCharCnt ch vs = (foldl (\acc c -> if c == ch then acc + 1 else acc) 0 vs') - 1
-  where vs' = scanl (\acc c -> if acc == c then acc else '~') ch vs
+isStrMatch :: Vec 16 Char -> Vec 32 Char -> Bool
+isStrMatch xs vs = foldl (&&) (True) zipped
+  where zipped = zipWith (\x v  -> x == v || x == '~')  xs (takeI vs :: Vec 16 Char)
 
 zero :: Integer
 zero = 0
@@ -296,6 +279,38 @@ fromDigits vs = val * sign
                               else acc
                   ) 0 vs'
 
+strToCharN :: Int -> String -> [Char]
+strToCharN n s
+  | n > len   = s P.++ (L.take (n - len) (L.repeat '~'))
+  | n == len  = s
+  | otherwise = L.take n s
+    where len = L.length s
+
+vecToString :: Vec n Char -> String
+vecToString vs = show $ L.reverse $ foldl (\acc c -> if c /= '~' then c : acc else acc) "" vs
+
+showParseResult :: Show a => Maybe (a, Vec 32 Char) -> String
+showParseResult res = if isJust res
+  then do
+    let (r, vec) = fromJust res
+    "(" P.++ show r P.++ ", " P.++ (vecToString vec) P.++ ")"
+  else "Nothing"
+
+str8 :: Char -> Vec 8 Char
+str8 = repeat
+
+str16 :: Char -> Vec 16 Char
+str16 = repeat
+
+str32 :: Char -> Vec 32 Char
+str32 = repeat
+
+str64 :: Char -> Vec 64 Char
+str64 = repeat
+
+str1024 :: Char -> Vec 1024 Char
+str1024 = repeat
+
 loadStr8 :: String -> Vec 8 Char
 loadStr8 s = go s' (str8 '~')
   where
@@ -316,23 +331,6 @@ loadStr32 s = go s' (str32 '~')
     s' = strToCharN 32 s
     go "" vs     = vs
     go (c:cs) vs = go cs (replaceThenRotate c vs)
-
-strToCharN :: Int -> String -> [Char]
-strToCharN n s
-  | n > len   = s P.++ (L.take (n - len) (L.repeat '~'))
-  | n == len  = s
-  | otherwise = L.take n s
-    where len = L.length s
-
-vecToString :: Vec n Char -> String
-vecToString vs = show $ L.reverse $ foldl (\acc c -> if c /= '~' then c : acc else acc) "" vs
-
-showParseResult :: Show a => Maybe (a, Vec 32 Char) -> String
-showParseResult res = if isJust res
-  then do
-    let (r, vec) = fromJust res
-    "(" P.++ show r P.++ ", " P.++ (vecToString vec) P.++ ")"
-  else "Nothing"
 
 -- | Data for tests
 -- |
@@ -381,15 +379,6 @@ parserTests = do
 
   let s6 = showParseResult $ parse numberInt (loadStr32 "123 abc")
   putStrLn $  "parse numberInt (loadStr32 \"123 abc\"): " P.++ s6
-
-  let s7 = show $ manyCharCnt 'a' (loadStr16 "aaa bbb")
-  putStrLn $  "manyCharCnt 'a' (loadStr16 \"aaa bbb\"): " P.++ s7
-
-  let s8 = show $ manyCharCnt 'a' (loadStr16 "a bbb")
-  putStrLn $  "manyCharCnt 'a' (loadStr16 \"a bbb\"): " P.++ s8
-
-  let s9 = show $ manyCharCnt 'a' (loadStr16 "bbb aaa")
-  putStrLn $  "manyCharCnt 'a' (loadStr16 \"bbb aaa\"): " P.++ s9
 
   let s10 = showParseResult $ parse (manyChar (char 'a')) (loadStr32 "aaa bbb")
   putStrLn $  "manyChar 'a' (loadStr32 \"aaa bbb\"): " P.++ s10
