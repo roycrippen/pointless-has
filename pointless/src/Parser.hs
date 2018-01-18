@@ -162,15 +162,15 @@ spaces = void (many (satisfies isSpace))
   isSpace '\t' = True
   isSpace _    = False
 
-token :: Parser a -> Parser a
-token p = do
-  _ <- spaces
-  a <- p
-  _ <- spaces
-  return a
+-- token :: Parser a -> Parser a
+-- token p = do
+--   _ <- spaces
+--   a <- p
+--   _ <- spaces
+--   return a
 
-symb :: String -> Parser String
-symb s = token $ string s
+-- symb :: String -> Parser String
+-- symb s = token $ string s
 
 digit :: Parser Char
 digit = satisfies isDigit where isDigit c = isJust (find (== c) ['0' .. '9'])
