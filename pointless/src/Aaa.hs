@@ -179,23 +179,26 @@ numberInt = do
 -- -- --       double    = sign ++ digits ++ "." ++ mantissa'
 -- -- --   return (read double :: Double)
 
--- letter :: Parser Char
--- letter = satisfies isAlpha
---  where
---   isAlpha c = isJust (L.find (== c) letters)
---   letters = ['a' .. 'z'] P.++ ['A' .. 'Z']
+letter :: Parser Char
+letter = satisfies isAlpha
+ where
+  isAlpha c = isJust (findIndex (== c) letters)
+  letters = 'a':>'b':>'c':>'d':>'e':>'f':>'g':>'h':>'i':>'j':>'k':>'l':>'m':>'n':>'o':>'p':>'q':>Nil ++
+            'r':>'s':>'t':>'u':>'v':>'w':>'x':>'y':>'z':>'A':>'B':>'C':>'D':>'E':>'F':>'G':>'H':>Nil ++
+            'I':>'J':>'K':>'L':>'M':>'N':>'O':>'P':>'Q':>'R':>'S':>'T':>'U':>'V':>'W':>'X':>'Y':>'Z':>Nil
 
--- firstLetter :: Parser Char
--- firstLetter = letter <|> oneOf "+-*/<>=!?§$%&@~´',:._"
+firstLetter :: Parser Char
+firstLetter = letter <|> oneOf symbols
+  where symbols = '+':>'-':>'*':>'/':>'<':>'>':>'=':>'!':>'?':>'$':>'%':>'&':>'@':>'´':>'\'':>'_':>Nil
 
--- wordLetter :: Parser Char
--- wordLetter = firstLetter <|> digit
+wordLetter :: Parser Char
+wordLetter = firstLetter <|> digit
 
--- newline :: Parser Char
--- newline = char '\n'
+newline :: Parser Char
+newline = char '\n'
 
--- crlf :: Parser Char
--- crlf = char '\r' *> char '\n'
+crlf :: Parser Char
+crlf = char '\r' *> char '\n'
 
 -- endOfLine :: Parser Char
 -- endOfLine = newline <|> crlf
