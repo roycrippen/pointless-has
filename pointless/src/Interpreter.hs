@@ -1,6 +1,12 @@
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE GADTs               #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators       #-}
+
 module Interpreter where
 
-import           Clash.Prelude       hiding (concat, length, many, map, splitAt, (++), (<|>))
+import           Clash.Prelude       hiding (concat, length, map, splitAt, (++))
 import           Control.Applicative (Applicative (..), pure)
 import           Control.Monad       (Functor (..), Monad (..), ap, liftM, void)
 import           Data.Bool
@@ -23,6 +29,28 @@ data ValueP = Sym String
             | Str String
             | Quot [ValueP]
             deriving (Eq, Ord, Show)
+--
+data ValueP' = Sym' (Vec 16 Char)
+             | NumP' Int
+             | Chr' Char
+             | Str' (Vec 32 Char)
+             | Quot' Q
+             deriving (Eq, Ord, Show)
+
+data Q = Quot16    (Vec 16    Char)
+       | Quot32    (Vec 32    Char)
+       | Quot64    (Vec 64    Char)
+       | Quot128   (Vec 128   Char)
+       | Quot256   (Vec 256   Char)
+       | Quot512   (Vec 512   Char)
+       | Quot1024  (Vec 1024  Char)
+       | Quot2048  (Vec 2048  Char)
+       | Quot4096  (Vec 4096  Char)
+       | Quot8192  (Vec 8192  Char)
+       | Quot16383 (Vec 16383 Char)
+       | Quot32768 (Vec 32768 Char)
+       | Quot65536 (Vec 65536 Char)
+       deriving (Eq, Ord, Show)
 
 data Lang = Lang { vocab   :: Vocabulary
                  , stack   :: [ValueP]
@@ -123,6 +151,22 @@ replaceStr old new str = go str
     let (prefix, rest) = splitAt n str'
     in  if old == prefix then new ++ go rest else x : go xs
   n = length old
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -10,7 +10,7 @@ import           System.IO.Unsafe (unsafeDupablePerformIO)
 import           Test.Tasty
 import           Test.Tasty.HUnit
 
--- stack ghci pointless-hs:pointless-hs-test
+-- stack ghci pointless/test/Spec.hs
 
 sKeep01 :: String
 sKeep01 = "\"aaa\" [1.1] define aaa aaa [] cons cons dup "
@@ -28,7 +28,7 @@ s2 = " [1 2 3] size "
 
 s1AstFull :: [ValueP]
 s1AstFull =
-  [ NumP 10.0
+  [ NumP 10
   , Str "aaa"
   , Quot []
   , Sym "cons"
@@ -36,7 +36,7 @@ s1AstFull =
   , Quot []
   , Sym "cons"
   , Sym "define"
-  , NumP 3.0
+  , NumP 3
   , Sym "dup"
   ]
 
@@ -98,7 +98,7 @@ runQuot s = runQuotation qs (Lang coreDefinitions [] [] "" REPL)
 main :: IO ()
 main = do
 
-  let xs  = getAst s2
+  let xs  = getAst s1'
       xs' = primitiveAST coreDefinitions xs
 
   print xs
@@ -119,11 +119,7 @@ main = do
 unitTests :: TestTree
 unitTests = testGroup
   "Pointlees interprter tests"
-  [ parsePositiveDouble1
-  , parsePositiveDouble2
-  , parseNegativeDouble1
-  , parseNegativeDouble2
-  , parseNumberP1
+  [ parseNumberP1
   , parseNumberP2
   , parseNakedQuotation1
   , parseNakedQuotation2
@@ -132,50 +128,47 @@ unitTests = testGroup
   , parseCharP2
   , parseQuotedStringP1
   , parseQuotedStringP2
-  , formatStack1
   , escapeNewLine1
   ]
 
-parsePositiveDouble1 :: TestTree
-parsePositiveDouble1 = testCase "parse numberDouble 23"
-  $ assertEqual [] 23.0 val
-  where (val, _):_ = parse numberDouble "23"
+-- parsePositiveDouble1 :: TestTree
+-- parsePositiveDouble1 = testCase "parse numberDouble 23"
+--   $ assertEqual [] 23.0 val
+--   where (val, _):_ = parse numberDouble "23"
 
-parsePositiveDouble2 :: TestTree
-parsePositiveDouble2 = testCase "parse numberDouble 23.4"
-  $ assertEqual [] 23.4 val
-  where (val, _):_ = parse numberDouble "23.4"
+-- parsePositiveDouble2 :: TestTree
+-- parsePositiveDouble2 = testCase "parse numberDouble 23.4"
+--   $ assertEqual [] 23.4 val
+--   where (val, _):_ = parse numberDouble "23.4"
 
-parseNegativeDouble1 :: TestTree
-parseNegativeDouble1 = testCase "parse numberDouble -23"
-  $ assertEqual [] (-23.0) val
-  where (val, _):_ = parse numberDouble "-23"
+-- parseNegativeDouble1 :: TestTree
+-- parseNegativeDouble1 = testCase "parse numberDouble -23"
+--   $ assertEqual [] (-23.0) val
+--   where (val, _):_ = parse numberDouble "-23"
 
-parseNegativeDouble2 :: TestTree
-parseNegativeDouble2 = testCase "parse numberDouble -23.4"
-  $ assertEqual [] (-23.4) val
-  where (val, _):_ = parse numberDouble "-23.4"
+-- parseNegativeDouble2 :: TestTree
+-- parseNegativeDouble2 = testCase "parse numberDouble -23.4"
+--   $ assertEqual [] (-23.4) val
+--   where (val, _):_ = parse numberDouble "-23.4"
 
 parseNumberP1 :: TestTree
-parseNumberP1 = testCase "parse numberP -23"
-  $ assertEqual [] (NumP (-23.0)) val
+parseNumberP1 = testCase "parse numberP -23" $ assertEqual [] (NumP (-23)) val
   where (val, _):_ = parse numberP "-23"
 
 parseNumberP2 :: TestTree
-parseNumberP2 = testCase "parse numberP -23.4"
-  $ assertEqual [] (NumP (-23.4)) val
-  where (val, _):_ = parse numberP "-23.4"
+parseNumberP2 = testCase "parse numberP -23" $ assertEqual [] (NumP (-23)) val
+  where (val, _):_ = parse numberP "-23"
 
 parseNakedQuotation1 :: TestTree
 parseNakedQuotation1 =
   testCase "parse nakedQuotaions \"-10 10 +\" "
-    $ assertEqual [] [NumP (-10.0), NumP 10.0, Sym "+"] val
+    $ assertEqual [] [NumP (-10), NumP 10, Sym "+"] val
   where (val, _):_ = parse nakedQuotations "-10 10 +"
 
 parseNakedQuotation2 :: TestTree
 parseNakedQuotation2 =
   testCase "parse nakedQuotaions \"-10 'a'\" "
-    $ assertEqual [] [NumP (-10.0), Chr 'a'] val
+    $ assertEqual [] [NumP (-10), Chr 'a'] val
   where (val, _):_ = parse nakedQuotations "-10 'a'"
 
 parseNakedQuotation3 :: TestTree
@@ -206,10 +199,10 @@ parseQuotedStringP2 = testCase "parse parsequotedStringP \"\""
   $ assertEqual [] (Str "") val
   where (val, _):_ = parse quotedStringP "\"\""
 
-formatStack1 :: TestTree
-formatStack1 = testCase "formatStack after running"
-  $ assertEqual [] ["[ 1.100000 1.100000 ]", "[ 1.100000 1.100000 ]"] val
-  where val = formatStack $ stack $ runQuot sKeep01
+-- formatStack1 :: TestTree
+-- formatStack1 = testCase "formatStack after running"
+--   $ assertEqual [] ["[ 1.100000 1.100000 ]", "[ 1.100000 1.100000 ]"] val
+--   where val = formatStack $ stack $ runQuot sKeep01
 
 escapeNewLine1 :: TestTree
 escapeNewLine1 = testCase "escapeNewLine parser test"
@@ -217,6 +210,9 @@ escapeNewLine1 = testCase "escapeNewLine parser test"
  where
   val = lines (display res)
   res = runQuot sKeep02
+
+
+
 
 
 
