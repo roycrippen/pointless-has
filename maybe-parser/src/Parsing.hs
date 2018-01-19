@@ -28,18 +28,22 @@ class Monad m => MonadPlus m where
   mplus :: m a -> m a -> m a
 
 instance MonadPlus Parser where
-  mzero       = Parser (\_ -> Nothing)
-  p `mplus` q = Parser (\inp -> case parse p inp of
-                                      Nothing -> parse q inp
-                                      Just x  -> Just x)
+  mzero       = Parser (const Nothing)
+  p `mplus` q = Parser 
+    (\inp -> case parse p inp of
+      Nothing -> parse q inp
+      Just x  -> Just x
+    )
 
 failure :: Parser a
 failure = mzero
 
 item :: Parser Char
-item = Parser (\inp -> case inp of
-                      []     -> Nothing
-                      (x:xs) -> Just (x,xs))
+item = Parser 
+  (\case
+    []     -> Nothing
+    (x:xs) -> Just (x,xs)
+  )
 
 (+++) :: Parser a -> Parser a -> Parser a
 p +++ q = p `mplus` q
@@ -158,3 +162,4 @@ eval  :: String -> Int
 eval xs = case parse expr xs of
                 Just (n,[]) -> n
                 Nothing     -> error "invalid input"
+
