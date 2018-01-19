@@ -149,27 +149,92 @@ numberInt = do
 
 
 letter :: Parser Char
-letter = satisfies isAlpha
- where
-  isAlpha c = isJust (findIndex (==c) letters)
+letter = satisfies isAlpha where isAlpha c = isJust (findIndex (==c) letters)
 
 azLower :: Vec 26 Char
 azLower =
-  'a' :> 'b' :> 'c' :> 'd' :> 'e' :> 'f' :> 'g' :> 'h' :> 'i' :> 'j' :> 'k' :> 'l' :> 'm' :> 
-  'n' :> 'o' :> 'p' :> 'q' :> 'r' :> 's' :> 't' :> 'u' :> 'v' :> 'w' :> 'x' :> 'y' :> 'z' :> Nil
+  'a'
+    :> 'b'
+    :> 'c'
+    :> 'd'
+    :> 'e'
+    :> 'f'
+    :> 'g'
+    :> 'h'
+    :> 'i'
+    :> 'j'
+    :> 'k'
+    :> 'l'
+    :> 'm'
+    :> 'n'
+    :> 'o'
+    :> 'p'
+    :> 'q'
+    :> 'r'
+    :> 's'
+    :> 't'
+    :> 'u'
+    :> 'v'
+    :> 'w'
+    :> 'x'
+    :> 'y'
+    :> 'z'
+    :> Nil
 
 azUpper :: Vec 26 Char
 azUpper =
-  'A' :> 'B' :> 'C' :> 'D' :> 'E' :> 'F' :> 'G' :> 'H' :> 'I' :> 'J' :> 'K' :> 'L' :> 'M' :> 
-  'N' :> 'O' :> 'P' :> 'Q' :> 'R' :> 'S' :> 'T' :> 'U' :> 'V' :> 'W' :> 'X' :> 'Y' :> 'Z' :> Nil
+  'A'
+    :> 'B'
+    :> 'C'
+    :> 'D'
+    :> 'E'
+    :> 'F'
+    :> 'G'
+    :> 'H'
+    :> 'I'
+    :> 'J'
+    :> 'K'
+    :> 'L'
+    :> 'M'
+    :> 'N'
+    :> 'O'
+    :> 'P'
+    :> 'Q'
+    :> 'R'
+    :> 'S'
+    :> 'T'
+    :> 'U'
+    :> 'V'
+    :> 'W'
+    :> 'X'
+    :> 'Y'
+    :> 'Z'
+    :> Nil
 
-letters :: Vec 52 Char 
+letters :: Vec 52 Char
 letters = azLower ++ azUpper
 
 firstLetter :: Parser Char
 firstLetter = letter <|> oneOf symbols
- where symbols = '+' :> '-' :> '*' :> '/' :> '<' :> '>' :> '=' :> '!' :> '?' :> 
-                 '$' :> '%' :> '&' :> '@' :> '´' :> '\'' :> '_' :> Nil
+ where
+  symbols =
+    '+'
+      :> '-'
+      :> '*'
+      :> '/'
+      :> '<'
+      :> '>'
+      :> '='
+      :> '!'
+      :> '?'
+      :> '$'
+      :> '%'
+      :> '&'
+      :> '@'
+      :> '´'
+      :> '\''
+      :> '_'
+      :> Nil
 
 wordLetter :: Parser Char
 wordLetter = firstLetter <|> digit
@@ -316,32 +381,62 @@ parserTests = do
   putStrLn $ "Vec: " P.++ show vs
   putStrLn $ "back to str: " P.++ vecToString vs P.++ "\n"
 
-  let s1 = showParseResult $ parse (oneOf $ loadStr16 "aaa bbb aaa") (loadStr32 "abc   123")
-  putStrLn $ "parse (oneOf loadStr32 \"aaa bbb aaa\") (loadStr32 \"abc   123\"): " P.++ s1
+  let s1 = showParseResult
+        $ parse (oneOf $ loadStr16 "aaa bbb aaa") (loadStr32 "abc   123")
+  putStrLn
+    $    "parse (oneOf loadStr32 \"aaa bbb aaa\") (loadStr32 \"abc   123\"): "
+    P.++ s1
 
-  let s2 = showParseResult $ parse (string $ loadStr16 "abc") (loadStr32 "abc   123")
-  putStrLn $ "parse (string loadStr16 \"abc\") (loadStr32 \"abc   123\"): " P.++ s2
+  let
+    s2 =
+      showParseResult $ parse (string $ loadStr16 "abc") (loadStr32 "abc   123")
+  putStrLn
+    $    "parse (string loadStr16 \"abc\") (loadStr32 \"abc   123\"): "
+    P.++ s2
 
-  let s3 = showParseResult $ parse (string (loadStr16 "abc") >> spaces) (loadStr32 "abc   123")
-  putStrLn $ "parse ((string loadStr16 \"abc\") >> spaces) (loadStr32 \"abc   123\"): " P.++ s3
+  let s3 = showParseResult
+        $ parse (string (loadStr16 "abc") >> spaces) (loadStr32 "abc   123")
+  putStrLn
+    $ "parse ((string loadStr16 \"abc\") >> spaces) (loadStr32 \"abc   123\"): "
+    P.++ s3
 
-  let s4 = showParseResult $ parse (string (loadStr16 "abc") >> spaces >> digit) (loadStr32 "abc   123")
-  putStrLn $ "parse ((string loadStr16 \"abc\") >> spaces >> digit) (loadStr32 \"abc   123\"): " P.++ s4
+  let s4 = showParseResult $ parse
+        (string (loadStr16 "abc") >> spaces >> digit)
+        (loadStr32 "abc   123")
+  putStrLn
+    $ "parse ((string loadStr16 \"abc\") >> spaces >> digit) (loadStr32 \"abc   123\"): "
+    P.++ s4
 
-  let s5 = showParseResult $ parse (string (loadStr16 "abc") >> spaces >> numberInt) (loadStr32 "abc   123")
-  putStrLn $ "parse ((string loadStr16 \"abc\") >> spaces >> numberInt) (loadStr32 \"abc   123\"): "P.++ s5
+  let s5 = showParseResult $ parse
+        (string (loadStr16 "abc") >> spaces >> numberInt)
+        (loadStr32 "abc   123")
+  putStrLn
+    $ "parse ((string loadStr16 \"abc\") >> spaces >> numberInt) (loadStr32 \"abc   123\"): "
+    P.++ s5
 
   let s6 = showParseResult $ parse numberInt (loadStr32 "123 abc")
   putStrLn $ "parse numberInt (loadStr32 \"123 abc\"): " P.++ s6
 
-  let s7 = showParseResult $ parse (oneOf $ loadStr16 "defa") (loadStr32 "abc   123")
-  putStrLn $ "parse (oneOf $ loadStr16 \"defa\") (loadStr32 \"abc   123\"): " P.++ s7
+  let
+    s7 =
+      showParseResult $ parse (oneOf $ loadStr16 "defa") (loadStr32 "abc   123")
+  putStrLn
+    $    "parse (oneOf $ loadStr16 \"defa\") (loadStr32 \"abc   123\"): "
+    P.++ s7
 
-  let s8 = showParseResult $ parse (oneOf $ loadStr16 "cdef") (loadStr32 "abc   123")
-  putStrLn $ "parse (oneOf $ loadStr16 \"cdef\") (loadStr32 \"abc   123\"): " P.++ s8
+  let
+    s8 =
+      showParseResult $ parse (oneOf $ loadStr16 "cdef") (loadStr32 "abc   123")
+  putStrLn
+    $    "parse (oneOf $ loadStr16 \"cdef\") (loadStr32 \"abc   123\"): "
+    P.++ s8
 
-  let s9 = showParseResult $ parse (noneOf $ loadStr16 "def") (loadStr32 "abc   123")
-  putStrLn $ "parse (noneOf $ loadStr16 \"def\") (loadStr32 \"abc   123\"): " P.++ s9
+  let
+    s9 =
+      showParseResult $ parse (noneOf $ loadStr16 "def") (loadStr32 "abc   123")
+  putStrLn
+    $    "parse (noneOf $ loadStr16 \"def\") (loadStr32 \"abc   123\"): "
+    P.++ s9
 
   let s10 = showParseResult $ parse (manyChar (char 'a')) (loadStr32 "aaa bbb")
   putStrLn $ "parse manyChar 'a' (loadStr32 \"aaa bbb\"): " P.++ s10
@@ -352,23 +447,31 @@ parserTests = do
   let s12 = showParseResult $ parse (manyChar (char 'a')) (loadStr32 "bbb aaa")
   putStrLn $ "parse manyChar 'a' (loadStr32 \"bbb aaa\"): " P.++ s12
 
-  let s13 = showParseResult $ parse (many1Char (char 'a')) (loadStr32 "aaa bbb")
+  let s13 =
+        showParseResult $ parse (many1Char (char 'a')) (loadStr32 "aaa bbb")
   putStrLn $ "parse many1Char 'a' (loadStr32 \"aaa bbb\"): " P.++ s13
 
   let s14 = showParseResult $ parse (many1Char (char 'a')) (loadStr32 "a bbb")
   putStrLn $ "parse many1Char 'a' (loadStr32 \"a bbb\"): " P.++ s14
 
-  let s15 = showParseResult $ parse (many1Char (char 'a')) (loadStr32 "bbb aaa")
+  let s15 =
+        showParseResult $ parse (many1Char (char 'a')) (loadStr32 "bbb aaa")
   putStrLn $ "parse many1Char 'a' (loadStr32 \"bbb aaa\"): " P.++ s15
 
   let s16 = showParseResult $ parse emptyQuot (loadStr32 "[] abc")
   putStrLn $ "parse emptyQuot (loadStr32 \"[] abc\"): " P.++ s16
 
-  let s17 = showParseResult $ parse (manyTillChar anyChar (char '}')) (loadStr32 "123} ccc")
-  putStrLn $ "parse (manyTillChar anyChar (char '}'))  (loadStr32 \"123} ccc\"): " P.++ s17
+  let s17 = showParseResult
+        $ parse (manyTillChar anyChar (char '}')) (loadStr32 "123} ccc")
+  putStrLn
+    $    "parse (manyTillChar anyChar (char '}'))  (loadStr32 \"123} ccc\"): "
+    P.++ s17
 
-  let s18 = showParseResult $ parse quotedString (loadStr32 "\"hello world\" 123")
-  putStrLn $ "parse quotedString (loadStr32 \" \\\"hello world\\\" 123\"): " P.++ s18
+  let s18 =
+        showParseResult $ parse quotedString (loadStr32 "\"hello world\" 123")
+  putStrLn
+    $    "parse quotedString (loadStr32 \" \\\"hello world\\\" 123\"): "
+    P.++ s18
 
   let s19 = showParseResult $ parse firstLetter (loadStr32 "abc")
   putStrLn $ "parse firstLetter (loadStr32 \"abc\"): " P.++ s19
@@ -402,9 +505,6 @@ parserTests = do
   --     v3Str =  if (v3 == [NumP 10,Str "aaa",Sym "set-var", NumP 3, Sym "dup"]) then "OK" else "ERROR"
   -- putStrLn $ "parse nakedQuotation: " ++ v3Str
   -- putStrLn $ show v3 ++ "\n"
-
-
-
 
 
 
