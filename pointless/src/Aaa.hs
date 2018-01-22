@@ -482,6 +482,11 @@ loadStr32 s = go s' (str32 '~')
   s' = strToCharN 32 s
   go ""     vs = vs
   go (c:cs) vs = go cs (replaceThenRotate c vs)
+--
+
+consVec :: a -> Vec n a -> Vec (n + 1) a
+consVec c vs = c :> vs
+
 
 
 padStrN :: Int -> String -> String
@@ -651,6 +656,8 @@ parserTests = do
   putStrLn
     $    "parse spacesCommentsSpecifications (loadStr32 \" {a} (b) a\"): "
     P.++ s34
+
+
 
 
 
