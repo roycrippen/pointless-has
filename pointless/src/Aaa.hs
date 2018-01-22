@@ -484,6 +484,12 @@ loadStr32 s = go s' (str32 '~')
   go (c:cs) vs = go cs (replaceThenRotate c vs)
 
 
+padStrN :: Int -> String -> String
+padStrN n s = s P.++ P.replicate (n - L.length s) '~'
+
+blank1024 :: Vec 1024 Char
+blank1024 = repeat '~'
+
 -- | Data for tests
 -- |
 
@@ -645,6 +651,16 @@ parserTests = do
   putStrLn
     $    "parse spacesCommentsSpecifications (loadStr32 \" {a} (b) a\"): "
     P.++ s34
+
+
+
+
+
+
+
+
+
+
 
 
 
