@@ -10,12 +10,14 @@ module Main where
 import Clash.Prelude hiding ((<|>))
 import           Control.Monad (ap, liftM, void)
 import qualified Data.Char     as C (digitToInt)
-import qualified Data.List     as L (find, foldl, length, repeat, reverse, take)
+import qualified Data.List     as L (foldl, length, repeat, reverse,
+                               take, head, last, drop)
 import           Data.Maybe    (fromJust, isJust)
 import           Data.String   ()
 import qualified Prelude       as P (replicate, (++))
-
 import Interpreter (ValueP'(..))
+
+import Debug.Trace
 
 newtype Parser a = Parser (Vec 32 Char -> Maybe (a, Vec 32 Char))
 
@@ -23,7 +25,7 @@ parse :: Parser t -> Vec 32 Char -> Maybe (t, Vec 32 Char)
 parse (Parser p) = p
 
 instance Functor Parser where
-  fmap = liftM
+ fmap = liftM
 
 instance Applicative Parser where
   pure  = return
@@ -424,13 +426,18 @@ replaceThenRotateN cnt c vs =
   replaceThenRotateN (cnt - 1) c (replaceThenRotate c vs)
 
 -- | Count non '~' consecutive charaters starting a Vector
-cntConsecutive :: KnownNat n => Vec n Char -> Int
-cntConsecutive vs = go 0 vs vs
- where
-  go :: KnownNat n1 => Int -> Vec n1 Char -> Vec n1 Char -> Int
-  go cnt orig new = do
-    let new' = rotateLeft new one
-    if (new !! 0) == '~' || new' == orig then cnt else go (cnt + 1) orig new'
+-- cntConsecutive :: ((1 <=? n) ~ True, KnownNat n, Num a) => Vec n Char -> a
+cntConsecutive vs = case findIndex (=='~') vs of
+  Just n -> fromIntegral (toInteger n)
+  _      -> length vs
+--
+-- cntConsecutive :: KnownNat n => Vec n Char -> Int
+-- cntConsecutive vs = go 0 vs vs
+--  where
+--   go :: KnownNat n => Int -> Vec n Char -> Vec n Char -> Int
+--   go cnt orig new = do
+--     let new' = rotateLeft new one
+--     if (new !! 0) == '~' || new' == orig then cnt else go (cnt + 1) orig new'
 
 -- | Covert a vector of chars to an int
 -- | takes chars != '~'
@@ -450,14 +457,23 @@ strToCharN n s | n > len   = s P.++ P.replicate (n - len) '~'
   where len = L.length s
 
 vecToString :: Vec n Char -> String
-vecToString vs =
-  show $ L.reverse $ foldl (\acc c -> if c /= '~' then c : acc else acc) "" vs
+vecToString vs = show $ L.reverse removeTilda
+  where removeTilda = foldl (\acc c -> if c /= '~' then c : acc else acc) "" vs
 
-showParseResult :: Show a => Maybe (a, Vec 32 Char) -> String
-showParseResult res = if isJust res
+showVec :: String -> String
+showVec s = if L.length s > 1 && L.head s == '<' && L.last s == '>'
+  then filter (\c -> c /= ',' && c /= '\'' && c /= '~') $ show s
+  else case L.take 3 s of
+    "Sym" -> "Sym' " P.++ showVec (L.drop 5 s)
+    "Str" -> "Str' " P.++ showVec (L.drop 5 s)
+    _     -> s
+
+showParse :: Show a => Maybe (a, Vec n Char) -> String
+showParse res = if isJust res
   then do
     let (r, vec) = fromJust res
-    "(" P.++ show r P.++ ", " P.++ vecToString vec P.++ ")"
+        r'       = showVec $ show r
+    "(" P.++ r' P.++ ", " P.++ vecToString vec P.++ ")"
   else "Nothing"
 
 str16 :: Char -> Vec 16 Char
@@ -503,159 +519,184 @@ main = do
   putStrLn "Pointless in Clash tests\n"
   parserTests
 
+
 parserTests :: IO ()
 parserTests = do
   putStrLn "parserTests..."
 
-  let vs = loadStr32 "abc 123"
-  putStrLn $ "Vec: " P.++ show vs
-  putStrLn $ "back to str: " P.++ vecToString vs P.++ "\n"
+  let s1 = parse (oneOf $ loadStr16 "cba") (loadStr32 "abc 123")
+      r1 = "('a', \"bc 123\")"
+  putStrLn $ "parse oneOf:             " P.++ show (r1 == showParse s1)
 
-  let s1 = showParseResult
-        $ parse (oneOf $ loadStr16 "cba") (loadStr32 "abc 123")
-  putStrLn
-    $    "parse (oneOf $ loadStr16 \"cba\") (loadStr32 \"abc 123\"): "
-    P.++ s1
+  let s2 = parse (string $ loadStr16 "abc") (loadStr32 "abc   123")
+      r2 = "(\"<abc>\", \"   123\")"
+  putStrLn $ "parse string:            " P.++ show (r2 == showParse s2)
 
-  let
-    s2 =
-      showParseResult $ parse (string $ loadStr16 "abc") (loadStr32 "abc   123")
-  putStrLn
-    $    "parse (string loadStr16 \"abc\") (loadStr32 \"abc   123\"): "
-    P.++ s2
+  let s3 = parse spaces (loadStr32 "   123")
+      r3 = "((), \"123\")"
+  putStrLn $ "parse spaces:            " P.++ show (r3 == showParse s3)
 
-  let s3 = showParseResult
-        $ parse (string (loadStr16 "abc") >> spaces) (loadStr32 "abc   123")
-  putStrLn
-    $ "parse ((string loadStr16 \"abc\") >> spaces) (loadStr32 \"abc   123\"): "
-    P.++ s3
+  let s4 = parse digit (loadStr32 "123")
+      r4 = "('1', \"23\")"
+  putStrLn $ "parse digit:             " P.++ show (r4 == showParse s4)
 
-  let s4 = showParseResult $ parse
-        (string (loadStr16 "abc") >> spaces >> digit)
-        (loadStr32 "abc   123")
-  putStrLn
-    $ "parse ((string loadStr16 \"abc\") >> spaces >> digit) (loadStr32 \"abc   123\"): "
-    P.++ s4
+  let s5 = parse numberInt (loadStr32 "123")
+      r5 = "(123, \"\")"
+  putStrLn $ "parse numberInt:         " P.++ show (r5 == showParse s5)
 
-  let s5 = showParseResult $ parse
-        (string (loadStr16 "abc") >> spaces >> numberInt)
-        (loadStr32 "abc   123")
-  putStrLn
-    $ "parse ((string loadStr16 \"abc\") >> spaces >> numberInt) (loadStr32 \"abc   123\"): "
-    P.++ s5
+  let s6 = parse numberInt (loadStr32 "123 abc")
+      r6 = "(123, \" abc\")"
+  putStrLn $ "parse numberInt:         " P.++ show (r6 == showParse s6)
 
-  let s6 = showParseResult $ parse numberInt (loadStr32 "123 abc")
-  putStrLn $ "parse numberInt (loadStr32 \"123 abc\"): " P.++ s6
+  let s7 = parse (oneOf $ loadStr16 "defa") (loadStr32 "abc   123")
+      r7 = "('a', \"bc   123\")"
+  putStrLn $ "parse oneOf:             " P.++ show (r7 == showParse s7)
 
-  let
-    s7 =
-      showParseResult $ parse (oneOf $ loadStr16 "defa") (loadStr32 "abc   123")
-  putStrLn
-    $    "parse (oneOf $ loadStr16 \"defa\") (loadStr32 \"abc   123\"): "
-    P.++ s7
+  let s8 = parse (oneOf $ loadStr16 "cdef") (loadStr32 "abc   123")
+      r8 = "Nothing"
+  putStrLn $ "parse oneOf:             " P.++ show (r8 == showParse s8)
 
-  let
-    s8 =
-      showParseResult $ parse (oneOf $ loadStr16 "cdef") (loadStr32 "abc   123")
-  putStrLn
-    $    "parse (oneOf $ loadStr16 \"cdef\") (loadStr32 \"abc   123\"): "
-    P.++ s8
+  let s9 = parse (noneOf $ loadStr16 "def") (loadStr32 "abc   123")
+      r9 = "('a', \"bc   123\")"
+  putStrLn $ "parse NoneOf:            " P.++ show (r9 == showParse s9)
 
-  let
-    s9 =
-      showParseResult $ parse (noneOf $ loadStr16 "def") (loadStr32 "abc   123")
-  putStrLn
-    $    "parse (noneOf $ loadStr16 \"def\") (loadStr32 \"abc   123\"): "
-    P.++ s9
+  let s10 = parse (manyChar (char 'a')) (loadStr32 "aaa bbb")
+      r10 = "(\"<aaa>\", \" bbb\")"
+  putStrLn $ "parse manyChar:          " P.++ show (r10 == showParse s10)
 
-  let s10 = showParseResult $ parse (manyChar (char 'a')) (loadStr32 "aaa bbb")
-  putStrLn $ "parse manyChar 'a' (loadStr32 \"aaa bbb\"): " P.++ s10
+  let s11 = parse (manyChar (char 'a')) (loadStr32 "a bbb")
+      r11 = "(\"<a>\", \" bbb\")"
+  putStrLn $ "parse manyChar:          " P.++ show (r11 == showParse s11)
 
-  let s11 = showParseResult $ parse (manyChar (char 'a')) (loadStr32 "a bbb")
-  putStrLn $ "parse manyChar 'a' (loadStr32 \"a bbb\"): " P.++ s11
+  let s12 = parse (manyChar (char 'a')) (loadStr32 "bbb aaa")
+      r12 = "(\"<>\", \"bbb aaa\")"      
+  putStrLn $ "parse manyChar:          " P.++ show (r12 == showParse s12)
 
-  let s12 = showParseResult $ parse (manyChar (char 'a')) (loadStr32 "bbb aaa")
-  putStrLn $ "parse manyChar 'a' (loadStr32 \"bbb aaa\"): " P.++ s12
+  let s13 = parse (many1Char (char 'a')) (loadStr32 "aaa bbb")
+      r13 = "(\"<aaa>\", \" bbb\")"
+  putStrLn $ "parse many1Char:         " P.++ show (r13 == showParse s13)
 
-  let s13 =
-        showParseResult $ parse (many1Char (char 'a')) (loadStr32 "aaa bbb")
-  putStrLn $ "parse many1Char 'a' (loadStr32 \"aaa bbb\"): " P.++ s13
+  let s14 = parse (many1Char (char 'a')) (loadStr32 "a bbb")
+      r14 = "(\"<a>\", \" bbb\")"
+  putStrLn $ "parse many1Char:         " P.++ show (r14 == showParse s14)
 
-  let s14 = showParseResult $ parse (many1Char (char 'a')) (loadStr32 "a bbb")
-  putStrLn $ "parse many1Char 'a' (loadStr32 \"a bbb\"): " P.++ s14
+  let s15 = parse (many1Char (char 'a')) (loadStr32 "bbb aaa")
+      r15 = "Nothing"
+  putStrLn $ "parse many1Char:         " P.++ show (r15 == showParse s15)
 
-  let s15 =
-        showParseResult $ parse (many1Char (char 'a')) (loadStr32 "bbb aaa")
-  putStrLn $ "parse many1Char 'a' (loadStr32 \"bbb aaa\"): " P.++ s15
+  let s16 = parse emptyQuot (loadStr32 "[] abc")
+      r16 = "(\"<[]>\", \" abc\")"
+  putStrLn $ "parse emptyQuot:         " P.++ show (r16 == showParse s16)
 
-  let s16 = showParseResult $ parse emptyQuot (loadStr32 "[] abc")
-  putStrLn $ "parse emptyQuot (loadStr32 \"[] abc\"): " P.++ s16
+  let s17 = parse (manyTillChar anyChar (char '}')) (loadStr32 "123} ccc")
+      r17 = "(\"<123>\", \"} ccc\")"
+  putStrLn $ "parse manyTillChar:      "  P.++ show (r17 == showParse s17)
 
-  let s17 = showParseResult
-        $ parse (manyTillChar anyChar (char '}')) (loadStr32 "123} ccc")
-  putStrLn
-    $    "parse (manyTillChar anyChar (char '}'))  (loadStr32 \"123} ccc\"): "
-    P.++ s17
+  let s18 = parse quotedString (loadStr32 "\"hello world\" 123")
+      r18 = "(\"<hello world>\", \" 123\")"
+  putStrLn $ "parse quotedString:      " P.++ show (r18 == showParse s18)
 
-  let s18 =
-        showParseResult $ parse quotedString (loadStr32 "\"hello world\" 123")
-  putStrLn
-    $    "parse quotedString (loadStr32 \" \\\"hello world\\\" 123\"): "
-    P.++ s18
+  let s19 = parse firstLetter (loadStr32 "abc")
+      r19 = "('a', \"bc\")"
+  putStrLn $ "parse firstLetter:       " P.++ show (r19 == showParse s19)
 
-  let s19 = showParseResult $ parse firstLetter (loadStr32 "abc")
-  putStrLn $ "parse firstLetter (loadStr32 \"abc\"): " P.++ s19
+  let s20 = parse firstLetter (loadStr32 "_abc")
+      r20 = "('_', \"abc\")"
+  putStrLn $ "parse firstLetter:       " P.++ show (r20 == showParse s20)
 
-  let s20 = showParseResult $ parse firstLetter (loadStr32 "_abc")
-  putStrLn $ "parse firstLetter (loadStr32 \"_abc\"): " P.++ s20
+  let s21 = parse charP (loadStr32 "'z' abc")
+      r21 = "(Chr' 'z', \" abc\")"
+  putStrLn $ "parse charP:             " P.++ show (r21 == showParse s21)
 
-  let s21 = showParseResult $ parse charP (loadStr32 "'z' abc")
-  putStrLn $ "parse charP (loadStr32 \"'z' abc\"): " P.++ s21
+  let s22 = parse charP (loadStr32 "abc")
+      r22 = "Nothing"
+  putStrLn $ "parse charP:             " P.++ show (r22 == showParse s22)
 
-  let s22 = showParseResult $ parse charP (loadStr32 "abc")
-  putStrLn $ "parse charP (loadStr32 \"abc\"): " P.++ s22
+  let s23 = parse numberP (loadStr32 "123 abc")
+      r23 = "(NumP' 123, \" abc\")"
+  putStrLn $ "parse numberP:           " P.++ show (r23 == showParse s23)
 
-  let s23 = showParseResult $ parse numberP (loadStr32 "123 abc")
-  putStrLn $ "parse numberP (loadStr32 \"123 abc\"): " P.++ s23
+  let s24 = parse numberP (loadStr32 "-123 abc")
+      r24 = "(NumP' (-123), \" abc\")"
+  putStrLn $ "parse numberP:           " P.++ show (r24 == showParse s24)
 
-  let s24 = showParseResult $ parse numberP (loadStr32 "-123 abc")
-  putStrLn $ "parse numberP (loadStr32 \"-123 abc\"): " P.++ s24
+  let s25 = parse numberP (loadStr32 "abc")
+      r25 = "Nothing"
+  putStrLn $ "parse numberP:           " P.++ show (r25 == showParse s25)
 
-  let s24 = showParseResult $ parse numberP (loadStr32 "abc")
-  putStrLn $ "parse numberP (loadStr32 \"abc\"): " P.++ s24
+  let s26 = parse quotedStringP (loadStr32 "\"abc\" 123")
+      r26 = "(Str' \"<abc>\", \" 123\")"
+  putStrLn $ "parse quotedStringP:     " P.++ show (r26 == showParse s26)
 
-  let s25 = showParseResult $ parse quotedStringP (loadStr32 "\"abc\" 123")
-  putStrLn $ "parse quotedStringP (loadStr32 \"\\\"abc\\\" 123\"): " P.++ s25
+  let s27 = parse word (loadStr32 "dup +")
+      r27 = "(Sym' \"<dup>\", \" +\")"
+  putStrLn $ "parse word:              " P.++ show (r27 == showParse s27)
 
-  let s26 = showParseResult $ parse word (loadStr32 "dup +")
-  putStrLn $ "parse word (loadStr32 \"dup +\"): " P.++ s26
+  let s28 = parse lineComment (loadStr32 "$ zzz \n dup")
+      r28 = "((), \"dup\")"
+  putStrLn $ "parse lineComment:       " P.++ show (r28 == showParse s28)
 
-  let s27 = showParseResult $ parse lineComment (loadStr32 "$ zzz \n dup")
-  putStrLn $ "parse lineComment (loadStr32 \"$ zzz \\n dup\"): " P.++ s27
+  let s29 = parse blockComment (loadStr32 "{ zzz } dup")
+      r29 = "((), \"dup\")"
+  putStrLn $ "parse blockComment:      " P.++ show (r29 == showParse s29)
 
-  let s28 = showParseResult $ parse blockComment (loadStr32 "{ zzz } dup")
-  putStrLn $ "parse blockComment (loadStr32 \"{ zzz } dup\"): " P.++ s28
+  let s30 = parse comment (loadStr32 "$ zzz \n dup")
+      r30 = "((), \"dup\")"
+  putStrLn $ "parse comment:           " P.++ show (r30 == showParse s30)
 
-  let s29 = showParseResult $ parse comment (loadStr32 "$ zzz \n dup")
-  putStrLn $ "parse comment (loadStr32 \"$ zzz \\n dup\"): " P.++ s29
+  let s31 = parse comment (loadStr32 "{ zzz } dup")
+      r31 = "((), \"dup\")"
+  putStrLn $ "parse comment:           " P.++ show (r31 == showParse s31)
 
-  let s30 = showParseResult $ parse comment (loadStr32 "{ zzz } dup")
-  putStrLn $ "parse comment (loadStr32 \"{ zzz } dup\"): " P.++ s30
+  let s32 = parse comments (loadStr32 "$ a \n {z} {z} dup")
+      r32 = "((), \"dup\")"
+  putStrLn $ "parse comments:          " P.++ show (r32 == showParse s32)
 
-  let s31 = showParseResult $ parse comments (loadStr32 "$ a \n {z} {z} dup")
-  putStrLn $ "parse comments (loadStr32 \"$ a \\n {z} {z} dup\"): " P.++ s31
+  let s33 = parse specification (loadStr32 "( X -> -- ) a")
+      r33 = "((), \"a\")"
+  putStrLn $ "parse specification:     " P.++ show (r33 == showParse s33)
 
-  let s32 = showParseResult $ parse specification (loadStr32 "( X -> -- ) a")
-  putStrLn $ "parse specification (loadStr32 \"( X -> -- ) a\"): " P.++ s32
+  let s34 = parse specifications (loadStr32 "(a) (b) a")
+      r34 = "((), \"a\")"
+  putStrLn $ "parse specifications:    " P.++ show (r34 == showParse s34)
 
-  let s33 = showParseResult $ parse specifications (loadStr32 "(a) (b) a")
-  putStrLn $ "parse specifications (loadStr32 \"(a) (b) a\"): " P.++ s33
+  let s35 = parse spacesCommentsSpecifications (loadStr32 " {a} (b) a")
+      r35 = "((), \"a\")"
+  putStrLn $ "parse spacesCommentsSpecifications: " P.++ show (r35 == showParse s35)
+      
 
-  let s34 = showParseResult
-        $ parse spacesCommentsSpecifications (loadStr32 " {a} (b) a")
-  putStrLn
-    $    "parse spacesCommentsSpecifications (loadStr32 \" {a} (b) a\"): "
-    P.++ s34
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
