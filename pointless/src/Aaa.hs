@@ -1,7 +1,7 @@
 {-# LANGUAGE DataKinds           #-}
 {-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE GADTs               #-}
-{-# LANGUAGE KindSignatures      #-}
+-- {-# LANGUAGE KindSignatures      #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 
@@ -82,7 +82,7 @@ string vs = Parser
 manyChar :: Parser Char -> Parser (Vec 32 Char)
 manyChar p = Parser
   ( \vs -> do
-    let vs' = map (parseChar p . str32) vs
+    let vs' = map (parseChar p . repeat) vs
         cnt = cntConsecutive vs'
         res = imap (\i x -> if fromIntegral i < cnt then x else '~') vs'
     Just (res, replaceThenRotateN cnt '~' vs)
@@ -96,8 +96,8 @@ many1Char p = do
 manyTillChar :: Parser Char -> Parser Char -> Parser (Vec 32 Char)
 manyTillChar p end = Parser
   ( \vs -> do
-    let vs'  = map (parseChar p . str32) vs
-        vs'' = map (\x -> if x == parseChar end (str32 x) then '~' else x) vs'
+    let vs'  = map (parseChar p . repeat) vs
+        vs'' = map (\x -> if x == parseChar end (repeat x) then '~' else x) vs'
         cnt  = cntConsecutive vs''
         res  = imap (\i x -> if fromIntegral i < cnt then x else '~') vs'
     Just (res, replaceThenRotateN cnt '~' vs)
@@ -256,11 +256,11 @@ anyChar :: Parser Char
 anyChar = satisfies (const True)
 
 emptyQuot :: Parser (Vec 16 Char)
-emptyQuot = string ('[' +>> ']' +>> str16 '~')
+emptyQuot = string ('[' +>> ']' +>> blank16)
 
 escapeNewLine :: Parser Char
 escapeNewLine = do
-  b <- lookAhead (string ('\\' +>> '\n' +>> str16 '~'))
+  b <- lookAhead (string ('\\' +>> '\n' +>> blank16))
   if b
     then do
       _ <- char '\\'
@@ -268,7 +268,7 @@ escapeNewLine = do
     else failure
 
 nonEscape :: Parser Char
-nonEscape = noneOf ('\\' +>> '\"' +>> str16 '~')
+nonEscape = noneOf ('\\' +>> '\"' +>> blank16)
 
 quotedString :: Parser (Vec 32 Char)
 quotedString = do
@@ -415,12 +415,10 @@ zero = 0
 one :: Integer
 one = 1
 
-replaceThenRotate
-  :: forall (n :: Nat) . KnownNat n => Char -> Vec n Char -> Vec n Char
+replaceThenRotate :: KnownNat n => Char -> Vec n Char -> Vec n Char
 replaceThenRotate c vs = rotateLeft (replace zero c vs) one
 
-replaceThenRotateN
-  :: forall (n :: Nat) . KnownNat n => Int -> Char -> Vec n Char -> Vec n Char
+replaceThenRotateN :: KnownNat n => Int -> Char -> Vec n Char -> Vec n Char
 replaceThenRotateN 0 _ vs = vs
 replaceThenRotateN cnt c vs =
   replaceThenRotateN (cnt - 1) c (replaceThenRotate c vs)
@@ -450,11 +448,11 @@ fromDigits vs = val * sign
   val =
     foldl (\acc c -> if c /= '~' then 10 * acc + C.digitToInt c else acc) 0 vs'
 
-strToCharN :: Int -> String -> String
-strToCharN n s | n > len   = s P.++ P.replicate (n - len) '~'
-               | n == len  = s
-               | otherwise = L.take n s
-  where len = L.length s
+-- strToCharN :: Int -> String -> String
+-- strToCharN n s | n > len   = s P.++ P.replicate (n - len) '~'
+--                | n == len  = s
+--                | otherwise = L.take n s
+--   where len = L.length s
 
 vecToString :: Vec n Char -> String
 vecToString vs = show $ L.reverse removeTilda
@@ -476,34 +474,11 @@ showParse res = if isJust res
     "(" P.++ r' P.++ ", " P.++ vecToString vec P.++ ")"
   else "Nothing"
 
-str16 :: Char -> Vec 16 Char
-str16 = repeat
-
-str32 :: Char -> Vec 32 Char
-str32 = repeat
-
-str1024 :: Char -> Vec 1024 Char
-str1024 = repeat
-
-loadStr16 :: String -> Vec 16 Char
-loadStr16 s = go s' (str16 '~')
+loadStr n s = go s' $ drop (subSNat d64 n) blank64
  where
-  s' = strToCharN 16 s
+  s' = padStrN (fromIntegral (snatToInteger n) :: Int) s
   go ""     vs = vs
   go (c:cs) vs = go cs (replaceThenRotate c vs)
-
-loadStr32 :: String -> Vec 32 Char
-loadStr32 s = go s' (str32 '~')
- where
-  s' = strToCharN 32 s
-  go ""     vs = vs
-  go (c:cs) vs = go cs (replaceThenRotate c vs)
---
-
-consVec :: a -> Vec n a -> Vec (n + 1) a
-consVec c vs = c :> vs
-
-
 
 padStrN :: Int -> String -> String
 padStrN n s = s P.++ P.replicate (n - L.length s) '~'
@@ -511,7 +486,16 @@ padStrN n s = s P.++ P.replicate (n - L.length s) '~'
 blank1024 :: Vec 1024 Char
 blank1024 = repeat '~'
 
--- | Data for tests
+blank64 :: Vec 64 Char
+blank64 = repeat '~'
+
+blank32 :: Vec 32 Char
+blank32 = repeat '~'
+
+blank16 :: Vec 16 Char
+blank16 = repeat '~'
+
+-- | Parser tests.
 -- |
 
 main :: IO ()
@@ -524,222 +508,180 @@ parserTests :: IO ()
 parserTests = do
   putStrLn "parserTests..."
 
-  let s1 = parse (oneOf $ loadStr16 "cba") (loadStr32 "abc 123")
+  let s1 = parse (oneOf $ loadStr d16 "cba") (loadStr d32 "abc 123")
       r1 = "('a', \"bc 123\")"
-  putStrLn $ "parse oneOf:             " P.++ show (r1 == showParse s1)
+  putStr $ "parse oneOf:             " P.++ show (r1 == showParse s1)
+  putStrLn $ ",  result = " P.++ r1
 
-  let s2 = parse (string $ loadStr16 "abc") (loadStr32 "abc   123")
+  let s2 = parse (string $ loadStr d16 "abc") (loadStr d32 "abc   123")
       r2 = "(\"<abc>\", \"   123\")"
-  putStrLn $ "parse string:            " P.++ show (r2 == showParse s2)
+  putStr $ "parse string:            " P.++ show (r2 == showParse s2)
+  putStrLn $ ",  result = " P.++ r2
 
-  let s3 = parse spaces (loadStr32 "   123")
+  let s3 = parse spaces (loadStr d32 "   123")
       r3 = "((), \"123\")"
-  putStrLn $ "parse spaces:            " P.++ show (r3 == showParse s3)
+  putStr $ "parse spaces:            " P.++ show (r3 == showParse s3)
+  putStrLn $ ",  result = " P.++ r3
 
-  let s4 = parse digit (loadStr32 "123")
+  let s4 = parse digit (loadStr d32 "123")
       r4 = "('1', \"23\")"
-  putStrLn $ "parse digit:             " P.++ show (r4 == showParse s4)
+  putStr $ "parse digit:             " P.++ show (r4 == showParse s4)
+  putStrLn $ ",  result = " P.++ r4
 
-  let s5 = parse numberInt (loadStr32 "123")
+  let s5 = parse numberInt (loadStr d32 "123")
       r5 = "(123, \"\")"
-  putStrLn $ "parse numberInt:         " P.++ show (r5 == showParse s5)
+  putStr $ "parse numberInt:         " P.++ show (r5 == showParse s5)
+  putStrLn $ ",  result = " P.++ r5
 
-  let s6 = parse numberInt (loadStr32 "123 abc")
+  let s6 = parse numberInt (loadStr d32 "123 abc")
       r6 = "(123, \" abc\")"
-  putStrLn $ "parse numberInt:         " P.++ show (r6 == showParse s6)
+  putStr $ "parse numberInt:         " P.++ show (r6 == showParse s6)
+  putStrLn $ ",  result = " P.++ r6
 
-  let s7 = parse (oneOf $ loadStr16 "defa") (loadStr32 "abc   123")
+  let s7 = parse (oneOf $ loadStr d16 "defa") (loadStr d32 "abc   123")
       r7 = "('a', \"bc   123\")"
-  putStrLn $ "parse oneOf:             " P.++ show (r7 == showParse s7)
+  putStr $ "parse oneOf:             " P.++ show (r7 == showParse s7)
+  putStrLn $ ",  result = " P.++ r7
 
-  let s8 = parse (oneOf $ loadStr16 "cdef") (loadStr32 "abc   123")
+  let s8 = parse (oneOf $ loadStr d16 "cdef") (loadStr d32 "abc   123")
       r8 = "Nothing"
-  putStrLn $ "parse oneOf:             " P.++ show (r8 == showParse s8)
+  putStr $ "parse oneOf:             " P.++ show (r8 == showParse s8)
+  putStrLn $ ",  result = " P.++ r8
 
-  let s9 = parse (noneOf $ loadStr16 "def") (loadStr32 "abc   123")
+  let s9 = parse (noneOf $ loadStr d16 "def") (loadStr d32 "abc   123")
       r9 = "('a', \"bc   123\")"
-  putStrLn $ "parse NoneOf:            " P.++ show (r9 == showParse s9)
+  putStr $ "parse NoneOf:            " P.++ show (r9 == showParse s9)
+  putStrLn $ ",  result = " P.++ r9
 
-  let s10 = parse (manyChar (char 'a')) (loadStr32 "aaa bbb")
+  let s10 = parse (manyChar (char 'a')) (loadStr d32 "aaa bbb")
       r10 = "(\"<aaa>\", \" bbb\")"
-  putStrLn $ "parse manyChar:          " P.++ show (r10 == showParse s10)
+  putStr $ "parse manyChar:          " P.++ show (r10 == showParse s10)
+  putStrLn $ ",  result = " P.++ r10
 
-  let s11 = parse (manyChar (char 'a')) (loadStr32 "a bbb")
+  let s11 = parse (manyChar (char 'a')) (loadStr d32 "a bbb")
       r11 = "(\"<a>\", \" bbb\")"
-  putStrLn $ "parse manyChar:          " P.++ show (r11 == showParse s11)
+  putStr $ "parse manyChar:          " P.++ show (r11 == showParse s11)
+  putStrLn $ ",  result = " P.++ r11
 
-  let s12 = parse (manyChar (char 'a')) (loadStr32 "bbb aaa")
-      r12 = "(\"<>\", \"bbb aaa\")"      
-  putStrLn $ "parse manyChar:          " P.++ show (r12 == showParse s12)
+  let s12 = parse (manyChar (char 'a')) (loadStr d32 "bbb aaa")
+      r12 = "(\"<>\", \"bbb aaa\")"
+  putStr $ "parse manyChar:          " P.++ show (r12 == showParse s12)
+  putStrLn $ ",  result = " P.++ r12
 
-  let s13 = parse (many1Char (char 'a')) (loadStr32 "aaa bbb")
+  let s13 = parse (many1Char (char 'a')) (loadStr d32 "aaa bbb")
       r13 = "(\"<aaa>\", \" bbb\")"
-  putStrLn $ "parse many1Char:         " P.++ show (r13 == showParse s13)
+  putStr $ "parse many1Char:         " P.++ show (r13 == showParse s13)
+  putStrLn $ ",  result = " P.++ r13
 
-  let s14 = parse (many1Char (char 'a')) (loadStr32 "a bbb")
+  let s14 = parse (many1Char (char 'a')) (loadStr d32 "a bbb")
       r14 = "(\"<a>\", \" bbb\")"
-  putStrLn $ "parse many1Char:         " P.++ show (r14 == showParse s14)
+  putStr $ "parse many1Char:         " P.++ show (r14 == showParse s14)
+  putStrLn $ ",  result = " P.++ r14
 
-  let s15 = parse (many1Char (char 'a')) (loadStr32 "bbb aaa")
+  let s15 = parse (many1Char (char 'a')) (loadStr d32 "bbb aaa")
       r15 = "Nothing"
-  putStrLn $ "parse many1Char:         " P.++ show (r15 == showParse s15)
+  putStr $ "parse many1Char:         " P.++ show (r15 == showParse s15)
+  putStrLn $ ",  result = " P.++ r15
 
-  let s16 = parse emptyQuot (loadStr32 "[] abc")
+  let s16 = parse emptyQuot (loadStr d32 "[] abc")
       r16 = "(\"<[]>\", \" abc\")"
-  putStrLn $ "parse emptyQuot:         " P.++ show (r16 == showParse s16)
+  putStr $ "parse emptyQuot:         " P.++ show (r16 == showParse s16)
+  putStrLn $ ",  result = " P.++ r16
 
-  let s17 = parse (manyTillChar anyChar (char '}')) (loadStr32 "123} ccc")
+  let s17 = parse (manyTillChar anyChar (char '}')) (loadStr d32 "123} ccc")
       r17 = "(\"<123>\", \"} ccc\")"
-  putStrLn $ "parse manyTillChar:      "  P.++ show (r17 == showParse s17)
+  putStr $ "parse manyTillChar:      " P.++ show (r17 == showParse s17)
+  putStrLn $ ",  result = " P.++ r17
 
-  let s18 = parse quotedString (loadStr32 "\"hello world\" 123")
+  let s18 = parse quotedString (loadStr d32 "\"hello world\" 123")
       r18 = "(\"<hello world>\", \" 123\")"
-  putStrLn $ "parse quotedString:      " P.++ show (r18 == showParse s18)
+  putStr $ "parse quotedString:      " P.++ show (r18 == showParse s18)
+  putStrLn $ ",  result = " P.++ r18
 
-  let s19 = parse firstLetter (loadStr32 "abc")
+  let s19 = parse firstLetter (loadStr d32 "abc")
       r19 = "('a', \"bc\")"
-  putStrLn $ "parse firstLetter:       " P.++ show (r19 == showParse s19)
+  putStr $ "parse firstLetter:       " P.++ show (r19 == showParse s19)
+  putStrLn $ ",  result = " P.++ r19
 
-  let s20 = parse firstLetter (loadStr32 "_abc")
+  let s20 = parse firstLetter (loadStr d32 "_abc")
       r20 = "('_', \"abc\")"
-  putStrLn $ "parse firstLetter:       " P.++ show (r20 == showParse s20)
+  putStr $ "parse firstLetter:       " P.++ show (r20 == showParse s20)
+  putStrLn $ ",  result = " P.++ r20
 
-  let s21 = parse charP (loadStr32 "'z' abc")
+  let s21 = parse charP (loadStr d32 "'z' abc")
       r21 = "(Chr' 'z', \" abc\")"
-  putStrLn $ "parse charP:             " P.++ show (r21 == showParse s21)
+  putStr $ "parse charP:             " P.++ show (r21 == showParse s21)
+  putStrLn $ ",  result = " P.++ r21
 
-  let s22 = parse charP (loadStr32 "abc")
+  let s22 = parse charP (loadStr d32 "abc")
       r22 = "Nothing"
-  putStrLn $ "parse charP:             " P.++ show (r22 == showParse s22)
+  putStr $ "parse charP:             " P.++ show (r22 == showParse s22)
+  putStrLn $ ",  result = " P.++ r22
 
-  let s23 = parse numberP (loadStr32 "123 abc")
+  let s23 = parse numberP (loadStr d32 "123 abc")
       r23 = "(NumP' 123, \" abc\")"
-  putStrLn $ "parse numberP:           " P.++ show (r23 == showParse s23)
+  putStr $ "parse numberP:           " P.++ show (r23 == showParse s23)
+  putStrLn $ ",  result = " P.++ r23
 
-  let s24 = parse numberP (loadStr32 "-123 abc")
+  let s24 = parse numberP (loadStr d32 "-123 abc")
       r24 = "(NumP' (-123), \" abc\")"
-  putStrLn $ "parse numberP:           " P.++ show (r24 == showParse s24)
+  putStr $ "parse numberP:           " P.++ show (r24 == showParse s24)
+  putStrLn $ ",  result = " P.++ r24
 
-  let s25 = parse numberP (loadStr32 "abc")
+  let s25 = parse numberP (loadStr d32 "abc")
       r25 = "Nothing"
-  putStrLn $ "parse numberP:           " P.++ show (r25 == showParse s25)
+  putStr $ "parse numberP:           " P.++ show (r25 == showParse s25)
+  putStrLn $ ",  result = " P.++ r25
 
-  let s26 = parse quotedStringP (loadStr32 "\"abc\" 123")
+  let s26 = parse quotedStringP (loadStr d32 "\"abc\" 123")
       r26 = "(Str' \"<abc>\", \" 123\")"
-  putStrLn $ "parse quotedStringP:     " P.++ show (r26 == showParse s26)
+  putStr $ "parse quotedStringP:     " P.++ show (r26 == showParse s26)
+  putStrLn $ ",  result = " P.++ r26
 
-  let s27 = parse word (loadStr32 "dup +")
+  let s27 = parse word (loadStr d32 "dup +")
       r27 = "(Sym' \"<dup>\", \" +\")"
-  putStrLn $ "parse word:              " P.++ show (r27 == showParse s27)
+  putStr $ "parse word:              " P.++ show (r27 == showParse s27)
+  putStrLn $ ",  result = " P.++ r27
 
-  let s28 = parse lineComment (loadStr32 "$ zzz \n dup")
+  let s28 = parse lineComment (loadStr d32 "$ zzz \n dup")
       r28 = "((), \"dup\")"
-  putStrLn $ "parse lineComment:       " P.++ show (r28 == showParse s28)
+  putStr $ "parse lineComment:       " P.++ show (r28 == showParse s28)
+  putStrLn $ ",  result = " P.++ r28
 
-  let s29 = parse blockComment (loadStr32 "{ zzz } dup")
+  let s29 = parse blockComment (loadStr d32 "{ zzz } dup")
       r29 = "((), \"dup\")"
-  putStrLn $ "parse blockComment:      " P.++ show (r29 == showParse s29)
+  putStr $ "parse blockComment:      " P.++ show (r29 == showParse s29)
+  putStrLn $ ",  result = " P.++ r29
 
-  let s30 = parse comment (loadStr32 "$ zzz \n dup")
+  let s30 = parse comment (loadStr d32 "$ zzz \n dup")
       r30 = "((), \"dup\")"
-  putStrLn $ "parse comment:           " P.++ show (r30 == showParse s30)
+  putStr $ "parse comment:           " P.++ show (r30 == showParse s30)
+  putStrLn $ ",  result = " P.++ r30
 
-  let s31 = parse comment (loadStr32 "{ zzz } dup")
+  let s31 = parse comment (loadStr d32 "{ zzz } dup")
       r31 = "((), \"dup\")"
-  putStrLn $ "parse comment:           " P.++ show (r31 == showParse s31)
+  putStr $ "parse comment:           " P.++ show (r31 == showParse s31)
+  putStrLn $ ",  result = " P.++ r31
 
-  let s32 = parse comments (loadStr32 "$ a \n {z} {z} dup")
+  let s32 = parse comments (loadStr d32 "$ a \n {z} {z} dup")
       r32 = "((), \"dup\")"
-  putStrLn $ "parse comments:          " P.++ show (r32 == showParse s32)
+  putStr $ "parse comments:          " P.++ show (r32 == showParse s32)
+  putStrLn $ ",  result = " P.++ r32
 
-  let s33 = parse specification (loadStr32 "( X -> -- ) a")
+  let s33 = parse specification (loadStr d32 "( X -> -- ) a")
       r33 = "((), \"a\")"
-  putStrLn $ "parse specification:     " P.++ show (r33 == showParse s33)
+  putStr $ "parse specification:     " P.++ show (r33 == showParse s33)
+  putStrLn $ ",  result = " P.++ r33
 
-  let s34 = parse specifications (loadStr32 "(a) (b) a")
+  let s34 = parse specifications (loadStr d32 "(a) (b) a")
       r34 = "((), \"a\")"
-  putStrLn $ "parse specifications:    " P.++ show (r34 == showParse s34)
+  putStr $ "parse specifications:    " P.++ show (r34 == showParse s34)
+  putStrLn $ ",  result = " P.++ r34
 
-  let s35 = parse spacesCommentsSpecifications (loadStr32 " {a} (b) a")
+  let s35 = parse spacesCommentsSpecifications (loadStr d32 " {a} (b) a")
       r35 = "((), \"a\")"
-  putStrLn $ "parse spacesCommentsSpecifications: " P.++ show (r35 == showParse s35)
-      
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  putStr $ "parse spacesCommentsSpecifications: " P.++ show
+    (r35 == showParse s35)
+  putStrLn $ ",  result = " P.++ r35
 
 
