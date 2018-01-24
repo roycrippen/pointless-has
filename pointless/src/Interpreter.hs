@@ -35,21 +35,22 @@ data ValueP' = Sym' (Vec 16 Char)
              | Chr' Char
              | Str' (Vec 32 Char)
              | Quot' Q
+             | EmptyQ
              deriving (Eq, Ord, Show)
 
-data Q = Quot16    (Vec 16    Char)
-       | Quot32    (Vec 32    Char)
-       | Quot64    (Vec 64    Char)
-       | Quot128   (Vec 128   Char)
-       | Quot256   (Vec 256   Char)
-       | Quot512   (Vec 512   Char)
-       | Quot1024  (Vec 1024  Char)
-       | Quot2048  (Vec 2048  Char)
-       | Quot4096  (Vec 4096  Char)
-       | Quot8192  (Vec 8192  Char)
-       | Quot16383 (Vec 16383 Char)
-       | Quot32768 (Vec 32768 Char)
-       | Quot65536 (Vec 65536 Char)
+data Q = Q16    (Vec 16    ValueP')
+       | Q32    (Vec 32    ValueP')
+       | Q64    (Vec 64    ValueP')
+       | Q128   (Vec 128   ValueP')
+       | Q256   (Vec 256   ValueP')
+       | Q512   (Vec 512   ValueP')
+       | Q1024  (Vec 1024  ValueP')
+       | Q2048  (Vec 2048  ValueP')
+       | Q4096  (Vec 4096  ValueP')
+       | Q8192  (Vec 8192  ValueP')
+       | Q16383 (Vec 16383 ValueP')
+       | Q32768 (Vec 32768 ValueP')
+       | Q65536 (Vec 65536 ValueP')
        deriving (Eq, Ord, Show)
 
 data Lang = Lang { vocab   :: Vocabulary
@@ -151,6 +152,10 @@ replaceStr old new str = go str
     let (prefix, rest) = splitAt n str'
     in  if old == prefix then new ++ go rest else x : go xs
   n = length old
+
+
+
+
 
 
 
