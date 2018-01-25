@@ -17,7 +17,7 @@ import qualified Data.List  as L (foldl, length, repeat, reverse, take,
                                   head, last, drop)
 import Data.Maybe (fromJust, isJust)
 import Data.String ()
-import Interpreter (ValueP'(..), Q(..))
+import Interpreter (ValueP'(..), Q(..), V(..))
 
 import Debug.Trace
 
@@ -351,37 +351,58 @@ parseValueP p vs = case parse p vs of
   Nothing     -> EmptyQ
   -- Nothing     -> Sym' ('E':>'R':>'R':>'R':>'O':>'R':>'~':>'~':>'~':>'~':>'~':>'~':>'~':>'~':>'~':>'~':>Nil)
 
--- manyQ :: Parser ValueP' -> Parser Q
+manyQ :: Parser ValueP' -> Parser Q
 manyQ p = Parser
-  ( \vs -> do
-    let vs' = map (parseValueP p . repeat) vs
-        cnt = cntConsecutive EmptyQ vs'
-        res = imap (\i x -> if fromIntegral i < cnt then x else EmptyQ) vs'
-    Just (res, replaceThenRotateN cnt '~' vs)
+  ( \vs -> case parseValueP p vs of
+    EmptyQ -> Nothing
+    _      -> Just (mP p vs)
   )
 
+mP :: Parser ValueP' -> Vec 32 Char -> (Q, Vec 32 Char)
+mP p_ vs_ = (pruneQ (Q1024 resQ'), resS)
+ where
+  (resQ, resS) = go p_ vs_ (repeat EmptyQ :: Vec 1024 ValueP')
+  cnt          = foldl (\acc v -> if v == EmptyQ then acc + 1 else acc) 0 resQ
+  resQ'        = rotateLeft resQ cnt
+  go p vs qs = case parseValueP p vs of
+    EmptyQ -> (qs, vs)
+    _      -> do
+      let (vp, vs') = fromJust $ parse p vs
+      go p vs' (qs <<+ vp)
+
+
+
+--
+-- manyChar :: Parser Char -> Parser (Vec 32 Char)
+-- manyChar p = Parser
+--   ( \vs -> do
+--     let vs' = map (parseChar p . repeat) vs
+--         cnt = cntConsecutive '~' vs'
+--         res = imap (\i x -> if fromIntegral i < cnt then x else '~') vs'
+--     Just (res, replaceThenRotateN cnt '~' vs)
+--   )
 
 
 instruction :: Parser ValueP'
 instruction = do
   _   <- spacesCommentsSpecifications
-  res <- numberP <|> charP <|> quotedStringP <|> word
-  -- res <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
+  -- res <- numberP <|> charP <|> quotedStringP <|> word
+  res <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
   _   <- spacesCommentsSpecifications
   return res
 
--- nakedQuotations :: Parser Q
--- nakedQuotations = manyQ instruction
+nakedQuotations :: Parser Q
+nakedQuotations = manyQ instruction
 
--- quotation :: Parser ValueP'
--- quotation = do
---   _ <- char '['
---   _ <- spaces
---   q <- nakedQuotations
---   -- traceM $ "\nq: " ++ show q
---   _ <- spaces
---   _ <- char ']'
---   return (Quot' q)
+quotation :: Parser ValueP'
+quotation = do
+  _ <- char '['
+  _ <- spaces
+  q <- nakedQuotations
+  -- traceM $ "\nq: " ++ show q
+  _ <- spaces
+  _ <- char ']'
+  return (Quot' q)
 
 -- nonTest :: Parser ()
 -- nonTest = do
@@ -526,6 +547,173 @@ blank1024 = repeat '~'
 
 blank65536 :: Vec 65536 Char
 blank65536 = repeat '~'
+
+newLengthVP :: KnownNat n => Vec n ValueP' -> Int
+newLengthVP vs =
+  2 ^ ceiling (logBase 2 $ fromIntegral (cntConsecutive EmptyQ vs)) :: Int
+
+newLengthC :: KnownNat n => Vec n Char -> Int
+newLengthC vs =
+  2 ^ ceiling (logBase 2 $ fromIntegral (cntConsecutive '~' vs)) :: Int
+
+-- (qs, _) = fromJust $ parse nakedQuotations  (loadStr64 d32 "[10 20 +] dup exec swap exec +")
+
+-- vecReduce :: Vec n a -> Vec m a
+-- vecReduce n = take (SNat: SNat (length n))
+
+pruneQ :: Q -> Q
+pruneQ qs = case qs of
+  Q16 vs -> case newLengthVP vs of
+    2 -> Q2 (take d2 vs)
+    4 -> Q4 (take d4 vs)
+    8 -> Q8 (take d8 vs)
+    _ -> qs
+  Q32 vs -> case newLengthVP vs of
+    2  -> Q2 (take d2 vs)
+    4  -> Q4 (take d4 vs)
+    8  -> Q8 (take d8 vs)
+    16 -> Q16 (take d16 vs)
+    _  -> qs
+  Q64 vs -> case newLengthVP vs of
+    2  -> Q2 (take d2 vs)
+    4  -> Q4 (take d4 vs)
+    8  -> Q8 (take d8 vs)
+    16 -> Q16 (take d16 vs)
+    32 -> Q32 (take d32 vs)
+    _  -> qs
+  Q1024 vs -> case newLengthVP vs of
+    2   -> Q2 (take d2 vs)
+    4   -> Q4 (take d4 vs)
+    8   -> Q8 (take d8 vs)
+    16  -> Q16 (take d16 vs)
+    32  -> Q32 (take d32 vs)
+    64  -> Q64 (take d64 vs)
+    128 -> Q128 (take d128 vs)
+    256 -> Q256 (take d256 vs)
+    512 -> Q512 (take d512 vs)
+    _   -> qs
+  _ -> qs
+
+--
+pruneV :: V -> V
+pruneV vvs = case vvs of
+  V16 vs -> case newLengthC vs of
+    2 -> V2 (take d2 vs)
+    4 -> V4 (take d4 vs)
+    8 -> V8 (take d8 vs)
+    _ -> vvs
+  V32 vs -> case newLengthC vs of
+    2  -> V2 (take d2 vs)
+    4  -> V4 (take d4 vs)
+    8  -> V8 (take d8 vs)
+    16 -> V16 (take d16 vs)
+    _  -> vvs
+  V64 vs -> case newLengthC vs of
+    2  -> V2 (take d2 vs)
+    4  -> V4 (take d4 vs)
+    8  -> V8 (take d8 vs)
+    16 -> V16 (take d16 vs)
+    32 -> V32 (take d32 vs)
+    _  -> vvs
+  V1024 vs -> case newLengthC vs of
+    2   -> V2 (take d2 vs)
+    4   -> V4 (take d4 vs)
+    8   -> V8 (take d8 vs)
+    16  -> V16 (take d16 vs)
+    32  -> V32 (take d32 vs)
+    64  -> V64 (take d64 vs)
+    128 -> V128 (take d128 vs)
+    256 -> V256 (take d256 vs)
+    512 -> V512 (take d512 vs)
+    _   -> vvs
+  V2048 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    _    -> vvs
+  V4096 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    -- 2048 -> V2048 (take d2048 vs)
+    _    -> vvs
+  V8192 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    -- 2048 -> V2048 (take d2048 vs)
+    -- 4096 -> V4096 (take d4096 vs)
+    _    -> vvs
+  V16383 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    -- 2048 -> V2048 (take d2048 vs)
+    -- 4096 -> V4096 (take d4096 vs)
+    -- 8192 -> V8192 (take d8192 vs)
+    _    -> vvs
+  V32768 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    -- 2048  -> V2048 (take d2048 vs)
+    -- 4096  -> V4096 (take d4096 vs)
+    -- 8192  -> V8192 (take d8192 vs)
+    -- 16383 -> V16383 (take d16383 vs)
+    _    -> vvs
+  V65536 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    -- 2048  -> V2048 (take d2048 vs)
+    -- 4096  -> V4096 (take d4096 vs)
+    -- 8192  -> V8192 (take d8192 vs)
+    -- 16383 -> V16383 (take d16383 vs)
+    -- 32768 -> V32768 (take d32768 vs)
+    _    -> vvs
+  _ -> vvs
 
 -- | Parser tests.
 -- |
@@ -741,6 +929,33 @@ parserTests = do
           :> EmptyQ
           :> Nil
   putStrLn $ show xs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
