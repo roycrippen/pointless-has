@@ -6,7 +6,7 @@
 
 module Interpreter where
 
-import           Clash.Prelude       hiding (concat, length, map, splitAt, (++))
+import           Clash.Prelude
 import           Control.Applicative (Applicative (..), pure)
 import           Control.Monad       (Functor (..), Monad (..), ap, liftM, void)
 import           Data.Bool
@@ -14,11 +14,11 @@ import           Data.Char
 import           Data.Eq
 import           Data.Function
 import           Data.Int
-import           Data.List           as L
+import           Data.List           as L (concat, map, length, splitAt)
 import qualified Data.Map            as M (Map, lookup)
 import           Data.Maybe          (isJust)
 import           Data.String
-import           Prelude             as P
+import           Prelude             as P ((++))
 import           Text.Read
 import           Text.Show
 
@@ -111,7 +111,7 @@ runInstruction ins lang = case ins of
   Sym w -> case getWord w (vocab lang) of
     Just w' -> runWord w' lang
     Nothing -> lang { result = msg : result lang }
-      where msg = "ERROR(getWord): not a valid word " ++ show w
+      where msg = "ERROR(getWord): not a valid word " P.++ show w
   x -> lang { stack = x : stack lang }
 
 -- |
@@ -126,7 +126,7 @@ formatV (Sym  s ) = s
 --   where floatStr = showFFloat (Just 6) n ""
 formatV (NumP n ) = show n
 formatV (Quot []) = "[]"
-formatV (Quot q ) = concat ["[ ", unwords $ map formatV q, " ]"]
+formatV (Quot q ) = L.concat ["[ ", unwords $ L.map formatV q, " ]"]
 formatV (Chr  c ) = [c]
 formatV (Str  s ) = show s
 
@@ -146,7 +146,7 @@ formatWordAST (Quotation xs) = show xs
 formatWordAST (Function  _ ) = "function: Vocabulary -> [ValueP] -> [ValueP]"
 
 formatStack :: [ValueP] -> [String]
-formatStack = map formatV
+formatStack = L.map formatV
 
 -- isInteger :: Double -> Bool
 -- isInteger d = abs realFrac < 0.0000001
@@ -165,12 +165,180 @@ replaceStr old new str = go str
  where
   go [] = []
   go str'@(x:xs) =
-    let (prefix, rest) = splitAt n str'
-    in  if old == prefix then new ++ go rest else x : go xs
-  n = length old
+    let (prefix, rest) = L.splitAt n str'
+    in  if old == prefix then new P.++ go rest else x : go xs
+  n = L.length old
 
 
+-- | size helpers
 
+newLengthVP :: KnownNat n => Vec n ValueP' -> Int
+newLengthVP vs =
+  2 ^ ceiling (logBase 2 $ fromIntegral (cntConsecutive EmptyQ vs)) :: Int
+
+newLengthC :: KnownNat n => Vec n Char -> Int
+newLengthC vs =
+  2 ^ ceiling (logBase 2 $ fromIntegral (cntConsecutive '~' vs)) :: Int
+
+-- | Count non '~' consecutive charaters starting a Vector
+cntConsecutive :: (Eq a, KnownNat n) => a -> Vec n a -> Int
+cntConsecutive a vs = case Clash.Prelude.findIndex (==a) vs of
+  Just n -> fromIntegral (toInteger n)
+  _      -> Clash.Prelude.length vs
+
+pruneQ :: Q -> Q
+pruneQ qs = case qs of
+  Q16 vs -> case newLengthVP vs of
+    2 -> Q2 (take d2 vs)
+    4 -> Q4 (take d4 vs)
+    8 -> Q8 (take d8 vs)
+    _ -> qs
+  Q32 vs -> case newLengthVP vs of
+    2  -> Q2 (take d2 vs)
+    4  -> Q4 (take d4 vs)
+    8  -> Q8 (take d8 vs)
+    16 -> Q16 (take d16 vs)
+    _  -> qs
+  Q64 vs -> case newLengthVP vs of
+    2  -> Q2 (take d2 vs)
+    4  -> Q4 (take d4 vs)
+    8  -> Q8 (take d8 vs)
+    16 -> Q16 (take d16 vs)
+    32 -> Q32 (take d32 vs)
+    _  -> qs
+  Q1024 vs -> case newLengthVP vs of
+    2   -> Q2 (take d2 vs)
+    4   -> Q4 (take d4 vs)
+    8   -> Q8 (take d8 vs)
+    16  -> Q16 (take d16 vs)
+    32  -> Q32 (take d32 vs)
+    64  -> Q64 (take d64 vs)
+    128 -> Q128 (take d128 vs)
+    256 -> Q256 (take d256 vs)
+    512 -> Q512 (take d512 vs)
+    _   -> qs
+  _ -> qs
+
+--
+pruneV :: V -> V
+pruneV vvs = case vvs of
+  V16 vs -> case newLengthC vs of
+    2 -> V2 (take d2 vs)
+    4 -> V4 (take d4 vs)
+    8 -> V8 (take d8 vs)
+    _ -> vvs
+  V32 vs -> case newLengthC vs of
+    2  -> V2 (take d2 vs)
+    4  -> V4 (take d4 vs)
+    8  -> V8 (take d8 vs)
+    16 -> V16 (take d16 vs)
+    _  -> vvs
+  V64 vs -> case newLengthC vs of
+    2  -> V2 (take d2 vs)
+    4  -> V4 (take d4 vs)
+    8  -> V8 (take d8 vs)
+    16 -> V16 (take d16 vs)
+    32 -> V32 (take d32 vs)
+    _  -> vvs
+  V1024 vs -> case newLengthC vs of
+    2   -> V2 (take d2 vs)
+    4   -> V4 (take d4 vs)
+    8   -> V8 (take d8 vs)
+    16  -> V16 (take d16 vs)
+    32  -> V32 (take d32 vs)
+    64  -> V64 (take d64 vs)
+    128 -> V128 (take d128 vs)
+    256 -> V256 (take d256 vs)
+    512 -> V512 (take d512 vs)
+    _   -> vvs
+  V2048 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    _    -> vvs
+  V4096 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    -- 2048 -> V2048 (take d2048 vs)
+    _    -> vvs
+  V8192 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    -- 2048 -> V2048 (take d2048 vs)
+    -- 4096 -> V4096 (take d4096 vs)
+    _    -> vvs
+  V16383 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    -- 2048 -> V2048 (take d2048 vs)
+    -- 4096 -> V4096 (take d4096 vs)
+    -- 8192 -> V8192 (take d8192 vs)
+    _    -> vvs
+  V32768 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    -- 2048  -> V2048 (take d2048 vs)
+    -- 4096  -> V4096 (take d4096 vs)
+    -- 8192  -> V8192 (take d8192 vs)
+    -- 16383 -> V16383 (take d16383 vs)
+    _    -> vvs
+  V65536 vs -> case newLengthC vs of
+    2    -> V2 (take d2 vs)
+    4    -> V4 (take d4 vs)
+    8    -> V8 (take d8 vs)
+    16   -> V16 (take d16 vs)
+    32   -> V32 (take d32 vs)
+    64   -> V64 (take d64 vs)
+    128  -> V128 (take d128 vs)
+    256  -> V256 (take d256 vs)
+    512  -> V512 (take d512 vs)
+    1024 -> V1024 (take d1024 vs)
+    -- 2048  -> V2048 (take d2048 vs)
+    -- 4096  -> V4096 (take d4096 vs)
+    -- 8192  -> V8192 (take d8192 vs)
+    -- 16383 -> V16383 (take d16383 vs)
+    -- 32768 -> V32768 (take d32768 vs)
+    _    -> vvs
+  _ -> vvs
 
 
 
