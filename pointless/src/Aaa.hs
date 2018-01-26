@@ -70,7 +70,14 @@ item = Parser item'
  where
   item' vs =
     if vs !! zero == '~' then Nothing else Just (vs !! zero, vs <<+ '~')
-
+--
+item_ :: Parser Char
+item_ = Parser
+  (\vs -> if vs !! zero == '~' 
+    then Nothing 
+    else Just (vs !! zero, vs <<+ '~')
+  )
+--
 -- | Parse a fixed length string.
 -- | "abc" == <'a','b','c','~','~','~','~','~','~','~','~','~','~','~','~','~'>
 string :: Vec 16 Char -> Parser (Vec 16 Char)
@@ -743,6 +750,9 @@ parserTests = do
           :> EmptyQ
           :> Nil
   putStrLn $ show xs
+
+
+
 
 
 
