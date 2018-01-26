@@ -5,21 +5,23 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 
+-- stack exec --resolver=nightly-2017-08-15 -- clash --interactive pointless/src/Aaa.hs
+
 module Main where
 
-import Clash.Prelude hiding ((<|>))
-import Clash.Promoted.Nat.TH
+import           Clash.Prelude         hiding ((<|>))
+import           Clash.Promoted.Nat.TH
 
-import Control.Monad (ap, liftM, void)
-import qualified Prelude    as P (replicate, (++))
-import qualified Data.Char  as C (digitToInt)
-import qualified Data.List  as L (foldl, length, repeat, reverse, take,
-                                  head, last, drop)
-import Data.Maybe (fromJust, isJust)
-import Data.String ()
-import Interpreter (ValueP'(..), Q(..), V(..), pruneQ, pruneV)
+import           Control.Monad         (ap, liftM, void)
+import qualified Data.Char             as C (digitToInt)
+import qualified Data.List             as L (drop, foldl, head, last, length, repeat, reverse, take)
+import           Data.Maybe            (fromJust, isJust)
+import           Data.String           ()
+import           Interpreter           (Q (..), V (..), ValueP' (..), cntConsecutive, pruneQ,
+                                        pruneV)
+import qualified Prelude               as P (replicate, (++))
 
-import Debug.Trace
+import           Debug.Trace
 
 newtype Parser a = Parser (V -> Maybe (a, V))
 
@@ -73,62 +75,44 @@ one = 1
 
 item :: Parser Char
 item = Parser
-  ( \vn -> do
-    let vn' = pruneV vn
-    case vn' of
-      V1024 v -> if v !! zero == '~'
-        then Nothing
-        else Just (v !! zero, V1024 (v <<+ '~'))
-      V512 v -> if v !! zero == '~'
-        then Nothing
-        else Just (v !! zero, V512 (v <<+ '~'))
-      V256 v -> if v !! zero == '~'
-        then Nothing
-        else Just (v !! zero, V256 (v <<+ '~'))
-      V128 v -> if v !! zero == '~'
-        then Nothing
-        else Just (v !! zero, V128 (v <<+ '~'))
-      V64 v -> if v !! zero == '~'
-        then Nothing
-        else Just (v !! zero, V64 (v <<+ '~'))
-      V32 v -> if v !! zero == '~'
-        then Nothing
-        else Just (v !! zero, V32 (v <<+ '~'))
-      V16 v -> if v !! zero == '~'
-        then Nothing
-        else Just (v !! zero, V16 (v <<+ '~'))
-      V8 v -> if v !! zero == '~'
-        then Nothing
-        else Just (v !! zero, V8 (v <<+ '~'))
-      V4 v -> if v !! zero == '~'
-        then Nothing
-        else Just (v !! zero, V4 (v <<+ '~'))
-      V2 v -> if v !! zero == '~'
-        then Nothing
-        else Just (v !! zero, V2 (v <<+ '~'))
+  ( \vs -> do
+    let vs' = pruneV vs
+        p x = x !! zero == '~'
+        a x = x <<+ '~'
+    case vs' of
+      V1024 v -> if p v then Nothing else Just (v !! zero, V1024 (a v))
+      V512 v  -> if p v then Nothing else Just (v !! zero, V512  (a v))
+      V256 v  -> if p v then Nothing else Just (v !! zero, V256  (a v))
+      V128 v  -> if p v then Nothing else Just (v !! zero, V128  (a v))
+      V64 v   -> if p v then Nothing else Just (v !! zero, V64   (a v))
+      V32 v   -> if p v then Nothing else Just (v !! zero, V32   (a v))
+      V16 v   -> if p v then Nothing else Just (v !! zero, V16   (a v))
+      V8 v    -> if p v then Nothing else Just (v !! zero, V8    (a v))
+      V4 v    -> if p v then Nothing else Just (v !! zero, V4    (a v))
+      V2 v    -> if p v then Nothing else Just (v !! zero, V2    (a v))
   )
-    -- if vs !! zero == '~' 
-    -- then Nothing 
-    -- else Just (vs !! zero, vs <<+ '~')
 --
 
-getV1024 (V1024 v) = Just v
-getV1024 _         = Nothing
-
-getV64 (V64 v) = Just v
-getV64 _       = Nothing
-
-
---
-
--- -- | Parse a fixed length string.
--- -- | "abc" == <'a','b','c','~','~','~','~','~','~','~','~','~','~','~','~','~'>
--- string :: Vec 16 Char -> Parser (Vec 16 Char)
--- string vs = Parser
---   ( \s -> if isStrMatch vs (take d16 s)
---     then Just (vs, dropN (cntConsecutive '~' vs) '~' s)
---     else Nothing
---   )
+-- | Parse a fixed length string.
+-- | "abc" == <'a','b','c','~','~','~','~','~','~','~','~','~','~','~','~','~'>
+string :: Vec 16 Char -> Parser V
+string s = Parser
+  ( \vs -> Just (s, vs)
+    -- let vs' = pruneV vs
+    --     p v  = not (isStrMatch s v)
+    -- Just (s, vs')
+    -- case vs' of
+    --   V1024 v -> if p v then Nothing else Just (s, V1024 (dropN (cntConsecutive '~' v) '~' s)) 
+    --   V512 v  -> if p v then Nothing else Just (s, V512  (dropN (cntConsecutive '~' v) '~' s))  
+    --   V256 v  -> if p v then Nothing else Just (s, V256  (dropN (cntConsecutive '~' v) '~' s))  
+    --   V128 v  -> if p v then Nothing else Just (s, V128  (dropN (cntConsecutive '~' v) '~' s))  
+    --   V64 v   -> if p v then Nothing else Just (s, V64   (dropN (cntConsecutive '~' v) '~' s))   
+    --   V32 v   -> if p v then Nothing else Just (s, V32   (dropN (cntConsecutive '~' v) '~' s))   
+    --   V16 v   -> if p v then Nothing else Just (s, V16   (dropN (cntConsecutive '~' v) '~' s))   
+    --   V8 v    -> if p v then Nothing else Just (s, V8    (dropN (cntConsecutive '~' v) '~' s))    
+    --   V4 v    -> if p v then Nothing else Just (s, V4    (dropN (cntConsecutive '~' v) '~' s))    
+    --   V2 v    -> if p v then Nothing else Just (s, V2    (dropN (cntConsecutive '~' v) '~' s))    
+  )
 
 -- manyChar :: Parser Char -> Parser (Vec 64 Char)
 -- manyChar p = Parser
@@ -154,18 +138,18 @@ getV64 _       = Nothing
 --     Just (res, dropN cnt '~' vs)
 --   )
 
--- oneOf :: Vec 16 Char -> Parser Char
--- oneOf cs = satisfies (`elem`cs)
+oneOf :: Vec 16 Char -> Parser Char
+oneOf cs = satisfies (`elem`cs)
 
--- noneOf :: Vec 16 Char -> Parser Char
--- noneOf cs = satisfies (`notElem`cs)
+noneOf :: Vec 16 Char -> Parser Char
+noneOf cs = satisfies (`notElem`cs)
 
--- lookAhead :: Parser a -> Parser Bool
--- lookAhead p = Parser
---   ( \s -> case parse p s of
---     Nothing -> Just (False, s)
---     _       -> Just (True, s)
---   )
+lookAhead :: Parser a -> Parser Bool
+lookAhead p = Parser
+  ( \s -> case parse p s of
+    Nothing -> Just (False, s)
+    _       -> Just (True, s)
+  )
 
 -- -- | Lexical combinators
 -- -- |
@@ -475,19 +459,19 @@ getV64 _       = Nothing
 -- -- strCharCount :: Vec n Char -> Int
 -- -- strCharCount = foldl (\acc c -> if c /= '~' then acc + 1 else acc) 0
 
--- isStrMatch :: Vec 16 Char -> Vec 16 Char -> Bool
--- isStrMatch xs vs = foldl (&&) True zipped
---   where zipped = zipWith (\x v -> x == v || x == '~') xs vs
+isStrMatch :: Vec 16 Char -> Vec 16 Char -> Bool
+isStrMatch xs vs = foldl (&&) True zipped
+  where zipped = zipWith (\x v -> x == v || x == '~') xs vs
 
 -- parseChar :: Parser Char -> Vec 64 Char -> Char
 -- parseChar p vs = case parse p vs of
 --   Just (c, _) -> c
 --   Nothing     -> '~'
 
--- -- | dropN n chars from vs
--- dropN :: KnownNat n => Int -> a -> Vec n a -> Vec n a
--- dropN 0   _ vs = vs
--- dropN cnt c vs = dropN (cnt - 1) c (vs <<+ c)
+-- | dropN n chars from vs
+dropN :: KnownNat n => Int -> a -> Vec n a -> Vec n a
+dropN 0   _ vs = vs
+dropN cnt c vs = dropN (cnt - 1) c (vs <<+ c)
 
 -- -- | Count non '~' consecutive charaters starting a Vector
 -- cntConsecutive :: (Eq a, KnownNat n) => a -> Vec n a -> Int
@@ -506,28 +490,41 @@ getV64 _       = Nothing
 --   val =
 --     foldl (\acc c -> if c /= '~' then 10 * acc + C.digitToInt c else acc) 0 vs'
 
--- -- | Convert vs to string dropping the '~' tail characters
--- vecToString :: Vec n Char -> String
--- vecToString vs = show $ L.reverse removeTilda
---   where removeTilda = foldl (\acc c -> if c /= '~' then c : acc else acc) "" vs
 
--- -- | Pretty print a show (Vec n Char) 
--- showVec :: String -> String
--- showVec s = if L.length s > 1 && L.head s == '<' && L.last s == '>'
---   then filter (\c -> c /= ',' && c /= '\'' && c /= '~') $ show s
---   else case L.take 3 s of
---     "Sym" -> "Sym' " P.++ showVec (L.drop 5 s)
---     "Str" -> "Str' " P.++ showVec (L.drop 5 s)
---     _     -> s
+-- | Convert vs to string dropping the '~' tail characters
+vecToString :: V -> String
+vecToString vs = do
+  let  removeTilda = foldl (\acc c -> if c /= '~' then c : acc else acc) ""
+       result v = show $ L.reverse (removeTilda v)
+  case vs of
+    V1024 v -> result v
+    V512 v  -> result v
+    V256 v  -> result v
+    V128 v  -> result v
+    V64 v   -> result v
+    V32 v   -> result v
+    V16 v   -> result v
+    V8 v    -> result v
+    V4 v    -> result v
+    V2 v    -> result v
 
--- -- | Petty print a parse result
--- showParse :: Show a => Maybe (a, Vec n Char) -> String
--- showParse res = if isJust res
---   then do
---     let (r, vec) = fromJust res
---         r'       = showVec $ show r
---     "(" P.++ r' P.++ ", " P.++ vecToString vec P.++ ")"
---   else "Nothing"
+-- | Pretty print a (show (Vec n Char))
+showVec :: String -> String
+showVec s = if L.length s > 1 && L.head s == '<' && L.last s == '>'
+  then filter (\c -> c /= ',' && c /= '\'' && c /= '~') $ show s
+  else case L.take 3 s of
+    "Sym" -> "Sym' " P.++ showVec (L.drop 5 s)
+    "Str" -> "Str' " P.++ showVec (L.drop 5 s)
+    _     -> s
+
+-- | Petty print a parse result
+showParse :: Show a => Maybe (a, V) -> String
+showParse res = if isJust res
+  then do
+    let (r, vec) = fromJust res
+        r'       = showVec $ show r
+    "(" P.++ r' P.++ ", " P.++ vecToString vec P.++ ")"
+  else "Nothing"
 
 -- | Covert s to (Vec n Char) where n < 65
 loadStr64 :: (m + n) ~ 64 => SNat n -> String -> Vec n Char
@@ -546,7 +543,7 @@ loadStr1024 n s = go s' $ drop (subSNat d1024 n) blank1024
 
 
 -- | Covert s a pruned V
-loadStr :: String -> V 
+loadStr :: String -> V
 loadStr s = pruneV $ V65536 (go s' blank65536)
  where
   s' = L.reverse s
@@ -574,34 +571,22 @@ blank65536 = repeat '~'
 -- -- | Parser tests.
 -- -- |
 
--- testQuote :: Vec 9 ValueP'
--- testQuote =
---   NumP' 1
---     :> Chr' 'a'
---     :> Sym' (loadStr64 d16 "pop")
---     :> Str' (loadStr64 d32 "hello world")
---     :> EmptyQ
---     :> EmptyQ
---     :> EmptyQ
---     :> EmptyQ
---     :> EmptyQ
---     :> Nil
-
 main :: IO ()
 main = do
   putStrLn "Pointless in Clash tests\n"
   putStrLn ""
-  -- parserTests
+  parserTests
 
+  putStrLn $ show $ parse item (loadStr "abcl")
 
--- parserTests :: IO ()
--- parserTests = do
---   putStrLn "parserTests..."
+parserTests :: IO ()
+parserTests = do
+  putStrLn "parserTests..."
 
---   let s1 = parse (oneOf $ loadStr64 d16 "cba") (loadStr64 d64 "abc 123")
---       r1 = "('a', \"bc 123\")"
---   putStr $ "parse oneOf:             " P.++ show (r1 == showParse s1)
---   putStrLn $ ",  result = " P.++ r1
+  let s1 = parse (oneOf $ loadStr64 d16 "cba") (loadStr "abc 123")
+      r1 = "('a', \"bc 123\")"
+  putStr $ "parse oneOf:             " P.++ show (r1 == showParse s1)
+  putStrLn $ ",  result = " P.++ r1
 
 --   let s2 = parse (string $ loadStr64 d16 "abc") (loadStr64 d64 "abc   123")
 --       r2 = "(\"<abc>\", \"   123\")"
@@ -628,20 +613,20 @@ main = do
 --   putStr $ "parse numberInt:         " P.++ show (r6 == showParse s6)
 --   putStrLn $ ",  result = " P.++ r6
 
---   let s7 = parse (oneOf $ loadStr64 d16 "defa") (loadStr64 d64 "abc   123")
---       r7 = "('a', \"bc   123\")"
---   putStr $ "parse oneOf:             " P.++ show (r7 == showParse s7)
---   putStrLn $ ",  result = " P.++ r7
+  let s7 = parse (oneOf $ loadStr64 d16 "defa") (loadStr "abc   123")
+      r7 = "('a', \"bc   123\")"
+  putStr $ "parse oneOf:             " P.++ show (r7 == showParse s7)
+  putStrLn $ ",  result = " P.++ r7
 
---   let s8 = parse (oneOf $ loadStr64 d16 "cdef") (loadStr64 d64 "abc   123")
---       r8 = "Nothing"
---   putStr $ "parse oneOf:             " P.++ show (r8 == showParse s8)
---   putStrLn $ ",  result = " P.++ r8
+  let s8 = parse (oneOf $ loadStr64 d16 "cdef") (loadStr "abc   123")
+      r8 = "Nothing"
+  putStr $ "parse oneOf:             " P.++ show (r8 == showParse s8)
+  putStrLn $ ",  result = " P.++ r8
 
---   let s9 = parse (noneOf $ loadStr64 d16 "def") (loadStr64 d64 "abc   123")
---       r9 = "('a', \"bc   123\")"
---   putStr $ "parse NoneOf:            " P.++ show (r9 == showParse s9)
---   putStrLn $ ",  result = " P.++ r9
+  let s9 = parse (noneOf $ loadStr64 d16 "def") (loadStr "abc   123")
+      r9 = "('a', \"bc   123\")"
+  putStr $ "parse NoneOf:            " P.++ show (r9 == showParse s9)
+  putStrLn $ ",  result = " P.++ r9
 
 --   let s10 = parse (manyChar (char 'a')) (loadStr64 d64 "aaa bbb")
 --       r10 = "(\"<aaa>\", \" bbb\")"
@@ -786,64 +771,6 @@ main = do
 --           :> EmptyQ
 --           :> Nil
 --   putStrLn $ show xs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
