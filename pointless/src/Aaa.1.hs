@@ -81,39 +81,38 @@ item = Parser
         a x = x <<+ '~'
     case vs' of
       V1024 v -> if p v then Nothing else Just (v !! zero, V1024 (a v))
-      V512 v  -> if p v then Nothing else Just (v !! zero, V512  (a v))
-      V256 v  -> if p v then Nothing else Just (v !! zero, V256  (a v))
-      V128 v  -> if p v then Nothing else Just (v !! zero, V128  (a v))
-      V64 v   -> if p v then Nothing else Just (v !! zero, V64   (a v))
-      V32 v   -> if p v then Nothing else Just (v !! zero, V32   (a v))
-      V16 v   -> if p v then Nothing else Just (v !! zero, V16   (a v))
-      V8 v    -> if p v then Nothing else Just (v !! zero, V8    (a v))
-      V4 v    -> if p v then Nothing else Just (v !! zero, V4    (a v))
-      V2 v    -> if p v then Nothing else Just (v !! zero, V2    (a v))
+      V512  v -> if p v then Nothing else Just (v !! zero, V512 (a v))
+      V256  v -> if p v then Nothing else Just (v !! zero, V256 (a v))
+      V128  v -> if p v then Nothing else Just (v !! zero, V128 (a v))
+      V64   v -> if p v then Nothing else Just (v !! zero, V64 (a v))
+      V32   v -> if p v then Nothing else Just (v !! zero, V32 (a v))
+      V16   v -> if p v then Nothing else Just (v !! zero, V16 (a v))
+      V8    v -> if p v then Nothing else Just (v !! zero, V8 (a v))
+      V4    v -> if p v then Nothing else Just (v !! zero, V4 (a v))
+      V2    v -> if p v then Nothing else Just (v !! zero, V2 (a v))
   )
 --
 
 -- | Parse a fixed length string.
 -- | "abc" == <'a','b','c','~','~','~','~','~','~','~','~','~','~','~','~','~'>
-string :: Vec 16 Char -> Parser V
+string :: Vec 16 Char -> Parser (Vec 16 Char)
 string s = Parser
-  ( \vs -> Just (s, vs)
-    -- let vs' = pruneV vs
-    --     p v  = not (isStrMatch s v)
-    -- Just (s, vs')
-    -- case vs' of
-    --   V1024 v -> if p v then Nothing else Just (s, V1024 (dropN (cntConsecutive '~' v) '~' s)) 
-    --   V512 v  -> if p v then Nothing else Just (s, V512  (dropN (cntConsecutive '~' v) '~' s))  
-    --   V256 v  -> if p v then Nothing else Just (s, V256  (dropN (cntConsecutive '~' v) '~' s))  
-    --   V128 v  -> if p v then Nothing else Just (s, V128  (dropN (cntConsecutive '~' v) '~' s))  
-    --   V64 v   -> if p v then Nothing else Just (s, V64   (dropN (cntConsecutive '~' v) '~' s))   
-    --   V32 v   -> if p v then Nothing else Just (s, V32   (dropN (cntConsecutive '~' v) '~' s))   
-    --   V16 v   -> if p v then Nothing else Just (s, V16   (dropN (cntConsecutive '~' v) '~' s))   
-    --   V8 v    -> if p v then Nothing else Just (s, V8    (dropN (cntConsecutive '~' v) '~' s))    
-    --   V4 v    -> if p v then Nothing else Just (s, V4    (dropN (cntConsecutive '~' v) '~' s))    
-    --   V2 v    -> if p v then Nothing else Just (s, V2    (dropN (cntConsecutive '~' v) '~' s))    
+  ( \vs -> do
+    let vs' = pruneV vs
+        p x = not (isStrMatch s (take d16 x))
+        a = dropN (cntConsecutive '~' s) '~'
+    case vs' of
+      V1024 v -> if p v then Nothing else Just (s, V1024 (a v))
+      V512  v -> if p v then Nothing else Just (s, V512 (a v))
+      V256  v -> if p v then Nothing else Just (s, V256 (a v))
+      V128  v -> if p v then Nothing else Just (s, V128 (a v))
+      V64   v -> if p v then Nothing else Just (s, V64 (a v))
+      V32   v -> if p v then Nothing else Just (s, V32 (a v))
+      V16   v -> if p v then Nothing else Just (s, V16 (a v))
+      V8    v -> if p v then Nothing else Just (s, V8 (a v))
+      V4    v -> if p v then Nothing else Just (s, V4 (a v))
+      V2    v -> if p v then Nothing else Just (s, V2 (a v))
   )
-
 -- manyChar :: Parser Char -> Parser (Vec 64 Char)
 -- manyChar p = Parser
 --   ( \vs -> do
@@ -494,19 +493,19 @@ dropN cnt c vs = dropN (cnt - 1) c (vs <<+ c)
 -- | Convert vs to string dropping the '~' tail characters
 vecToString :: V -> String
 vecToString vs = do
-  let  removeTilda = foldl (\acc c -> if c /= '~' then c : acc else acc) ""
-       result v = show $ L.reverse (removeTilda v)
+  let removeTilda = foldl (\acc c -> if c /= '~' then c : acc else acc) ""
+      result v = show $ L.reverse (removeTilda v)
   case vs of
     V1024 v -> result v
-    V512 v  -> result v
-    V256 v  -> result v
-    V128 v  -> result v
-    V64 v   -> result v
-    V32 v   -> result v
-    V16 v   -> result v
-    V8 v    -> result v
-    V4 v    -> result v
-    V2 v    -> result v
+    V512  v -> result v
+    V256  v -> result v
+    V128  v -> result v
+    V64   v -> result v
+    V32   v -> result v
+    V16   v -> result v
+    V8    v -> result v
+    V4    v -> result v
+    V2    v -> result v
 
 -- | Pretty print a (show (Vec n Char))
 showVec :: String -> String
@@ -771,6 +770,15 @@ parserTests = do
 --           :> EmptyQ
 --           :> Nil
 --   putStrLn $ show xs
+
+
+
+
+
+
+
+
+
 
 
 
