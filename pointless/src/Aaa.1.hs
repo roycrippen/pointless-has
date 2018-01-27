@@ -17,7 +17,7 @@ import qualified Data.Char             as C (digitToInt)
 import qualified Data.List             as L (drop, foldl, head, last, length, repeat, reverse, take)
 import           Data.Maybe            (fromJust, isJust)
 import           Data.String           ()
-import           Interpreter           (Q (..), V (..), ValueP' (..), cntConsecutive, pruneQ,
+import           Interpreter           (Q (..), V (..), ValueP' (..), lengthElem, pruneQ,
                                         pruneV)
 import qualified Prelude               as P (replicate, (++))
 
@@ -99,27 +99,28 @@ string :: Vec 16 Char -> Parser (Vec 16 Char)
 string s = Parser
   ( \vs -> do
     let vs' = pruneV vs
+        p :: Vec (16 + n) Char -> Bool
         p x = not (isStrMatch s (take d16 x))
-        a = dropN (cntConsecutive '~' s) '~'
+        f :: KnownNat n => Vec n Char -> Vec n Char
+        f = popN (lengthElem '~' s) '~'
     case vs' of
-      V1024 v -> if p v then Nothing else Just (s, V1024 (a v))
-      V512  v -> if p v then Nothing else Just (s, V512 (a v))
-      V256  v -> if p v then Nothing else Just (s, V256 (a v))
-      V128  v -> if p v then Nothing else Just (s, V128 (a v))
-      V64   v -> if p v then Nothing else Just (s, V64 (a v))
-      V32   v -> if p v then Nothing else Just (s, V32 (a v))
-      V16   v -> if p v then Nothing else Just (s, V16 (a v))
-      V8    v -> if p v then Nothing else Just (s, V8 (a v))
-      V4    v -> if p v then Nothing else Just (s, V4 (a v))
-      V2    v -> if p v then Nothing else Just (s, V2 (a v))
+      V1024 v -> if p v then Nothing else Just (s, V1024 (f v))
+      V512  v -> if p v then Nothing else Just (s, V512 (f v))
+      V256  v -> if p v then Nothing else Just (s, V256 (f v))
+      V128  v -> if p v then Nothing else Just (s, V128 (f v))
+      V64   v -> if p v then Nothing else Just (s, V64 (f v))
+      V32   v -> if p v then Nothing else Just (s, V32 (f v))
+      V16   v -> if p v then Nothing else Just (s, V16 (f v))
+      _       -> Nothing
   )
+
 -- manyChar :: Parser Char -> Parser (Vec 64 Char)
 -- manyChar p = Parser
 --   ( \vs -> do
 --     let vs' = map (parseChar p . repeat) vs
---         cnt = cntConsecutive '~' vs'
+--         cnt = lengthElem '~' vs'
 --         res = imap (\i x -> if fromIntegral i < cnt then x else '~') vs'
---     Just (res, dropN cnt '~' vs)
+--     Just (res, popN cnt '~' vs)
 --   )
 
 -- many1Char :: Parser Char -> Parser (Vec 64 Char)
@@ -132,9 +133,9 @@ string s = Parser
 --   ( \vs -> do
 --     let vs'  = map (parseChar p . repeat) vs
 --         vs'' = map (\x -> if x == parseChar end (repeat x) then '~' else x) vs'
---         cnt  = cntConsecutive '~' vs''
+--         cnt  = lengthElem '~' vs''
 --         res  = imap (\i x -> if fromIntegral i < cnt then x else '~') vs'
---     Just (res, dropN cnt '~' vs)
+--     Just (res, popN cnt '~' vs)
 --   )
 
 oneOf :: Vec 16 Char -> Parser Char
@@ -467,14 +468,14 @@ isStrMatch xs vs = foldl (&&) True zipped
 --   Just (c, _) -> c
 --   Nothing     -> '~'
 
--- | dropN n chars from vs
-dropN :: KnownNat n => Int -> a -> Vec n a -> Vec n a
-dropN 0   _ vs = vs
-dropN cnt c vs = dropN (cnt - 1) c (vs <<+ c)
+-- | popN n chars from vs
+popN :: KnownNat n => Int -> a -> Vec n a -> Vec n a
+popN 0   _ vs = vs
+popN cnt c vs = popN (cnt - 1) c (vs <<+ c)
 
 -- -- | Count non '~' consecutive charaters starting a Vector
--- cntConsecutive :: (Eq a, KnownNat n) => a -> Vec n a -> Int
--- cntConsecutive a vs = case findIndex (==a) vs of
+-- lengthElem :: (Eq a, KnownNat n) => a -> Vec n a -> Int
+-- lengthElem a vs = case findIndex (==a) vs of
 --   Just n -> fromIntegral (toInteger n)
 --   _      -> length vs
 
@@ -585,12 +586,12 @@ parserTests = do
   let s1 = parse (oneOf $ loadStr64 d16 "cba") (loadStr "abc 123")
       r1 = "('a', \"bc 123\")"
   putStr $ "parse oneOf:             " P.++ show (r1 == showParse s1)
-  putStrLn $ ",  result = " P.++ r1
+  putStrLn $ ",  result = " P.++ showParse s1
 
---   let s2 = parse (string $ loadStr64 d16 "abc") (loadStr64 d64 "abc   123")
---       r2 = "(\"<abc>\", \"   123\")"
---   putStr $ "parse string:            " P.++ show (r2 == showParse s2)
---   putStrLn $ ",  result = " P.++ r2
+  let s2 = parse (string $ loadStr64 d16 "abc") (loadStr "abc   123")
+      r2 = "(\"<abc>\", \"   123\")"
+  putStr $ "parse string:            " P.++ show (r2 == showParse s2)
+  putStrLn $ ",  result = " P.++ showParse s2
 
 --   let s3 = parse spaces (loadStr64 d64 "   123")
 --       r3 = "((), \"123\")"
@@ -770,6 +771,22 @@ parserTests = do
 --           :> EmptyQ
 --           :> Nil
 --   putStrLn $ show xs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

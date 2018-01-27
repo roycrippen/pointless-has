@@ -73,17 +73,14 @@ item = Parser item'
 --
 item_ :: Parser Char
 item_ = Parser
-  (\vs -> if vs !! zero == '~' 
-    then Nothing 
-    else Just (vs !! zero, vs <<+ '~')
-  )
+  (\vs -> if vs !! zero == '~' then Nothing else Just (vs !! zero, vs <<+ '~'))
 --
 -- | Parse a fixed length string.
 -- | "abc" == <'a','b','c','~','~','~','~','~','~','~','~','~','~','~','~','~'>
 string :: Vec 16 Char -> Parser (Vec 16 Char)
 string vs = Parser
   ( \s -> if isStrMatch vs (take d16 s)
-    then Just (vs, dropN (cntConsecutive '~' vs) '~' s)
+    then Just (vs, dropN (lengthElem '~' vs) '~' s)
     else Nothing
   )
 
@@ -91,7 +88,7 @@ manyChar :: Parser Char -> Parser (Vec 64 Char)
 manyChar p = Parser
   ( \vs -> do
     let vs' = map (parseChar p . repeat) vs
-        cnt = cntConsecutive '~' vs'
+        cnt = lengthElem '~' vs'
         res = imap (\i x -> if fromIntegral i < cnt then x else '~') vs'
     Just (res, dropN cnt '~' vs)
   )
@@ -106,7 +103,7 @@ manyTillChar p end = Parser
   ( \vs -> do
     let vs'  = map (parseChar p . repeat) vs
         vs'' = map (\x -> if x == parseChar end (repeat x) then '~' else x) vs'
-        cnt  = cntConsecutive '~' vs''
+        cnt  = lengthElem '~' vs''
         res  = imap (\i x -> if fromIntegral i < cnt then x else '~') vs'
     Just (res, dropN cnt '~' vs)
   )
@@ -453,8 +450,8 @@ dropN 0   _ vs = vs
 dropN cnt c vs = dropN (cnt - 1) c (vs <<+ c)
 
 -- | Count non '~' consecutive charaters starting a Vector
-cntConsecutive :: (Eq a, KnownNat n) => a -> Vec n a -> Int
-cntConsecutive a vs = case findIndex (==a) vs of
+lengthElem :: (Eq a, KnownNat n) => a -> Vec n a -> Int
+lengthElem a vs = case findIndex (==a) vs of
   Just n -> fromIntegral (toInteger n)
   _      -> length vs
 
@@ -750,6 +747,7 @@ parserTests = do
           :> EmptyQ
           :> Nil
   putStrLn $ show xs
+
 
 
 

@@ -174,15 +174,15 @@ replaceStr old new str = go str
 
 newLengthVP :: KnownNat n => Vec n ValueP' -> Int
 newLengthVP vs =
-  2 ^ ceiling (logBase 2 $ fromIntegral (cntConsecutive EmptyQ vs)) :: Int
+  2 ^ ceiling (logBase 2 $ fromIntegral (lengthElem EmptyQ vs)) :: Int
 
 newLengthC :: KnownNat n => Vec n Char -> Int
 newLengthC vs =
-  2 ^ ceiling (logBase 2 $ fromIntegral (cntConsecutive '~' vs)) :: Int
+  2 ^ ceiling (logBase 2 $ fromIntegral (lengthElem '~' vs)) :: Int
 
 -- | Count non '~' consecutive charaters starting a Vector
-cntConsecutive :: (Eq a, KnownNat n) => a -> Vec n a -> Int
-cntConsecutive a vs = case Clash.Prelude.findIndex (==a) vs of
+lengthElem :: (Eq a, KnownNat n) => a -> Vec n a -> Int
+lengthElem a vs = case Clash.Prelude.findIndex (==a) vs of
   Just n -> fromIntegral (toInteger n)
   _      -> Clash.Prelude.length vs
 
