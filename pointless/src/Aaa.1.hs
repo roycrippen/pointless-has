@@ -114,19 +114,35 @@ string s = Parser
       _       -> Nothing
   )
 
--- manyChar :: Parser Char -> Parser (Vec 64 Char)
--- manyChar p = Parser
---   ( \vs -> do
---     let vs' = map (parseChar p . repeat) vs
---         cnt = lengthElem '~' vs'
---         res = imap (\i x -> if fromIntegral i < cnt then x else '~') vs'
---     Just (res, popN cnt '~' vs)
---   )
+manyChar :: Parser Char -> Parser (Vec 64 Char)
+manyChar p = Parser
+  ( \vs -> do
+    let vs' = pruneV vs
+        s   = loadStr64 d64 "aaa"
+    case vs' of
+      V1024 v -> Just (s, V1024 v)
+      V512  v -> Just (s, V512 v)
+      V256  v -> Just (s, V256 v)
+      V128  v -> Just (s, V128 v)
+      V64   v -> Just (s, V64 v)
+      V32   v -> Just (s, V32 v)
+      V16   v -> Just (s, V16 v)
+      _       -> Nothing
+  )
+      -- V8    v -> Just (s, V16 v)
+      -- V4    v -> Just (s, V16 v)
+      -- V2    v -> Just (s, V16 v)
 
--- many1Char :: Parser Char -> Parser (Vec 64 Char)
--- many1Char p = do
---   a <- lookAhead p
---   if not a then failure else manyChar p
+    -- let vs' = map (parseChar p . repeat) vs
+    --     cnt = lengthElem '~' vs'
+    --     res = imap (\i x -> if fromIntegral i < cnt then x else '~') vs'
+    -- -- Just (res, popN cnt '~' vs)
+    -- Just (res, popN cnt '~' vs)
+
+many1Char :: Parser Char -> Parser (Vec 64 Char)
+many1Char p = do
+  a <- lookAhead p
+  if not a then failure else manyChar p
 
 -- manyTillChar :: Parser Char -> Parser Char -> Parser (Vec 64 Char)
 -- manyTillChar p end = Parser
@@ -151,23 +167,23 @@ lookAhead p = Parser
     _       -> Just (True, s)
   )
 
--- -- | Lexical combinators
--- -- |
--- spaces :: Parser ()
--- spaces = void (manyChar (satisfies isSpace))
---  where
---   isSpace ' '  = True
---   isSpace '\n' = True
---   isSpace '\r' = True
---   isSpace '\t' = True
---   isSpace _    = False
+-- | Lexical combinators
+-- |
+spaces :: Parser ()
+spaces = void (manyChar (satisfies isSpace))
+ where
+  isSpace ' '  = True
+  isSpace '\n' = True
+  isSpace '\r' = True
+  isSpace '\t' = True
+  isSpace _    = False
 
--- digit :: Parser Char
--- digit = satisfies isDigit
---  where
---   isDigit c = isJust (findIndex (==c) digits)
---   digits =
---     '0' :> '1' :> '2' :> '3' :> '4' :> '5' :> '6' :> '7' :> '8' :> '9' :> Nil
+digit :: Parser Char
+digit = satisfies isDigit
+ where
+  isDigit c = isJust (findIndex (==c) digits)
+  digits =
+    '0' :> '1' :> '2' :> '3' :> '4' :> '5' :> '6' :> '7' :> '8' :> '9' :> Nil
 
 -- numberInt :: Parser Int
 -- numberInt = do
@@ -463,10 +479,11 @@ isStrMatch :: Vec 16 Char -> Vec 16 Char -> Bool
 isStrMatch xs vs = foldl (&&) True zipped
   where zipped = zipWith (\x v -> x == v || x == '~') xs vs
 
--- parseChar :: Parser Char -> Vec 64 Char -> Char
--- parseChar p vs = case parse p vs of
---   Just (c, _) -> c
---   Nothing     -> '~'
+-- | get the character by applying parser p or '~' if Nothing
+parseChar :: Parser Char -> V -> Char
+parseChar p vs = case parse p vs of
+  Just (c, _) -> c
+  Nothing     -> '~'
 
 -- | popN n chars from vs
 popN :: KnownNat n => Int -> a -> Vec n a -> Vec n a
@@ -593,15 +610,15 @@ parserTests = do
   putStr $ "parse string:            " P.++ show (r2 == showParse s2)
   putStrLn $ ",  result = " P.++ showParse s2
 
---   let s3 = parse spaces (loadStr64 d64 "   123")
---       r3 = "((), \"123\")"
---   putStr $ "parse spaces:            " P.++ show (r3 == showParse s3)
---   putStrLn $ ",  result = " P.++ r3
+  let s3 = parse spaces (loadStr "   123")
+      r3 = "((), \"123\")"
+  putStr $ "parse spaces:            " P.++ show (r3 == showParse s3)
+  putStrLn $ ",  result = " P.++ showParse s3
 
---   let s4 = parse digit (loadStr64 d64 "123")
---       r4 = "('1', \"23\")"
---   putStr $ "parse digit:             " P.++ show (r4 == showParse s4)
---   putStrLn $ ",  result = " P.++ r4
+  let s4 = parse digit (loadStr "123")
+      r4 = "('1', \"23\")"
+  putStr $ "parse digit:             " P.++ show (r4 == showParse s4)
+  putStrLn $ ",  result = " P.++ showParse s4
 
 --   let s5 = parse numberInt (loadStr64 d64 "123")
 --       r5 = "(123, \"\")"
@@ -616,17 +633,17 @@ parserTests = do
   let s7 = parse (oneOf $ loadStr64 d16 "defa") (loadStr "abc   123")
       r7 = "('a', \"bc   123\")"
   putStr $ "parse oneOf:             " P.++ show (r7 == showParse s7)
-  putStrLn $ ",  result = " P.++ r7
+  putStrLn $ ",  result = " P.++ showParse s7
 
   let s8 = parse (oneOf $ loadStr64 d16 "cdef") (loadStr "abc   123")
       r8 = "Nothing"
   putStr $ "parse oneOf:             " P.++ show (r8 == showParse s8)
-  putStrLn $ ",  result = " P.++ r8
+  putStrLn $ ",  result = " P.++ showParse s8
 
   let s9 = parse (noneOf $ loadStr64 d16 "def") (loadStr "abc   123")
       r9 = "('a', \"bc   123\")"
   putStr $ "parse NoneOf:            " P.++ show (r9 == showParse s9)
-  putStrLn $ ",  result = " P.++ r9
+  putStrLn $ ",  result = " P.++ showParse s9
 
 --   let s10 = parse (manyChar (char 'a')) (loadStr64 d64 "aaa bbb")
 --       r10 = "(\"<aaa>\", \" bbb\")"
@@ -771,6 +788,11 @@ parserTests = do
 --           :> EmptyQ
 --           :> Nil
 --   putStrLn $ show xs
+
+
+
+
+
 
 
 
