@@ -19,6 +19,8 @@ library
                      , Primitives
                      , SocketServer
                      , Repl
+                     , Aaa
+                    --  , Bbb
   build-depends:       base >= 4.7 && < 5
                      , containers
                      , text
@@ -51,6 +53,7 @@ test-suite pointless-test
                      , Primitives
                      , SocketServer
                      , Repl
+                     , Aaa
   build-depends:       base
                      , containers
                      , text
