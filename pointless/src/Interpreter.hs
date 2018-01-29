@@ -173,12 +173,16 @@ replaceStr old new str = go str
 -- | size helpers
 
 newLengthVP :: KnownNat n => Vec n ValueP' -> Int
-newLengthVP vs =
-  2 ^ ceiling (logBase 2 $ fromIntegral (lengthElem EmptyQ vs)) :: Int
+newLengthVP vs = case lengthElem EmptyQ vs of
+  0 -> 2
+  1 -> 2
+  _ -> 2 ^ ceiling (logBase 2 $ fromIntegral (lengthElem EmptyQ vs)) :: Int
 
 newLengthC :: KnownNat n => Vec n Char -> Int
-newLengthC vs =
-  2 ^ ceiling (logBase 2 $ fromIntegral (lengthElem '~' vs)) :: Int
+newLengthC vs = case lengthElem '~' vs of
+  0 -> 2
+  1 -> 2
+  _ -> 2 ^ ceiling (logBase 2 $ fromIntegral (lengthElem '~' vs)) :: Int
 
 -- | Count non '~' consecutive charaters starting a Vector
 lengthElem :: (Eq a, KnownNat n) => a -> Vec n a -> Int
@@ -222,6 +226,14 @@ pruneQ qs = case qs of
 --
 pruneV :: V -> V
 pruneV vvs = case vvs of
+  --
+  V4 vs -> case newLengthC vs of
+    2 -> V2 (take d2 vs)
+    _ -> vvs
+  V8 vs -> case newLengthC vs of
+    2 -> V2 (take d2 vs)
+    4 -> V4 (take d4 vs)
+    _ -> vvs
   V16 vs -> case newLengthC vs of
     2 -> V2 (take d2 vs)
     4 -> V4 (take d4 vs)
@@ -339,6 +351,9 @@ pruneV vvs = case vvs of
     -- 32768 -> V32768 (take d32768 vs)
     _    -> vvs
   _ -> vvs
+
+
+
 
 
 
