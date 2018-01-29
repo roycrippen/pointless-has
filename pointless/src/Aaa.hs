@@ -152,6 +152,42 @@ many1Char :: Parser Char -> Parser V
 many1Char p = do
   a <- lookAhead p
   if not a then failure else manyChar p
+--
+manyTillChar :: Parser Char -> Parser Char -> Parser V
+manyTillChar p end = Parser
+  ( \vs -> do
+    let
+      vs' = pruneV vs
+      mapParser :: KnownNat n => Vec n Char -> Vec n Char
+      mapParser v = map (\x -> if x == parseChar end x then '~' else x)
+                        (map (parseChar p) v)
+
+      fCnt :: KnownNat n => Vec n Char -> Int
+      fCnt = lengthElem '~'
+
+      res :: KnownNat n => Vec n Char -> Int -> Vec n Char
+      res v cnt = imap (\i x -> if fromIntegral i < cnt then x else '~') v
+
+      left :: KnownNat n => Vec n Char -> Vec n Char
+      left v = res (mapParser v) (fCnt (mapParser v))
+
+      right :: KnownNat n => Vec n Char -> Vec n Char
+      right v = popN (fCnt (mapParser v)) '~' v
+
+    case vs' of
+      V1024 v -> Just (pruneV $ V1024 (left v), pruneV $ V1024 (right v))
+      V512  v -> Just (pruneV $ V512 (left v), pruneV $ V512 (right v))
+      V256  v -> Just (pruneV $ V256 (left v), pruneV $ V256 (right v))
+      V128  v -> Just (pruneV $ V128 (left v), pruneV $ V128 (right v))
+      V64   v -> Just (pruneV $ V64 (left v), pruneV $ V64 (right v))
+      V32   v -> Just (pruneV $ V32 (left v), pruneV $ V32 (right v))
+      V16   v -> Just (pruneV $ V16 (left v), pruneV $ V16 (right v))
+      V8    v -> Just (pruneV $ V8 (left v), pruneV $ V8 (right v))
+      V4    v -> Just (pruneV $ V4 (left v), pruneV $ V4 (right v))
+      V2    v -> Just (pruneV $ V2 (left v), pruneV $ V2 (right v))
+      _       -> Nothing
+  )
+
 
 -- manyTillChar :: Parser Char -> Parser Char -> Parser (Vec 64 Char)
 -- manyTillChar p end = Parser
@@ -218,108 +254,108 @@ numberInt = do
 -- -- -- --   return (read double :: Double)
 
 
--- letter :: Parser Char
--- letter = satisfies isAlpha where isAlpha c = isJust (findIndex (==c) letters)
+letter :: Parser Char
+letter = satisfies isAlpha where isAlpha c = isJust (findIndex (==c) letters)
 
--- azLower :: Vec 26 Char
--- azLower =
---   'a'
---     :> 'b'
---     :> 'c'
---     :> 'd'
---     :> 'e'
---     :> 'f'
---     :> 'g'
---     :> 'h'
---     :> 'i'
---     :> 'j'
---     :> 'k'
---     :> 'l'
---     :> 'm'
---     :> 'n'
---     :> 'o'
---     :> 'p'
---     :> 'q'
---     :> 'r'
---     :> 's'
---     :> 't'
---     :> 'u'
---     :> 'v'
---     :> 'w'
---     :> 'x'
---     :> 'y'
---     :> 'z'
---     :> Nil
+azLower :: Vec 26 Char
+azLower =
+  'a'
+    :> 'b'
+    :> 'c'
+    :> 'd'
+    :> 'e'
+    :> 'f'
+    :> 'g'
+    :> 'h'
+    :> 'i'
+    :> 'j'
+    :> 'k'
+    :> 'l'
+    :> 'm'
+    :> 'n'
+    :> 'o'
+    :> 'p'
+    :> 'q'
+    :> 'r'
+    :> 's'
+    :> 't'
+    :> 'u'
+    :> 'v'
+    :> 'w'
+    :> 'x'
+    :> 'y'
+    :> 'z'
+    :> Nil
 
--- azUpper :: Vec 26 Char
--- azUpper =
---   'A'
---     :> 'B'
---     :> 'C'
---     :> 'D'
---     :> 'E'
---     :> 'F'
---     :> 'G'
---     :> 'H'
---     :> 'I'
---     :> 'J'
---     :> 'K'
---     :> 'L'
---     :> 'M'
---     :> 'N'
---     :> 'O'
---     :> 'P'
---     :> 'Q'
---     :> 'R'
---     :> 'S'
---     :> 'T'
---     :> 'U'
---     :> 'V'
---     :> 'W'
---     :> 'X'
---     :> 'Y'
---     :> 'Z'
---     :> Nil
+azUpper :: Vec 26 Char
+azUpper =
+  'A'
+    :> 'B'
+    :> 'C'
+    :> 'D'
+    :> 'E'
+    :> 'F'
+    :> 'G'
+    :> 'H'
+    :> 'I'
+    :> 'J'
+    :> 'K'
+    :> 'L'
+    :> 'M'
+    :> 'N'
+    :> 'O'
+    :> 'P'
+    :> 'Q'
+    :> 'R'
+    :> 'S'
+    :> 'T'
+    :> 'U'
+    :> 'V'
+    :> 'W'
+    :> 'X'
+    :> 'Y'
+    :> 'Z'
+    :> Nil
 
--- letters :: Vec 52 Char
--- letters = azLower ++ azUpper
+letters :: Vec 52 Char
+letters = azLower ++ azUpper
 
--- firstLetter :: Parser Char
--- firstLetter = letter <|> oneOf symbols
---  where
---   symbols =
---     '+'
---       :> '-'
---       :> '*'
---       :> '/'
---       :> '<'
---       :> '>'
---       :> '='
---       :> '!'
---       :> '?'
---       :> '$'
---       :> '%'
---       :> '&'
---       :> '@'
---       :> '´'
---       :> '\''
---       :> '_'
---       :> Nil
+firstLetter :: Parser Char
+firstLetter = letter <|> oneOf symbols
+ where
+  symbols =
+    '+'
+      :> '-'
+      :> '*'
+      :> '/'
+      :> '<'
+      :> '>'
+      :> '='
+      :> '!'
+      :> '?'
+      :> '$'
+      :> '%'
+      :> '&'
+      :> '@'
+      :> '´'
+      :> '\''
+      :> '_'
+      :> Nil
 
--- wordLetter :: Parser Char
--- wordLetter = firstLetter <|> digit
+wordLetter :: Parser Char
+wordLetter = firstLetter <|> digit
 
--- newline :: Parser Char
--- newline = char '\n'
+newline :: Parser Char
+newline = char '\n'
 
--- crlf :: Parser Char
--- crlf = char '\r' *> char '\n'
+crlf :: Parser Char
+crlf = char '\r' *> char '\n'
 
--- endOfLine :: Parser Char
--- endOfLine = newline <|> crlf
+endOfLine :: Parser Char
+endOfLine = newline <|> crlf
 
--- anyChar :: Parser Char
--- anyChar = satisfies (const True)
+anyChar :: Parser Char
+anyChar = satisfies (const True)
 
 -- -- emptyQuot :: Parser (Vec 16 Char)
 -- -- emptyQuot = string ('[' +>> ']' +>> blank16)
@@ -691,15 +727,15 @@ parserTests = do
   putStr $ "parse many1Char:         " P.++ show (r15 == showParse s15)
   putStrLn $ ",  result = " P.++ showParse s15
 
---   let s16 = parse (manyTillChar anyChar (char '}')) (loadStr64 d64 "123 ccc")
---       r16 = "(\"<123 ccc>\", \"\")"
---   putStr $ "parse manyTillChar:      " P.++ show (r16 == showParse s16)
---   putStrLn $ ",  result = " P.++ r16
+  let s16 = parse (manyTillChar anyChar (char '}')) (loadStr "123 ccc")
+      r16 = "(V8 <'1','2','3',' ','c','c','c','~'>, \"\")"
+  putStr $ "parse manyTillChar:      " P.++ show (r16 == showParse s16)
+  putStrLn $ ",  result = " P.++ showParse s16
 
---   let s17 = parse (manyTillChar anyChar (char '}')) (loadStr64 d64 "123} ccc")
---       r17 = "(\"<123>\", \"} ccc\")"
---   putStr $ "parse manyTillChar:      " P.++ show (r17 == showParse s17)
---   putStrLn $ ",  result = " P.++ r17
+  let s17 = parse (manyTillChar anyChar (char '}')) (loadStr "123} ccc")
+      r17 = "(V4 <'1','2','3','~'>, \"} ccc\")"
+  putStr $ "parse manyTillChar:      " P.++ show (r17 == showParse s17)
+  putStrLn $ ",  result = " P.++ showParse s17
 
 --   let s18 = parse quotedString (loadStr64 d64 "\"hello world\" 123")
 --       r18 = "(\"<hello world>\", \" 123\")"
@@ -804,6 +840,9 @@ parserTests = do
 --           :> EmptyQ
 --           :> Nil
 --   putStrLn $ show xs
+
+
+
 
 
 
