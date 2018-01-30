@@ -502,41 +502,37 @@ quotation = do
   _ <- char ']'
   return (Quot' q)
 
--- -- nonTest :: Parser ()
--- -- nonTest = do
--- --   _ <- spacesLineCommentsSpecifications
--- --   _ <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
--- --   _ <- spacesLineCommentsSpecifications
--- --   return ()
+-- nonTest :: Parser ()
+-- nonTest = do
+--   _ <- spacesLineCommentsSpecifications
+--   _ <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
+--   _ <- spacesLineCommentsSpecifications
+--   return ()
 
 -- -- nonTests :: Parser [()]
--- -- nonTests = many nonTest
+-- nonTests = manyChar nonTest
 
--- -- testBlock :: Parser String
--- -- testBlock = do
--- --   _ <- char '{'
--- --   s <- manyTill anyChar (char '}')
--- --   _ <- char '}'
--- --   _ <- spaces
--- --   return s
+-- testBlock :: Parser V
+-- testBlock = do
+--   _ <- char '{'
+--   s <- manyTillChar anyChar (char '}')
+--   _ <- char '}'
+--   _ <- spaces
+--   return s
 
--- -- test :: Parser String
--- -- test = do
--- --   _ <- many nonTest
--- --   t <- testBlock
--- --   _ <- many nonTest
--- --   return t
+-- test :: Parser V
+-- test = do
+--   _ <- many nonTest
+--   t <- testBlock
+--   _ <- many nonTest
+--   return t
 
 -- -- tests :: Parser [String]
--- -- tests = many test
+-- tests = manyChar test
 
 
-
-
--- -- | Helper functions.
--- -- |
--- -- strCharCount :: Vec n Char -> Int
--- -- strCharCount = foldl (\acc c -> if c /= '~' then acc + 1 else acc) 0
+-- | Helper functions.
+-- |
 
 isStrMatch :: Vec 16 Char -> Vec 16 Char -> Bool
 isStrMatch xs vs = foldl (&&) True zipped
@@ -554,12 +550,6 @@ popN :: KnownNat n => Int -> a -> Vec n a -> Vec n a
 popN 0   _ vs = vs
 popN cnt c vs = popN (cnt - 1) c (vs <<+ c)
 
--- -- | Count non '~' consecutive charaters starting a Vector
--- lengthElem :: (Eq a, KnownNat n) => a -> Vec n a -> Int
--- lengthElem a vs = case findIndex (==a) vs of
---   Just n -> fromIntegral (toInteger n)
---   _      -> length vs
-
 -- | Covert a vector of chars to an int
 -- | takes chars != '~'
 fromDigits :: KnownNat n => Vec n Char -> Int
@@ -570,7 +560,6 @@ fromDigits vs = val * sign
   sign    = if isMinus then (-1) else 1
   val =
     foldl (\acc c -> if c /= '~' then 10 * acc + C.digitToInt c else acc) 0 vs'
-
 
 -- | Convert vs to string dropping the '~' tail characters
 vecToString :: V -> String
