@@ -1,160 +1,209 @@
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE GADTs               #-}
+-- {-# LANGUAGE KindSignatures      #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators       #-}
+
+
 module Parser where
 
-import           Clash.Prelude       hiding (many, (++), (<|>))
-import           Control.Applicative (Applicative (..), pure)
-import           Control.Monad       (Functor (..), Monad (..), ap, liftM, void)
-import           Data.Bool
-import           Data.Char
-import           Data.Eq
-import           Data.Function
-import           Data.Int
-import           Data.List           as L
-import           Data.Maybe          (isJust)
-import           Data.String
-import           Interpreter
-import qualified Prelude             as P
-import           Text.Read
+import qualified Data.Char as C (digitToInt)
+import Clash.Prelude hiding ((<|>))
+import Control.Monad (ap, liftM, void)
+import Data.Maybe (fromJust, isJust, isNothing)
+import Interpreter (Q (..), V (..), ValueP' (..), lengthElem, pruneQ, pruneV)
 
--- hints from other libraries
--- import CLaSH.Prelude
--- import qualified GHC.Base as B
--- import Prelude hiding ((!!), head)
--- import Text.Printf
-
-
+-- import qualified Prelude               as P (replicate, (++))
+-- import           Clash.Promoted.Nat.TH
+-- import qualified Data.List             as L (drop, foldl, head, last, length, repeat, reverse, take)
+-- import           Data.String           ()
 -- import           Debug.Trace
 
-newtype Parser a = Parser (String -> [(a, String)])
+newtype Parser a = Parser (V -> Maybe (a, V))
 
-parse :: Parser t -> String -> [(t, String)]
+parse :: Parser t -> V -> Maybe (t, V)
 parse (Parser p) = p
 
 instance Functor Parser where
-  fmap = liftM
+ fmap = liftM
 
 instance Applicative Parser where
   pure  = return
   (<*>) = ap
 
 instance Monad Parser where
-   return a = Parser (\s -> [(a,s)])
-   p >>= f = Parser (concatMap (\ (a, s') -> parse (f a) s') . parse p)
-
-item :: Parser Char
-item = Parser item'
- where
-  item' s = case s of
-    ""     -> []
-    (c:cs) -> [(c, cs)]
+   return a = Parser (\s -> Just (a,s))
+   p >>= f  = Parser
+    (\s -> do
+      (v, s') <- parse p s
+      parse (f v) s'
+    )
 
 class Monad m => MonadPlus m where
   mzero :: m a
   mplus :: m a -> m a -> m a
 
 instance MonadPlus Parser where
-  mzero = Parser (const [])
-  mplus p q = Parser (\s -> parse p s ++ parse q s)
+  mzero = Parser (const Nothing)
+  mplus p q = Parser
+    (\s -> case parse p s of
+      Nothing -> parse q s
+      Just x  -> Just x
+    )
 
-option :: Parser a -> Parser a -> Parser a
-option p q = Parser
-  ( \s -> case parse (mplus p q) s of
-    []    -> []
-    (x:_) -> [x]
-  )
+failure :: Parser a
+failure = mzero
 
 (<|>) :: Parser a -> Parser a -> Parser a
-(<|>) = option
+p <|> q = p `mplus` q
 
 satisfies :: (Char -> Bool) -> Parser Char
-satisfies p = item >>= \c -> if p c then return c else mzero
+satisfies p = item >>= \c -> if p c then return c else failure
 
 char :: Char -> Parser Char
-char c = satisfies (c ==)
+char c = satisfies (c==)
 
-string :: String -> Parser String
-string ""     = return ""
-string (c:cs) = do
-  _ <- char c
-  _ <- string cs
-  return (c : cs)
+zero :: Integer
+zero = 0
 
-many :: Parser a -> Parser [a]
-many p = many1 p <|> return []
+one :: Integer
+one = 1
 
-many1 :: Parser a -> Parser [a]
-many1 p = do
-  a  <- p
-  as <- many p
-  return (a : as)
+item :: Parser Char
+item = Parser
+  ( \vs -> do
+    let vs' = pruneV vs
+        p x = x !! zero == '~'
+        a x = x <<+ '~'
+    case vs' of
+      V1024 v -> if p v then Nothing else Just (v !! zero, V1024 (a v))
+      V512  v -> if p v then Nothing else Just (v !! zero, V512 (a v))
+      V256  v -> if p v then Nothing else Just (v !! zero, V256 (a v))
+      V128  v -> if p v then Nothing else Just (v !! zero, V128 (a v))
+      V64   v -> if p v then Nothing else Just (v !! zero, V64 (a v))
+      V32   v -> if p v then Nothing else Just (v !! zero, V32 (a v))
+      V16   v -> if p v then Nothing else Just (v !! zero, V16 (a v))
+      V8    v -> if p v then Nothing else Just (v !! zero, V8 (a v))
+      V4    v -> if p v then Nothing else Just (v !! zero, V4 (a v))
+      V2    v -> if p v then Nothing else Just (v !! zero, V2 (a v))
+      _       -> Nothing
+  )
 
-sepBy :: Parser a -> Parser b -> Parser [a]
-p `sepBy` sep = (p `sepBy1` sep) <|> return []
+-- | Parse a fixed length string.
+-- | "abc" == <'a','b','c','~','~','~','~','~','~','~','~','~','~','~','~','~'>
+string :: Vec 16 Char -> Parser (Vec 16 Char)
+string s = Parser
+  ( \vs -> do
+    let vs' = pruneV vs
+        p :: Vec (16 + n) Char -> Bool
+        p x = not (isStrMatch s (take d16 x))
+        f :: KnownNat n => Vec n Char -> Vec n Char
+        f = popN (lengthElem '~' s) '~'
+    case vs' of
+      V1024 v -> if p v then Nothing else Just (s, pruneV $ V1024 (f v))
+      V512  v -> if p v then Nothing else Just (s, pruneV $ V512 (f v))
+      V256  v -> if p v then Nothing else Just (s, pruneV $ V256 (f v))
+      V128  v -> if p v then Nothing else Just (s, pruneV $ V128 (f v))
+      V64   v -> if p v then Nothing else Just (s, pruneV $ V64 (f v))
+      V32   v -> if p v then Nothing else Just (s, pruneV $ V32 (f v))
+      V16   v -> if p v then Nothing else Just (s, pruneV $ V16 (f v))
+      _       -> Nothing
+  )
 
-sepBy1 :: Parser a -> Parser b -> Parser [a]
-p `sepBy1` sep = do
-  a  <- p
-  as <- many
-    ( do
-      _ <- sep
-      p
-    )
-  return (a : as)
+-- | Same as manyTillChar end character == end of string
+manyChar :: Parser Char -> Parser V
+manyChar p = manyTillChar p (char '~')
 
-chainl :: Parser a -> Parser (a -> a -> a) -> a -> Parser a
-chainl p op a = (p `chainl1` op) <|> return a
+-- manyChar :: Parser Char -> Parser V
+-- manyChar p = Parser
+--   ( \vs -> do
+--     let vs' = pruneV vs
+--         mapParser :: KnownNat n => Vec n Char -> Vec n Char
+--         mapParser = map (parseChar p)
 
-chainl1 :: Parser a -> Parser (a -> a -> a) -> Parser a
-p `chainl1` op = do
-  a <- p
-  rest a
- where
-  rest a =
-    ( do
-        f <- op
-        b <- p
-        rest (f a b)
-      )
-      <|> return a
+--         fCnt :: KnownNat n => Vec n Char -> Int
+--         fCnt = lengthElem '~'
 
-oneOf :: String -> Parser Char
-oneOf cs = satisfies (`elem` cs)
+--         res :: KnownNat n => Vec n Char -> Int -> Vec n Char
+--         res v cnt = imap (\i x -> if fromIntegral i < cnt then x else '~') v
 
-noneOf :: String -> Parser Char
-noneOf cs = satisfies (`notElem` cs)
+--         left :: KnownNat n => Vec n Char -> Vec n Char
+--         left v = res (mapParser v) (fCnt (mapParser v))
 
-manyN :: Parser a -> Int -> Parser [a]
-manyN p 1 = do
-  c <- p
-  return [c]
-manyN p n = do
-  c    <- p
-  rest <- manyN p (n - 1)
-  return (c : rest)
+--         right :: KnownNat n => Vec n Char -> Vec n Char
+--         right v = popN (fCnt (mapParser v)) '~' v
 
-manyTill :: Parser a -> Parser b -> Parser [a]
-manyTill p end = manyTill1 p end <|> return []
+--     case vs' of
+--       V1024 v -> Just (pruneV $ V1024 (left v), pruneV $ V1024 (right v))
+--       V512  v -> Just (pruneV $ V512 (left v), pruneV $ V512 (right v))
+--       V256  v -> Just (pruneV $ V256 (left v), pruneV $ V256 (right v))
+--       V128  v -> Just (pruneV $ V128 (left v), pruneV $ V128 (right v))
+--       V64   v -> Just (pruneV $ V64 (left v), pruneV $ V64 (right v))
+--       V32   v -> Just (pruneV $ V32 (left v), pruneV $ V32 (right v))
+--       V16   v -> Just (pruneV $ V16 (left v), pruneV $ V16 (right v))
+--       V8    v -> Just (pruneV $ V8 (left v), pruneV $ V8 (right v))
+--       V4    v -> Just (pruneV $ V4 (left v), pruneV $ V4 (right v))
+--       V2    v -> Just (pruneV $ V2 (left v), pruneV $ V2 (right v))
+--       _       -> Nothing
+--   )
 
-manyTill1 :: Parser a -> Parser b -> Parser [a]
-manyTill1 p end = do
-  a <- p
-  b <- lookAhead end
-  if b
-    then return [a]
-    else do
-      as <- manyTill p end
-      return (a : as)
+many1Char :: Parser Char -> Parser V
+many1Char p = do
+  a <- lookAhead p
+  if not a then failure else manyChar p
+--
+manyTillChar :: Parser Char -> Parser Char -> Parser V
+manyTillChar p end = Parser
+  ( \vs -> do
+    let
+      vs' = pruneV vs
+      mapParser :: KnownNat n => Vec n Char -> Vec n Char
+      mapParser v = map (\x -> if x == parseChar end x then '~' else x) . (parseChar p) v)
+
+      fCnt :: KnownNat n => Vec n Char -> Int
+      fCnt = lengthElem '~'
+
+      res :: KnownNat n => Vec n Char -> Int -> Vec n Char
+      res v cnt = imap (\i x -> if fromIntegral i < cnt then x else '~') v
+
+      left :: KnownNat n => Vec n Char -> Vec n Char
+      left v = res (mapParser v) (fCnt (mapParser v))
+
+      right :: KnownNat n => Vec n Char -> Vec n Char
+      right v = popN (fCnt (mapParser v)) '~' v
+
+    case vs' of
+      V1024 v -> Just (pruneV $ V1024 (left v), pruneV $ V1024 (right v))
+      V512  v -> Just (pruneV $ V512 (left v), pruneV $ V512 (right v))
+      V256  v -> Just (pruneV $ V256 (left v), pruneV $ V256 (right v))
+      V128  v -> Just (pruneV $ V128 (left v), pruneV $ V128 (right v))
+      V64   v -> Just (pruneV $ V64 (left v), pruneV $ V64 (right v))
+      V32   v -> Just (pruneV $ V32 (left v), pruneV $ V32 (right v))
+      V16   v -> Just (pruneV $ V16 (left v), pruneV $ V16 (right v))
+      V8    v -> Just (pruneV $ V8 (left v), pruneV $ V8 (right v))
+      V4    v -> Just (pruneV $ V4 (left v), pruneV $ V4 (right v))
+      V2    v -> Just (pruneV $ V2 (left v), pruneV $ V2 (right v))
+      _       -> Nothing
+  )
+
+oneOf :: Vec 16 Char -> Parser Char
+oneOf cs = satisfies (`elem`cs)
+
+noneOf :: Vec 16 Char -> Parser Char
+noneOf cs = satisfies (`notElem`cs)
 
 lookAhead :: Parser a -> Parser Bool
 lookAhead p = Parser
   ( \s -> case parse p s of
-    [] -> [(False, s)]
-    _  -> [(True, s)]
+    Nothing -> Just (False, s)
+    _       -> Just (True, s)
   )
 
 -- | Lexical combinators
 -- |
 spaces :: Parser ()
-spaces = void (many (satisfies isSpace))
+spaces = void (manyChar (satisfies isSpace))
  where
   isSpace ' '  = True
   isSpace '\n' = True
@@ -162,44 +211,92 @@ spaces = void (many (satisfies isSpace))
   isSpace '\t' = True
   isSpace _    = False
 
--- token :: Parser a -> Parser a
--- token p = do
---   _ <- spaces
---   a <- p
---   _ <- spaces
---   return a
-
--- symb :: String -> Parser String
--- symb s = token $ string s
-
 digit :: Parser Char
-digit = satisfies isDigit where isDigit c = isJust (find (== c) ['0' .. '9'])
+digit = satisfies isDigit
+ where
+  isDigit c = isJust (findIndex (==c) digits)
+  digits =
+    '0' :> '1' :> '2' :> '3' :> '4' :> '5' :> '6' :> '7' :> '8' :> '9' :> Nil
 
 numberInt :: Parser Int
 numberInt = do
-  sign   <- string "-" <|> string ""
-  digits <- many1 digit
-  return (read (sign ++ digits) :: Int)
-
--- numberDouble :: Parser Double
--- numberDouble = do
---   sign     <- string "-" <|> string ""
---   digits   <- many1 digit
---   _        <- string "." <|> string ""
---   mantissa <- many digit
---   _        <- spaces
---   let mantissa' = if mantissa == "" then "0" else mantissa
---       double    = sign ++ digits ++ "." ++ mantissa'
---   return (read double :: Double)
+  sign   <- char '-' <|> digit
+  digits <- manyChar digit
+  case digits of
+    V32 v -> return (fromDigits (sign :> v))
+    V16 v -> return (fromDigits (sign :> v))
+    V8  v -> return (fromDigits (sign :> v))
+    V4  v -> return (fromDigits (sign :> v))
+    V2  v -> return (fromDigits (sign :> v))
+    _     -> failure
 
 letter :: Parser Char
-letter = satisfies isAlpha
- where
-  isAlpha c = isJust (find (== c) letters)
-  letters = ['a' .. 'z'] ++ ['A' .. 'Z']
+letter = satisfies isAlpha where isAlpha c = isJust (findIndex (==c) letters)
+
+ajLower :: Vec 26 Char
+ajLower =  
+  'a' :> 'b' :> 'c' :> 'd' :> 'e' :> 'f' :> 'g' :> 'h' :> 'i' :> 'j' :> Nil
+--
+ktLower :: Vec 26 Char
+ktLower =  
+  'k' :> 'l' :> 'm' :> 'n' :> 'o' :> 'p':> 'q' :> 'r' :> 's' :> 't' :> Nil
+
+--
+azLower :: Vec 26 Char
+azLower = ajLower ++ ktLower ++ 'u' :> 'v' :> 'w' :> 'x' :> 'y' :> 'z' :> Nil
+
+azUpper :: Vec 26 Char
+azUpper =
+  'A':> 'B':> 'C'
+    :> 'D'
+    :> 'E'
+    :> 'F'
+    :> 'G'
+    :> 'H'
+    :> 'I'
+    :> 'J'
+    :> 'K'
+    :> 'L'
+    :> 'M'
+    :> 'N'
+    :> 'O'
+    :> 'P'
+    :> 'Q'
+    :> 'R'
+    :> 'S'
+    :> 'T'
+    :> 'U'
+    :> 'V'
+    :> 'W'
+    :> 'X'
+    :> 'Y'
+    :> 'Z'
+    :> Nil
+
+letters :: Vec 52 Char
+letters = azLower ++ azUpper
 
 firstLetter :: Parser Char
-firstLetter = letter <|> oneOf "+-*/<>=!?§$%&@~´',:._"
+firstLetter = letter <|> oneOf symbols
+ where
+  symbols =
+    '+'
+      :> '-'
+      :> '*'
+      :> '/'
+      :> '<'
+      :> '>'
+      :> '='
+      :> '!'
+      :> '?'
+      :> '$'
+      :> '%'
+      :> '&'
+      :> '@'
+      :> '´'
+      :> '\''
+      :> '_'
+      :> Nil
 
 wordLetter :: Parser Char
 wordLetter = firstLetter <|> digit
@@ -216,67 +313,150 @@ endOfLine = newline <|> crlf
 anyChar :: Parser Char
 anyChar = satisfies (const True)
 
-emptyQuot :: Parser String
-emptyQuot = string "[]"
-
 escapeNewLine :: Parser Char
 escapeNewLine = do
-  b <- lookAhead (string "\\\n")
-  -- traceM $ "\nb: " ++ show b
+  b <- lookAhead (string ('\\' +>> '\n' +>> blank16))
   if b
     then do
       _ <- char '\\'
       char '\n'
-    else mzero
+    else failure
 
 nonEscape :: Parser Char
-nonEscape = noneOf "\\\""
+nonEscape = noneOf ('\\' +>> '\"' +>> blank16)
 
--- character :: Parser Char
--- character = nonEscape <|> escapeNewLine
-
-quotedString :: Parser String
+quotedString :: Parser V
 quotedString = do
   char '"'
-  strings <- many (escapeNewLine <|> nonEscape)
+  s <- manyChar (escapeNewLine <|> nonEscape)
   char '"'
-  return strings
+  return $ pruneV s
 
-numberP :: Parser ValueP
+-- | Pointless specific parsers
+--
+numberP :: Parser ValueP'
 numberP = do
   d <- numberInt
-  -- d <- numberDouble
-  return (NumP d)
+  return (NumP' d)
 
-charP :: Parser ValueP
+charP :: Parser ValueP'
 charP = do
   _ <- char '\''
   c <- newline <|> firstLetter
   _ <- char '\''
-  return (Chr c)
+  return (Chr' c)
 
-quotedStringP :: Parser ValueP
+quotedStringP :: Parser ValueP'
 quotedStringP = do
   str <- quotedString
-  return (Str str)
+  case str of
+    V2    v -> return (Str' (V2 v))
+    V4    v -> return (Str' (V4 v))
+    V8    v -> return (Str' (V8 v))
+    V16   v -> return (Str' (V16 v))
+    V32   v -> return (Str' (V32 v))
+    V64   v -> return (Str' (V64 v))
+    V128  v -> return (Str' (V128 v))
+    V256  v -> return (Str' (V256 v))
+    V512  v -> return (Str' (V512 v))
+    V1024 v -> return (Str' (V1024 v))
+    _       -> failure
 
-word :: Parser ValueP
+word :: Parser ValueP'
 word = do
   c  <- firstLetter
-  cs <- many wordLetter
-  return (Sym (c : cs))
+  cs <- manyChar wordLetter
+  case cs of
+    V2  v -> return (Sym' (c :> select d0 d1 d2 v ++ drop d3 blank16))
+    V4  v -> return (Sym' (c :> select d0 d1 d4 v ++ drop d5 blank16))
+    V8  v -> return (Sym' (c :> select d0 d1 d8 v ++ drop d9 blank16))
+    V16 v -> return (Sym' (select d0 d1 d16 (c +>> v)))
+    _     -> failure
 
-instruction :: Parser ValueP
+lineComment :: Parser ()
+lineComment = char '$' >> manyTillChar anyChar newline >> spaces >> return ()
+
+blockComment :: Parser ()
+blockComment =
+  char '{' >> manyTillChar anyChar (char '}') >> char '}' >> spaces >> return ()
+
+comment :: Parser ()
+comment = lineComment <|> blockComment
+
+manyEmpty :: Parser () -> Parser ()
+manyEmpty p = do
+  com <- lookAhead p
+  if com
+    then do
+      _ <- p
+      _ <- manyEmpty p
+      return ()
+    else return ()
+
+comments :: Parser ()
+comments = manyEmpty comment
+
+specification :: Parser ()
+specification =
+  char '(' >> manyTillChar anyChar (char ')') >> char ')' >> spaces >> return ()
+
+specifications :: Parser ()
+specifications = manyEmpty specification
+
+spacesCommentsSpecifications :: Parser ()
+spacesCommentsSpecifications = spaces >> comments >> specifications >> comments
+
+-- |parsers to get inline test from inside {}
+lineComments :: Parser ()
+lineComments = manyEmpty lineComment
+
+spacesLineCommentsSpecifications :: Parser ()
+spacesLineCommentsSpecifications =
+  spaces >> lineComments >> specifications >> lineComments
+--
+parseValueP :: Parser ValueP' -> V -> ValueP'
+parseValueP p vs = case parse p vs of
+  Just (p, _) -> p
+  Nothing     -> EmptyQ
+
+manyQ :: Parser ValueP' -> Parser Q
+manyQ p = Parser
+  ( \vs -> case parseValueP p vs of
+    EmptyQ -> Nothing
+    _      -> Just (mP p vs)
+  )
+
+mP :: Parser ValueP' -> V -> (Q, V)
+mP p_ vs_ = (pruneQ (Q1024 resQ'), resS)
+ where
+  (resQ, resS) = go p_ vs_ (repeat EmptyQ :: Vec 1024 ValueP')
+  cnt          = foldl (\acc v -> if v == EmptyQ then acc + 1 else acc) 0 resQ
+  resQ'        = rotateLeft resQ cnt
+  go p vs qs = case parseValueP p vs of
+    EmptyQ -> (qs, vs)
+    _      -> do
+      let (vp, vs') = fromJust $ parse p vs
+      go p vs' (qs <<+ vp)
+--
+emptyQuot :: Parser ValueP'
+emptyQuot = do
+  l <- char '['
+  r <- char ']'
+  return (Quot' (Q2 (Chr' l :> Chr' r :> Nil)))
+
+instruction :: Parser ValueP'
 instruction = do
   _   <- spacesCommentsSpecifications
-  res <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
-  _   <- spacesCommentsSpecifications
+  -- res <- numberP <|> charP <|> quotedStringP <|> emptyQuot <|> word 
+  res <-
+    numberP <|> charP <|> quotedStringP <|> emptyQuot <|> quotation <|> word
+  _ <- spacesCommentsSpecifications
   return res
 
-nakedQuotations :: Parser [ValueP]
-nakedQuotations = many instruction
+nakedQuotations :: Parser Q
+nakedQuotations = manyQ instruction
 
-quotation :: Parser ValueP
+quotation :: Parser ValueP'
 quotation = do
   _ <- char '['
   _ <- spaces
@@ -284,91 +464,76 @@ quotation = do
   -- traceM $ "\nq: " ++ show q
   _ <- spaces
   _ <- char ']'
-  return (Quot q)
+  return (Quot' q)
 
-lineComment :: Parser ()
-lineComment = string "$" >> manyTill anyChar newline >> spaces >> return ()
+-- nonTest :: Parser ()
+-- nonTest = do
+--   _ <- spacesLineCommentsSpecifications
+--   _ <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
+--   _ <- spacesLineCommentsSpecifications
+--   return ()
 
-blockComment :: Parser ()
-blockComment =
-  char '{' >> manyTill anyChar (char '}') >> char '}' >> spaces >> return ()
+-- -- nonTests :: Parser [()]
+-- nonTests = manyChar nonTest
 
-comment :: Parser ()
-comment = lineComment <|> blockComment
+-- testBlock :: Parser V
+-- testBlock = do
+--   _ <- char '{'
+--   s <- manyTillChar anyChar (char '}')
+--   _ <- char '}'
+--   _ <- spaces
+--   return s
 
-comments :: Parser [()]
-comments = many comment
+-- test :: Parser V
+-- test = do
+--   _ <- many nonTest
+--   t <- testBlock
+--   _ <- many nonTest
+--   return t
 
-specification :: Parser ()
-specification =
-  char '(' >> manyTill anyChar (char ')') >> char ')' >> spaces >> return ()
-
-specifications :: Parser [()]
-specifications = many specification
-
-spacesCommentsSpecifications :: Parser ()
-spacesCommentsSpecifications =
-  spaces >> comments >> specifications >> return ()
-
-
--- parsers to get inline test from inside {}
-lineComments :: Parser [()]
-lineComments = many lineComment
-
-spacesLineCommentsSpecifications :: Parser ()
-spacesLineCommentsSpecifications =
-  spaces >> lineComments >> specifications >> return ()
-
-nonTest :: Parser ()
-nonTest = do
-  _ <- spacesLineCommentsSpecifications
-  _ <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
-  _ <- spacesLineCommentsSpecifications
-  return ()
-
-nonTests :: Parser [()]
-nonTests = many nonTest
-
-testBlock :: Parser String
-testBlock = do
-  _ <- char '{'
-  s <- manyTill anyChar (char '}')
-  _ <- char '}'
-  _ <- spaces
-  return s
-
-test :: Parser String
-test = do
-  _ <- many nonTest
-  t <- testBlock
-  _ <- many nonTest
-  return t
-
-tests :: Parser [String]
-tests = many test
+-- -- tests :: Parser [String]
+-- tests = manyChar test
 
 
+-- | Helper functions.
+-- |
+
+isStrMatch :: Vec 16 Char -> Vec 16 Char -> Bool
+isStrMatch xs vs = foldl (&&) True zipped
+  where zipped = zipWith (\x v -> x == v || x == '~') xs vs
+
+-- | get the character by applying parser p or '~' if Nothing
+parseChar :: Parser Char -> Char -> Char
+parseChar p c = case parse p vs of
+  Just (x, _) -> x
+  Nothing     -> '~'
+  where vs = V2 (c :> c :> Nil)
+
+-- | popN n chars from vs
+popN :: KnownNat n => Int -> a -> Vec n a -> Vec n a
+popN 0   _ vs = vs
+popN cnt c vs = popN (cnt - 1) c (vs <<+ c)
+
+-- | Covert a vector of chars to an int
+-- | takes chars != '~'
+fromDigits :: KnownNat n => Vec n Char -> Int
+fromDigits vs = val * sign
+ where
+  isMinus = vs !! (0 :: Integer) == '-'
+  vs'     = if isMinus then vs <<+ '~' else vs
+  sign    = if isMinus then (-1) else 1
+  val =
+    foldl (\acc c -> if c /= '~' then 10 * acc + C.digitToInt c else acc) 0 vs'
 
 
+blank16 :: Vec 16 Char
+blank16 = repeat '~'
 
+blank64 :: Vec 64 Char
+blank64 = repeat '~'
 
+blank1024 :: Vec 1024 Char
+blank1024 = repeat '~'
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+blank65536 :: Vec 65536 Char
+blank65536 = repeat '~'

@@ -1,250 +1,306 @@
+{-# LANGUAGE DataKinds           #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE GADTs               #-}
+-- {-# LANGUAGE KindSignatures      #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators       #-}
+
+-- stack exec --resolver=nightly-2017-08-15 -- clash --interactive pointless/test/Spec.hs
+
 module Main where
 
-import qualified Data.Map         as M
-import qualified Data.Text.IO     as T
-import           Interpreter
-import           Parser
-import           Primitives
-import           SocketServer
-import           System.IO.Unsafe (unsafeDupablePerformIO)
-import           Test.Tasty
-import           Test.Tasty.HUnit
+import           Clash.Prelude         hiding ((<|>))
+import           Clash.Promoted.Nat.TH
 
--- stack ghci pointless/test/Spec.hs
+import           Control.Monad         (ap, liftM, void)
+import qualified Data.Char             as C (digitToInt)
+import qualified Data.List             as L (drop, foldl, head, last, length, repeat, reverse, take)
+import           Data.Maybe            (fromJust, isJust, isNothing)
+import           Data.String           ()
+import           Interpreter           (Q (..), V (..), ValueP' (..), lengthElem, pruneQ,
+                                        pruneV)
+import Parser
+import qualified Prelude               as P (replicate, (++))
 
-sKeep01 :: String
-sKeep01 = "\"aaa\" [1.1] define aaa aaa [] cons cons dup "
+import           Debug.Trace
 
-sKeep02 :: String
-sKeep02 = "\"a\\\n\\\nz\" putchars "
 
-s1 :: String
-s1 = " 10 \"aaa\" set-var 3 dup "
+-- | Convert vs to string dropping the '~' tail characters
+vecToString :: V -> String
+vecToString vs = do
+  let removeTilda = foldl (\acc c -> if c /= '~' then c : acc else acc) ""
+      result v = show $ L.reverse (removeTilda v)
+  case vs of
+    V1024 v -> result v
+    V512  v -> result v
+    V256  v -> result v
+    V128  v -> result v
+    V64   v -> result v
+    V32   v -> result v
+    V16   v -> result v
+    V8    v -> result v
+    V4    v -> result v
+    V2    v -> result v
 
-s1' :: String
-s1' = "10 \"aaa\" [ ] cons dip [ ] cons define 3 dup"
+-- | Pretty print a (show (Vec n Char))
+showVec :: String -> String
+showVec s = if L.length s > 1 && L.head s == '<' && L.last s == '>'
+  then filter (\c -> c /= '\'' && c /= '~') $ show s
+  else case L.take 4 s of
+    "Sym'" -> "Sym' " P.++ showVec (L.drop 5 s)
+    "Str'" -> "Str' " P.++ showVec (L.drop 5 s)
+    "Q2 <" -> "Q2 " P.++ showVec (L.drop 3 s) P.++ ", "
+    "Q4 <" -> "Q4 " P.++ showVec (L.drop 3 s) P.++ ", "
+    "Q8 <" -> "Q8 " P.++ showVec (L.drop 3 s) P.++ ", "
+    "Q16 " -> "Q16 " P.++ showVec (L.drop 4 s) P.++ ", "
+    "Q32 " -> "Q32 " P.++ showVec (L.drop 4 s) P.++ ", "
+    "Q64 " -> "Q64 " P.++ showVec (L.drop 4 s) P.++ ", "
+    "Q128" -> "Q128 " P.++ showVec (L.drop 5 s) P.++ ", "
+    "Q256" -> "Q256 " P.++ showVec (L.drop 5 s) P.++ ", "
+    "Q512" -> "Q512 " P.++ showVec (L.drop 5 s) P.++ ", "
+    "1024" -> "Q1024 " P.++ showVec (L.drop 6 s) P.++ ", "
+    _      -> s
 
-s2 = " [1 2 3] size "
+-- | Petty print a parse result
+showParse :: Show a => Maybe (a, V) -> String
+showParse res = if isJust res
+  then do
+    let (r, vec) = fromJust res
+        r'       = showVec $ show r
+    "(" P.++ r' P.++ ", " P.++ vecToString vec P.++ ")"
+  else "Nothing"
 
-s1AstFull :: [ValueP]
-s1AstFull =
-  [ NumP 10
-  , Str "aaa"
-  , Quot []
-  , Sym "cons"
-  , Sym "dip"
-  , Quot []
-  , Sym "cons"
-  , Sym "define"
-  , NumP 3
-  , Sym "dup"
-  ]
+-- | Covert s to (Vec n Char) where n < 65
+loadStr64 :: (m + n) ~ 64 => SNat n -> String -> Vec n Char
+loadStr64 n s = go s' $ drop (subSNat d64 n) blank64
+ where
+  s' = padStrN (fromIntegral (snatToInteger n) :: Int) s
+  go ""     vs = vs
+  go (c:cs) vs = go cs (vs <<+ c)
 
-testSource :: String
-testSource
-  = "        \"pl-test\" libload                                                        \
-  \                                                                                   \
-  \         { [zipped-list last] ['j' 9] assert }                                     \
-  \         \"zipped-list\" [ 'a' 'j' from-to-string 0 9 from-to-list zip ] define    \
-  \                                                                                   \
-  \         { [dt] 0.01 assert                                                        \
-  \           [springCoeff] 39.47 assert                                              \
-  \           [func] 0.3947 assert                                                    \
-  \         }                                                                         \
-  \         [ \"dampCoeff\"      [[8.88 12.0 11.11]]                                  \
-  \           \"dt\"             [0.01]                                               \
-  \           \"gravity\"        [-9.88]                                              \
-  \           \"mass\"           [1.00]                                               \
-  \           \"springCoeff\"    [39.47]                                              \
-  \           \"func\"           [springCoeff dt *]                                   \
-  \         ] defines                                                                 \
-  \                                                                                   \
-  \         { [test-defs pop3 pop2] [8.88 12.0 11.11] assert }                        \
-  \         \"test-defs\" [ dampCoeff dt gravity mass springCoeff func ] define       \
-  \                                                                                   \
-  \         { [maxValue minValue +] 0 assert }                                        \
-  \         [ \"maxValue\"  100                                                       \
-  \           \"minValue\" -100                                                       \
-  \         ] dictionary                                                              \
-  \                                                                                   \
-  \         10 \"abc_\" set-var tx                                                    \
-  \                                                                                   \
-  \         $ \"small\" [dup size [2 <] exec] define                                  \
-  \                                                                                   \
-  \         $ \"qsort\"                                                               \
-  \         $   [ [small]                                                             \
-  \         $     []                                                                  \
-  \         $     [uncons [>] split]                                                  \
-  \         $     [swapd cons concat]                                                 \
-  \         $     binrec                                                              \
-  \         $   ] define   $ slow "
+-- | Covert s to (Vec n Char) where n < 1024
+loadStr1024 n s = go s' $ drop (subSNat d1024 n) blank1024
+ where
+  s' = padStrN (fromIntegral (snatToInteger n) :: Int) s
+  go ""     vs = vs
+  go (c:cs) vs = go cs (vs <<+ c)
 
-testSource2 :: String
-testSource2 = "\"scratch-pad\" run-tests"
 
-getAst :: String -> [ValueP]
-getAst s = ast where (ast, _) = head $ parse nakedQuotations s
+-- | Covert s a pruned V
+loadStr :: String -> V
+loadStr s = pruneV $ V65536 (go s' blank65536)
+ where
+  s' = L.reverse s
+  go ""     vs = vs
+  go (c:cs) vs = go cs (c +>> vs)
 
-ioTest :: Lang -> Lang
-ioTest lang = unsafeDupablePerformIO $ do
-  putStrLn "ioTest:"
-  mapM_ putStrLn (result lang)
-  return lang { result = [] }
 
-runQuot :: String -> Lang
-runQuot s = runQuotation qs (Lang coreDefinitions [] [] "" REPL)
-  where (qs, _):_ = parse nakedQuotations s
+padStrN :: Int -> String -> String
+padStrN n s = s P.++ P.replicate (n - L.length s) '~'
+
+-- xs' = parse nakedQuotations  (loadStr "[10 20 +] dup exec swap exec + [10 20 +] dup exec swap exec +")
+-- ss' = showParse xs'
+
+-- -- | Parser tests.
+-- -- |
+
+p001Src :: V
+p001Src =
+  loadStr
+    "\"p001\" [ 1 n from-to-list [ [3 is-div-by] [5 is-div-by] cleave or ] filter sum ] define"
 
 main :: IO ()
 main = do
-
-  let xs  = getAst s1'
-      xs' = primitiveAST coreDefinitions xs
-
-  print xs
-  print xs'
-  print s1AstFull
-  putStrLn $ "xs' == s1AstFull: " ++ show (xs' == s1AstFull)
+  putStrLn "Pointless in Clash tests\n"
   putStrLn ""
+  parserTests
 
+parserTests :: IO ()
+parserTests = do
+  putStrLn "parserTests..."
 
+  let s1 = parse (oneOf $ loadStr64 d16 "cba") (loadStr "abc 123")
+      r1 = "('a', \"bc 123\")"
+  putStr $ "parse oneOf:             " P.++ show (r1 == showParse s1)
+  putStrLn $ ",  result = " P.++ showParse s1
 
-  -- let lang  = Lang coreDefinitions [] ["10", "20"] "" REPL
-  --     lang' = ioTest lang
-  -- print "done"
-  -- print $ result lang'
+  let s2 = parse (string $ loadStr64 d16 "abc") (loadStr "abc   123")
+      r2 = "(\"<a,b,c,,,,,,,,,,,,,>\", \"   123\")"
+  putStr $ "parse string:            " P.++ show (r2 == showParse s2)
+  putStrLn $ ",  result = " P.++ showParse s2
 
-  defaultMain unitTests
+  let s3 = parse spaces (loadStr "   123")
+      r3 = "((), \"123\")"
+  putStr $ "parse spaces:            " P.++ show (r3 == showParse s3)
+  putStrLn $ ",  result = " P.++ showParse s3
 
-unitTests :: TestTree
-unitTests = testGroup
-  "Pointlees interprter tests"
-  [ parseNumberP1
-  , parseNumberP2
-  , parseNakedQuotation1
-  , parseNakedQuotation2
-  , parseNakedQuotation3
-  , parseCharP1
-  , parseCharP2
-  , parseQuotedStringP1
-  , parseQuotedStringP2
-  , escapeNewLine1
-  ]
+  let s4 = parse digit (loadStr "123")
+      r4 = "('1', \"23\")"
+  putStr $ "parse digit:             " P.++ show (r4 == showParse s4)
+  putStrLn $ ",  result = " P.++ showParse s4
 
--- parsePositiveDouble1 :: TestTree
--- parsePositiveDouble1 = testCase "parse numberDouble 23"
---   $ assertEqual [] 23.0 val
---   where (val, _):_ = parse numberDouble "23"
+  let s5 = parse numberInt (loadStr "123")
+      r5 = "(123, \"\")"
+  putStr $ "parse numberInt:         " P.++ show (r5 == showParse s5)
+  putStrLn $ ",  result = " P.++ showParse s5
 
--- parsePositiveDouble2 :: TestTree
--- parsePositiveDouble2 = testCase "parse numberDouble 23.4"
---   $ assertEqual [] 23.4 val
---   where (val, _):_ = parse numberDouble "23.4"
+  let s6 = parse numberInt (loadStr "123 abc")
+      r6 = "(123, \" abc\")"
+  putStr $ "parse numberInt:         " P.++ show (r6 == showParse s6)
+  putStrLn $ ",  result = " P.++ showParse s6
 
--- parseNegativeDouble1 :: TestTree
--- parseNegativeDouble1 = testCase "parse numberDouble -23"
---   $ assertEqual [] (-23.0) val
---   where (val, _):_ = parse numberDouble "-23"
+  let s7 = parse (oneOf $ loadStr64 d16 "defa") (loadStr "abc   123")
+      r7 = "('a', \"bc   123\")"
+  putStr $ "parse oneOf:             " P.++ show (r7 == showParse s7)
+  putStrLn $ ",  result = " P.++ showParse s7
 
--- parseNegativeDouble2 :: TestTree
--- parseNegativeDouble2 = testCase "parse numberDouble -23.4"
---   $ assertEqual [] (-23.4) val
---   where (val, _):_ = parse numberDouble "-23.4"
+  let s8 = parse (oneOf $ loadStr64 d16 "cdef") (loadStr "abc   123")
+      r8 = "Nothing"
+  putStr $ "parse oneOf:             " P.++ show (r8 == showParse s8)
+  putStrLn $ ",  result = " P.++ showParse s8
 
-parseNumberP1 :: TestTree
-parseNumberP1 = testCase "parse numberP -23" $ assertEqual [] (NumP (-23)) val
-  where (val, _):_ = parse numberP "-23"
+  let s9 = parse (noneOf $ loadStr64 d16 "def") (loadStr "abc   123")
+      r9 = "('a', \"bc   123\")"
+  putStr $ "parse NoneOf:            " P.++ show (r9 == showParse s9)
+  putStrLn $ ",  result = " P.++ showParse s9
 
-parseNumberP2 :: TestTree
-parseNumberP2 = testCase "parse numberP -23" $ assertEqual [] (NumP (-23)) val
-  where (val, _):_ = parse numberP "-23"
+  let s10 = parse (manyChar (char 'a')) (loadStr "aaa bbb")
+      r10 = "(V4 <'a','a','a','~'>, \" bbb\")"
+  putStr $ "parse manyChar:          " P.++ show (r10 == showParse s10)
+  putStrLn $ ",  result = " P.++ showParse s10
 
-parseNakedQuotation1 :: TestTree
-parseNakedQuotation1 =
-  testCase "parse nakedQuotaions \"-10 10 +\" "
-    $ assertEqual [] [NumP (-10), NumP 10, Sym "+"] val
-  where (val, _):_ = parse nakedQuotations "-10 10 +"
+  let s11 = parse (manyChar (char 'a')) (loadStr "a bbb")
+      r11 = "(V2 <'a','~'>, \" bbb\")"
+  putStr $ "parse manyChar:          " P.++ show (r11 == showParse s11)
+  putStrLn $ ",  result = " P.++ showParse s11
 
-parseNakedQuotation2 :: TestTree
-parseNakedQuotation2 =
-  testCase "parse nakedQuotaions \"-10 'a'\" "
-    $ assertEqual [] [NumP (-10), Chr 'a'] val
-  where (val, _):_ = parse nakedQuotations "-10 'a'"
+  let s12 = parse (manyChar (char 'a')) (loadStr "bbb aaa")
+      r12 = "(V2 <'~','~'>, \"bbb aaa\")"
+  putStr $ "parse manyChar:          " P.++ show (r12 == showParse s12)
+  putStrLn $ ",  result = " P.++ showParse s12
 
-parseNakedQuotation3 :: TestTree
-parseNakedQuotation3 =
-  testCase "parse nakedQuotaions \"'a' [dup 'z'] i 'b'\" " $ assertEqual
-    []
-    [Chr 'a', Quot [Sym "dup", Chr 'z'], Sym "i", Chr 'b']
-    val
-  where (val, _):_ = parse nakedQuotations "'a' [dup 'z'] i 'b'"
+  let s13 = parse (many1Char (char 'a')) (loadStr "aaa bbb")
+      r13 = "(V4 <'a','a','a','~'>, \" bbb\")"
+  putStr $ "parse many1Char:         " P.++ show (r13 == showParse s13)
+  putStrLn $ ",  result = " P.++ showParse s13
 
+  let s14 = parse (many1Char (char 'a')) (loadStr "a bbb")
+      r14 = "(V2 <'a','~'>, \" bbb\")"
+  putStr $ "parse many1Char:         " P.++ show (r14 == showParse s14)
+  putStrLn $ ",  result = " P.++ showParse s14
 
-parseCharP1 :: TestTree
-parseCharP1 = testCase "parse charP \'z\'" $ assertEqual [] (Chr 'z') val
-  where (val, _):_ = parse charP "\'z\'"
+  let s15 = parse (many1Char (char 'a')) (loadStr "bbb aaa")
+      r15 = "Nothing"
+  putStr $ "parse many1Char:         " P.++ show (r15 == showParse s15)
+  putStrLn $ ",  result = " P.++ showParse s15
 
-parseCharP2 :: TestTree
-parseCharP2 = testCase "parse charP \'$\'" $ assertEqual [] (Chr '$') val
-  where (val, _):_ = parse charP "\'$\'"
+  let s16 = parse (manyTillChar anyChar (char '}')) (loadStr "123 ccc")
+      r16 = "(V8 <'1','2','3',' ','c','c','c','~'>, \"\")"
+  putStr $ "parse manyTillChar:      " P.++ show (r16 == showParse s16)
+  putStrLn $ ",  result = " P.++ showParse s16
 
+  let s17 = parse (manyTillChar anyChar (char '}')) (loadStr "123} ccc")
+      r17 = "(V4 <'1','2','3','~'>, \"} ccc\")"
+  putStr $ "parse manyTillChar:      " P.++ show (r17 == showParse s17)
+  putStrLn $ ",  result = " P.++ showParse s17
 
-parseQuotedStringP1 :: TestTree
-parseQuotedStringP1 = testCase "parse parsequotedStringP \"abc\""
-  $ assertEqual [] (Str "abc") val
-  where (val, _):_ = parse quotedStringP "\"abc\""
+  let
+    s18 = parse quotedString (loadStr "\"hello world\" 123")
+    r18
+      = "(V16 <'h','e','l','l','o',' ','w','o','r','l','d','~','~','~','~','~'>, \" 123\")"
+  putStr $ "parse quotedString:      " P.++ show (r18 == showParse s18)
+  putStrLn $ ",  result = " P.++ showParse s18
 
-parseQuotedStringP2 :: TestTree
-parseQuotedStringP2 = testCase "parse parsequotedStringP \"\""
-  $ assertEqual [] (Str "") val
-  where (val, _):_ = parse quotedStringP "\"\""
+  let s19 = parse firstLetter (loadStr "abc")
+      r19 = "('a', \"bc\")"
+  putStr $ "parse firstLetter:       " P.++ show (r19 == showParse s19)
+  putStrLn $ ",  result = " P.++ showParse s19
 
--- formatStack1 :: TestTree
--- formatStack1 = testCase "formatStack after running"
---   $ assertEqual [] ["[ 1.100000 1.100000 ]", "[ 1.100000 1.100000 ]"] val
---   where val = formatStack $ stack $ runQuot sKeep01
+  let s20 = parse firstLetter (loadStr "_abc")
+      r20 = "('_', \"abc\")"
+  putStr $ "parse firstLetter:       " P.++ show (r20 == showParse s20)
+  putStrLn $ ",  result = " P.++ showParse s20
 
-escapeNewLine1 :: TestTree
-escapeNewLine1 = testCase "escapeNewLine parser test"
-  $ assertEqual [] ["a", "", "z"] val
- where
-  val = lines (display res)
-  res = runQuot sKeep02
+  let s21 = parse charP (loadStr "'z' abc")
+      r21 = "(Chr' 'z', \" abc\")"
+  putStr $ "parse charP:             " P.++ show (r21 == showParse s21)
+  putStrLn $ ",  result = " P.++ showParse s21
 
+  let s22 = parse charP (loadStr "abc")
+      r22 = "Nothing"
+  putStr $ "parse charP:             " P.++ show (r22 == showParse s22)
+  putStrLn $ ",  result = " P.++ showParse s22
 
+  let s23 = parse numberP (loadStr "123 abc")
+      r23 = "(NumP' 123, \" abc\")"
+  putStr $ "parse numberP:           " P.++ show (r23 == showParse s23)
+  putStrLn $ ",  result = " P.++ showParse s23
 
+  let s24 = parse numberP (loadStr "-123 abc")
+      r24 = "(NumP' (-123), \" abc\")"
+  putStr $ "parse numberP:           " P.++ show (r24 == showParse s24)
+  putStrLn $ ",  result = " P.++ showParse s24
 
+  let s25 = parse numberP (loadStr "abc")
+      r25 = "Nothing"
+  putStr $ "parse numberP:           " P.++ show (r25 == showParse s25)
+  putStrLn $ ",  result = " P.++ showParse s25
 
+  let s26 = parse quotedStringP (loadStr "\"abc\" 123")
+      r26 = "(Str' (V4 <'a','b','c','~'>), \" 123\")"
+  putStr $ "parse quotedStringP:     " P.++ show (r26 == showParse s26)
+  putStrLn $ ",  result = " P.++ showParse s26
 
+  let s27 = parse word (loadStr "dup +")
+      r27 = "(Sym' \"<d,u,p,,,,,,,,,,,,,>\", \" +\")"
+  putStr $ "parse word:              " P.++ show (r27 == showParse s27)
+  putStrLn $ ",  result = " P.++ showParse s27
 
+  let s28 = parse lineComment (loadStr "$ zzz \n dup")
+      r28 = "((), \"dup\")"
+  putStr $ "parse lineComment:       " P.++ show (r28 == showParse s28)
+  putStrLn $ ",  result = " P.++ showParse s28
 
+  let s29 = parse blockComment (loadStr "{ zzz } dup")
+      r29 = "((), \"dup\")"
+  putStr $ "parse blockComment:      " P.++ show (r29 == showParse s29)
+  putStrLn $ ",  result = " P.++ showParse s29
 
+  let s30 = parse comment (loadStr "$ zzz \n dup")
+      r30 = "((), \"dup\")"
+  putStr $ "parse comment:           " P.++ show (r30 == showParse s30)
+  putStrLn $ ",  result = " P.++ showParse s30
 
+  let s31 = parse comment (loadStr "{ zzz } dup")
+      r31 = "((), \"dup\")"
+  putStr $ "parse comment:           " P.++ show (r31 == showParse s31)
+  putStrLn $ ",  result = " P.++ showParse s31
 
+  let s32 = parse comments (loadStr "$ a \n {z} {z} dup")
+      r32 = "((), \"dup\")"
+  putStr $ "parse comments:          " P.++ show (r32 == showParse s32)
+  putStrLn $ ",  result = " P.++ showParse s32
 
+  let s33 = parse specification (loadStr "( X -> -- ) a")
+      r33 = "((), \"a\")"
+  putStr $ "parse specification:     " P.++ show (r33 == showParse s33)
+  putStrLn $ ",  result = " P.++ showParse s33
 
+  let s34 = parse specifications (loadStr "(a) (b) a")
+      r34 = "((), \"a\")"
+  putStr $ "parse specifications:    " P.++ show (r34 == showParse s34)
+  putStrLn $ ",  result = " P.++ showParse s34
 
+  let s35 = parse spacesCommentsSpecifications (loadStr " {a} (b) a")
+      r35 = "((), \"a\")"
+  putStr $ "parse spacesCommentsSpecifications: " P.++ show
+    (r35 == showParse s35)
+  putStrLn $ ",  result = " P.++ showParse s35
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  let s36        = parse nakedQuotations p001Src
+      (Q4 vs, _) = fromJust s36
+  putStr $ "parse nakedQuotations:    " P.++ show (length vs == 4)
+  putStrLn $ ",  result = " P.++ showParse s36
 
 
 
