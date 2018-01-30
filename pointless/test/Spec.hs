@@ -1,28 +1,21 @@
 {-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE GADTs               #-}
--- {-# LANGUAGE KindSignatures      #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 
 -- stack exec --resolver=nightly-2017-08-15 -- clash --interactive pointless/test/Spec.hs
 
 module Main where
 
-import           Clash.Prelude         hiding ((<|>))
-import           Clash.Promoted.Nat.TH
+import qualified Data.Char as C (digitToInt)
+import qualified Data.List as L (drop, foldl, head, last, length, repeat, reverse, take)
+import qualified Prelude as P (replicate, (++))
 
-import           Control.Monad         (ap, liftM, void)
-import qualified Data.Char             as C (digitToInt)
-import qualified Data.List             as L (drop, foldl, head, last, length, repeat, reverse, take)
-import           Data.Maybe            (fromJust, isJust, isNothing)
-import           Data.String           ()
-import           Interpreter           (Q (..), V (..), ValueP' (..), lengthElem, pruneQ,
-                                        pruneV)
+import Clash.Prelude
+import Control.Monad (ap, liftM, void)
+import Data.Maybe (fromJust, isJust, isNothing)
+import Data.String ()
+import Interpreter (Q (..), V (..), ValueP (..), lengthElem, pruneQ, pruneV)
 import Parser
-import qualified Prelude               as P (replicate, (++))
-
-import           Debug.Trace
 
 
 -- | Convert vs to string dropping the '~' tail characters
@@ -103,6 +96,9 @@ padStrN n s = s P.++ P.replicate (n - L.length s) '~'
 
 -- -- | Parser tests.
 -- -- |
+
+xs :: Vec 4 Char
+xs = '1' :> '2' :> '3' :> '~' :> Nil
 
 p001Src :: V
 p001Src =
@@ -232,12 +228,12 @@ parserTests = do
   putStrLn $ ",  result = " P.++ showParse s22
 
   let s23 = parse numberP (loadStr "123 abc")
-      r23 = "(NumP' 123, \" abc\")"
+      r23 = "(NumP 123, \" abc\")"
   putStr $ "parse numberP:           " P.++ show (r23 == showParse s23)
   putStrLn $ ",  result = " P.++ showParse s23
 
   let s24 = parse numberP (loadStr "-123 abc")
-      r24 = "(NumP' (-123), \" abc\")"
+      r24 = "(NumP (-123), \" abc\")"
   putStr $ "parse numberP:           " P.++ show (r24 == showParse s24)
   putStrLn $ ",  result = " P.++ showParse s24
 
@@ -301,6 +297,14 @@ parserTests = do
       (Q4 vs, _) = fromJust s36
   putStr $ "parse nakedQuotations:    " P.++ show (length vs == 4)
   putStrLn $ ",  result = " P.++ showParse s36
+
+
+
+
+
+
+
+
 
 
 

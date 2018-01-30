@@ -1,8 +1,4 @@
 {-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE FlexibleContexts    #-}
-{-# LANGUAGE GADTs               #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeOperators       #-}
 
 module Interpreter where
 
@@ -22,32 +18,24 @@ import           Prelude             as P ((++))
 import           Text.Read
 import           Text.Show
 
-
-data ValueP = Sym String
-            | NumP Int
-            | Chr Char
-            | Str String
-            | Quot [ValueP]
-            deriving (Eq, Ord, Show)
---
-data ValueP' = Sym' (Vec 16 Char)
-             | NumP' Int
-             | Chr' Char
-             | Str' V
-             | Quot' Q
+data ValueP = Sym (Vec 16 Char)
+             | NumP Int
+             | Chr Char
+             | Str V
+             | Quot Q
              | EmptyQ
              deriving (Eq, Ord, Show)
 
-data Q = Q2     (Vec 2     ValueP')
-       | Q4     (Vec 4     ValueP')
-       | Q8     (Vec 8     ValueP')
-       | Q16    (Vec 16    ValueP')
-       | Q32    (Vec 32    ValueP')
-       | Q64    (Vec 64    ValueP')
-       | Q128   (Vec 128   ValueP')
-       | Q256   (Vec 256   ValueP')
-       | Q512   (Vec 512   ValueP')
-       | Q1024  (Vec 1024  ValueP')
+data Q = Q2     (Vec 2     ValueP)
+       | Q4     (Vec 4     ValueP)
+       | Q8     (Vec 8     ValueP)
+       | Q16    (Vec 16    ValueP)
+       | Q32    (Vec 32    ValueP)
+       | Q64    (Vec 64    ValueP)
+       | Q128   (Vec 128   ValueP)
+       | Q256   (Vec 256   ValueP)
+       | Q512   (Vec 512   ValueP)
+       | Q1024  (Vec 1024  ValueP)
        deriving (Eq, Ord, Show)
 
 data V = V2     (Vec 2     Char)
@@ -69,127 +57,130 @@ data V = V2     (Vec 2     Char)
        deriving (Eq, Ord, Show)
 
 
-data Lang = Lang { vocab   :: Vocabulary
-                 , stack   :: [ValueP]
-                 , result  :: [String]
-                 , display :: String
-                 , mode    :: Mode
-                 }
-                 deriving (Show)
+-- data Lang = Lang { vocab   :: Vocabulary
+--                  , stack   :: [ValueP]
+--                  , result  :: [String]
+--                  , display :: String
+--                  , mode    :: Mode
+--                  }
+--                  deriving (Show)
 
-data WordP = Quotation [ValueP] | Function (Lang -> Lang)
-instance Show WordP where show = formatWordP
+-- data WordP = Quotation [ValueP] | Function (Lang -> Lang)
+-- instance Show WordP where show = formatWordP
 
-data Mode = REPL | WEBSOCKET
-instance Show Mode where show = formatMode
+-- data Mode = REPL | WEBSOCKET
+-- instance Show Mode where show = formatMode
 
-type Vocabulary = M.Map String WordP
+-- type Vocabulary = M.Map String WordP
 
-getWord :: String -> Vocabulary -> Maybe WordP
-getWord = M.lookup
+-- getWord :: String -> Vocabulary -> Maybe WordP
+-- getWord = M.lookup
 
-isTrue :: ValueP -> Bool
-isTrue (NumP x) = x /= 0
-isTrue (Quot q) = not (null q)
-isTrue _        = False
+-- isTrue :: ValueP -> Bool
+-- isTrue (NumP x) = x /= 0
+-- isTrue (Quot q) = not (null q)
+-- isTrue _        = False
 
-toTruth :: Bool -> ValueP
-toTruth b = if b then NumP 1 else NumP 0
+-- toTruth :: Bool -> ValueP
+-- toTruth b = if b then NumP 1 else NumP 0
 
-runWord :: WordP -> Lang -> Lang
-runWord w lang = case w of
-  Quotation q -> runQuotation q lang
-  Function  f -> f lang
+-- runWord :: WordP -> Lang -> Lang
+-- runWord w lang = case w of
+--   Quotation q -> runQuotation q lang
+--   Function  f -> f lang
 
-runQuotation :: [ValueP] -> Lang -> Lang
-runQuotation quotation lang = case quotation of
-  []     -> lang
-  (i:is) -> runQuotation is (runInstruction i lang)
+-- runQuotation :: [ValueP] -> Lang -> Lang
+-- runQuotation quotation lang = case quotation of
+--   []     -> lang
+--   (i:is) -> runQuotation is (runInstruction i lang)
 
-runInstruction :: ValueP -> Lang -> Lang
-runInstruction ins lang = case ins of
-  Sym w -> case getWord w (vocab lang) of
-    Just w' -> runWord w' lang
-    Nothing -> lang { result = msg : result lang }
-      where msg = "ERROR(getWord): not a valid word " P.++ show w
-  x -> lang { stack = x : stack lang }
+-- runInstruction :: ValueP -> Lang -> Lang
+-- runInstruction ins lang = case ins of
+--   Sym w -> case getWord w (vocab lang) of
+--     Just w' -> runWord w' lang
+--     Nothing -> lang { result = msg : result lang }
+--       where msg = "ERROR(getWord): not a valid word " P.++ show w
+--   x -> lang { stack = x : stack lang }
 
--- |
--- | pretty printers
--- |
+-- -- |
+-- -- | pretty printers
+-- -- |
 
-formatV :: ValueP -> String
-formatV (Sym  s ) = s
--- formatV (NumP   n) = if isInteger n
---   then show (truncate n :: Integer)
---   else floatStr
---   where floatStr = showFFloat (Just 6) n ""
-formatV (NumP n ) = show n
-formatV (Quot []) = "[]"
-formatV (Quot q ) = L.concat ["[ ", unwords $ L.map formatV q, " ]"]
-formatV (Chr  c ) = [c]
-formatV (Str  s ) = show s
+-- formatV :: ValueP -> String
+-- formatV (Sym  s ) = s
+-- -- formatV (NumP   n) = if isInteger n
+-- --   then show (truncate n :: Integer)
+-- --   else floatStr
+-- --   where floatStr = showFFloat (Just 6) n ""
+-- formatV (NumP n ) = show n
+-- formatV (Quot []) = "[]"
+-- formatV (Quot q ) = L.concat ["[ ", unwords $ L.map formatV q, " ]"]
+-- formatV (Chr  c ) = [c]
+-- formatV (Str  s ) = show s
 
-formatPutch :: ValueP -> Maybe Char
--- formatPutch (NumP n) = if isInteger n then Just charFromInt else Nothing
--- where charFromInt = chr (truncate n :: Int)
-formatPutch (NumP n) = Just $ chr n
-formatPutch (Chr  c) = Just c
-formatPutch _        = Nothing
+-- formatPutch :: ValueP -> Maybe Char
+-- -- formatPutch (NumP n) = if isInteger n then Just charFromInt else Nothing
+-- -- where charFromInt = chr (truncate n :: Int)
+-- formatPutch (NumP n) = Just $ chr n
+-- formatPutch (Chr  c) = Just c
+-- formatPutch _        = Nothing
 
-formatWordP :: WordP -> String
-formatWordP (Quotation xs) = formatV (Quot xs)
-formatWordP (Function  _ ) = "Primitive function"
+-- formatWordP :: WordP -> String
+-- formatWordP (Quotation xs) = formatV (Quot xs)
+-- formatWordP (Function  _ ) = "Primitive function"
 
-formatWordAST :: WordP -> String
-formatWordAST (Quotation xs) = show xs
-formatWordAST (Function  _ ) = "function: Vocabulary -> [ValueP] -> [ValueP]"
+-- formatWordAST :: WordP -> String
+-- formatWordAST (Quotation xs) = show xs
+-- formatWordAST (Function  _ ) = "function: Vocabulary -> [ValueP] -> [ValueP]"
 
-formatStack :: [ValueP] -> [String]
-formatStack = L.map formatV
+-- formatStack :: [ValueP] -> [String]
+-- formatStack = L.map formatV
 
--- isInteger :: Double -> Bool
--- isInteger d = abs realFrac < 0.0000001
+-- -- isInteger :: Double -> Bool
+-- -- isInteger d = abs realFrac < 0.0000001
+-- --  where
+-- --   (_, realFrac) = properFraction' d
+-- --   properFraction' :: Double -> (Integer, Double)
+-- --   properFraction' = properFraction
+
+-- formatMode :: Mode -> String
+-- formatMode REPL      = "REPL mode"
+-- formatMode WEBSOCKET = "Websocket mode"
+
+-- replaceStr :: String -> String -> String -> String
+-- replaceStr _   _   []  = []
+-- replaceStr old new str = go str
 --  where
---   (_, realFrac) = properFraction' d
---   properFraction' :: Double -> (Integer, Double)
---   properFraction' = properFraction
-
-formatMode :: Mode -> String
-formatMode REPL      = "REPL mode"
-formatMode WEBSOCKET = "Websocket mode"
-
-replaceStr :: String -> String -> String -> String
-replaceStr _   _   []  = []
-replaceStr old new str = go str
- where
-  go [] = []
-  go str'@(x:xs) =
-    let (prefix, rest) = L.splitAt n str'
-    in  if old == prefix then new P.++ go rest else x : go xs
-  n = L.length old
+--   go [] = []
+--   go str'@(x:xs) =
+--     let (prefix, rest) = L.splitAt n str'
+--     in  if old == prefix then new P.++ go rest else x : go xs
+--   n = L.length old
 
 
--- | size helpers
-
-newLengthVP :: KnownNat n => Vec n ValueP' -> Int
+-- | Helper functions.
+-- |
+-- | Calculate nearest power of 2 length >= n ofr Vec of ValueP.
+newLengthVP :: KnownNat n => Vec n ValueP -> Int
 newLengthVP vs = case lengthElem EmptyQ vs of
   0 -> 2
   1 -> 2
   _ -> 2 ^ ceiling (logBase 2 $ fromIntegral (lengthElem EmptyQ vs)) :: Int
 
+-- | Calculate nearest power of 2 length >= n ofr Vec of Char.
 newLengthC :: KnownNat n => Vec n Char -> Int
 newLengthC vs = case lengthElem '~' vs of
   0 -> 2
   1 -> 2
   _ -> 2 ^ ceiling (logBase 2 $ fromIntegral (lengthElem '~' vs)) :: Int
 
--- | Count non '~' consecutive charaters starting a Vector
+-- | Count non '~' consecutive charaters starting a Vector.
 lengthElem :: (Eq a, KnownNat n) => a -> Vec n a -> Int
 lengthElem a vs = case Clash.Prelude.findIndex (==a) vs of
   Just n -> fromIntegral (toInteger n)
   _      -> Clash.Prelude.length vs
 
+-- | Shorten type Q vector as much as possible.
 pruneQ :: Q -> Q
 pruneQ qs = case qs of
   Q16 vs -> case newLengthVP vs of
@@ -223,7 +214,7 @@ pruneQ qs = case qs of
     _   -> qs
   _ -> qs
 
---
+-- | Shorten type V vector of Q as much as possible.
 pruneV :: V -> V
 pruneV vvs = case vvs of
   --
@@ -263,25 +254,25 @@ pruneV vvs = case vvs of
     _  -> vvs
   --  
   V256 vs -> case newLengthC vs of
-    2  -> V2 (take d2 vs)
-    4  -> V4 (take d4 vs)
-    8  -> V8 (take d8 vs)
-    16 -> V16 (take d16 vs)
-    32 -> V32 (take d32 vs)
-    64 -> V64 (take d64 vs)
+    2   -> V2 (take d2 vs)
+    4   -> V4 (take d4 vs)
+    8   -> V8 (take d8 vs)
+    16  -> V16 (take d16 vs)
+    32  -> V32 (take d32 vs)
+    64  -> V64 (take d64 vs)
     128 -> V128 (take d128 vs)
-    _  -> vvs
+    _   -> vvs
   --  
   V512 vs -> case newLengthC vs of
-    2  -> V2 (take d2 vs)
-    4  -> V4 (take d4 vs)
-    8  -> V8 (take d8 vs)
-    16 -> V16 (take d16 vs)
-    32 -> V32 (take d32 vs)
-    64 -> V64 (take d64 vs)
+    2   -> V2 (take d2 vs)
+    4   -> V4 (take d4 vs)
+    8   -> V8 (take d8 vs)
+    16  -> V16 (take d16 vs)
+    32  -> V32 (take d32 vs)
+    64  -> V64 (take d64 vs)
     128 -> V128 (take d128 vs)
     256 -> V256 (take d256 vs)
-    _  -> vvs
+    _   -> vvs
   --  
   V1024 vs -> case newLengthC vs of
     2   -> V2 (take d2 vs)
@@ -382,6 +373,16 @@ pruneV vvs = case vvs of
     -- 32768 -> V32768 (take d32768 vs)
     _    -> vvs
   _ -> vvs
+
+
+
+
+
+
+
+
+
+
 
 
 
