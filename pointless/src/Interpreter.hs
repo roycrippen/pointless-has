@@ -33,7 +33,7 @@ data ValueP = Sym String
 data ValueP' = Sym' (Vec 16 Char)
              | NumP' Int
              | Chr' Char
-             | Str' (Vec 32 Char)
+             | Str' V
              | Quot' Q
              | EmptyQ
              deriving (Eq, Ord, Show)
@@ -252,6 +252,37 @@ pruneV vvs = case vvs of
     16 -> V16 (take d16 vs)
     32 -> V32 (take d32 vs)
     _  -> vvs
+  --  
+  V128 vs -> case newLengthC vs of
+    2  -> V2 (take d2 vs)
+    4  -> V4 (take d4 vs)
+    8  -> V8 (take d8 vs)
+    16 -> V16 (take d16 vs)
+    32 -> V32 (take d32 vs)
+    64 -> V64 (take d64 vs)
+    _  -> vvs
+  --  
+  V256 vs -> case newLengthC vs of
+    2  -> V2 (take d2 vs)
+    4  -> V4 (take d4 vs)
+    8  -> V8 (take d8 vs)
+    16 -> V16 (take d16 vs)
+    32 -> V32 (take d32 vs)
+    64 -> V64 (take d64 vs)
+    128 -> V128 (take d128 vs)
+    _  -> vvs
+  --  
+  V512 vs -> case newLengthC vs of
+    2  -> V2 (take d2 vs)
+    4  -> V4 (take d4 vs)
+    8  -> V8 (take d8 vs)
+    16 -> V16 (take d16 vs)
+    32 -> V32 (take d32 vs)
+    64 -> V64 (take d64 vs)
+    128 -> V128 (take d128 vs)
+    256 -> V256 (take d256 vs)
+    _  -> vvs
+  --  
   V1024 vs -> case newLengthC vs of
     2   -> V2 (take d2 vs)
     4   -> V4 (take d4 vs)

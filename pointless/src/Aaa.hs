@@ -15,7 +15,7 @@ import           Clash.Promoted.Nat.TH
 import           Control.Monad         (ap, liftM, void)
 import qualified Data.Char             as C (digitToInt)
 import qualified Data.List             as L (drop, foldl, head, last, length, repeat, reverse, take)
-import           Data.Maybe            (fromJust, isJust)
+import           Data.Maybe            (fromJust, isJust, isNothing)
 import           Data.String           ()
 import           Interpreter           (Q (..), V (..), ValueP' (..), lengthElem, pruneQ,
                                         pruneV)
@@ -92,7 +92,6 @@ item = Parser
       V2    v -> if p v then Nothing else Just (v !! zero, V2 (a v))
       _       -> Nothing
   )
---
 
 -- | Parse a fixed length string.
 -- | "abc" == <'a','b','c','~','~','~','~','~','~','~','~','~','~','~','~','~'>
@@ -115,38 +114,42 @@ string s = Parser
       _       -> Nothing
   )
 
+-- | Same as manyTillChar end character == end of string
 manyChar :: Parser Char -> Parser V
-manyChar p = Parser
-  ( \vs -> do
-    let vs' = pruneV vs
-        mapParser :: KnownNat n => Vec n Char -> Vec n Char
-        mapParser = map (parseChar p)
+manyChar p = manyTillChar p (char '~')
 
-        fCnt :: KnownNat n => Vec n Char -> Int
-        fCnt = lengthElem '~'
+-- manyChar :: Parser Char -> Parser V
+-- manyChar p = Parser
+--   ( \vs -> do
+--     let vs' = pruneV vs
+--         mapParser :: KnownNat n => Vec n Char -> Vec n Char
+--         mapParser = map (parseChar p)
 
-        res :: KnownNat n => Vec n Char -> Int -> Vec n Char
-        res v cnt = imap (\i x -> if fromIntegral i < cnt then x else '~') v
+--         fCnt :: KnownNat n => Vec n Char -> Int
+--         fCnt = lengthElem '~'
 
-        left :: KnownNat n => Vec n Char -> Vec n Char
-        left v = res (mapParser v) (fCnt (mapParser v))
+--         res :: KnownNat n => Vec n Char -> Int -> Vec n Char
+--         res v cnt = imap (\i x -> if fromIntegral i < cnt then x else '~') v
 
-        right :: KnownNat n => Vec n Char -> Vec n Char
-        right v = popN (fCnt (mapParser v)) '~' v
+--         left :: KnownNat n => Vec n Char -> Vec n Char
+--         left v = res (mapParser v) (fCnt (mapParser v))
 
-    case vs' of
-      V1024 v -> Just (pruneV $ V1024 (left v), pruneV $ V1024 (right v))
-      V512  v -> Just (pruneV $ V512 (left v), pruneV $ V512 (right v))
-      V256  v -> Just (pruneV $ V256 (left v), pruneV $ V256 (right v))
-      V128  v -> Just (pruneV $ V128 (left v), pruneV $ V128 (right v))
-      V64   v -> Just (pruneV $ V64 (left v), pruneV $ V64 (right v))
-      V32   v -> Just (pruneV $ V32 (left v), pruneV $ V32 (right v))
-      V16   v -> Just (pruneV $ V16 (left v), pruneV $ V16 (right v))
-      V8    v -> Just (pruneV $ V8 (left v), pruneV $ V8 (right v))
-      V4    v -> Just (pruneV $ V4 (left v), pruneV $ V4 (right v))
-      V2    v -> Just (pruneV $ V2 (left v), pruneV $ V2 (right v))
-      _       -> Nothing
-  )
+--         right :: KnownNat n => Vec n Char -> Vec n Char
+--         right v = popN (fCnt (mapParser v)) '~' v
+
+--     case vs' of
+--       V1024 v -> Just (pruneV $ V1024 (left v), pruneV $ V1024 (right v))
+--       V512  v -> Just (pruneV $ V512 (left v), pruneV $ V512 (right v))
+--       V256  v -> Just (pruneV $ V256 (left v), pruneV $ V256 (right v))
+--       V128  v -> Just (pruneV $ V128 (left v), pruneV $ V128 (right v))
+--       V64   v -> Just (pruneV $ V64 (left v), pruneV $ V64 (right v))
+--       V32   v -> Just (pruneV $ V32 (left v), pruneV $ V32 (right v))
+--       V16   v -> Just (pruneV $ V16 (left v), pruneV $ V16 (right v))
+--       V8    v -> Just (pruneV $ V8 (left v), pruneV $ V8 (right v))
+--       V4    v -> Just (pruneV $ V4 (left v), pruneV $ V4 (right v))
+--       V2    v -> Just (pruneV $ V2 (left v), pruneV $ V2 (right v))
+--       _       -> Nothing
+--   )
 
 many1Char :: Parser Char -> Parser V
 many1Char p = do
@@ -187,17 +190,6 @@ manyTillChar p end = Parser
       V2    v -> Just (pruneV $ V2 (left v), pruneV $ V2 (right v))
       _       -> Nothing
   )
-
-
--- manyTillChar :: Parser Char -> Parser Char -> Parser (Vec 64 Char)
--- manyTillChar p end = Parser
---   ( \vs -> do
---     let vs'  = map (parseChar p . repeat) vs
---         vs'' = map (\x -> if x == parseChar end (repeat x) then '~' else x) vs'
---         cnt  = lengthElem '~' vs''
---         res  = imap (\i x -> if fromIntegral i < cnt then x else '~') vs'
---     Just (res, popN cnt '~' vs)
---   )
 
 oneOf :: Vec 16 Char -> Parser Char
 oneOf cs = satisfies (`elem`cs)
@@ -357,138 +349,158 @@ endOfLine = newline <|> crlf
 anyChar :: Parser Char
 anyChar = satisfies (const True)
 
--- -- emptyQuot :: Parser (Vec 16 Char)
--- -- emptyQuot = string ('[' +>> ']' +>> blank16)
+escapeNewLine :: Parser Char
+escapeNewLine = do
+  b <- lookAhead (string ('\\' +>> '\n' +>> blank16))
+  if b
+    then do
+      _ <- char '\\'
+      char '\n'
+    else failure
 
--- escapeNewLine :: Parser Char
--- escapeNewLine = do
---   b <- lookAhead (string ('\\' +>> '\n' +>> blank16))
---   if b
---     then do
---       _ <- char '\\'
---       char '\n'
---     else failure
+nonEscape :: Parser Char
+nonEscape = noneOf ('\\' +>> '\"' +>> blank16)
 
--- nonEscape :: Parser Char
--- nonEscape = noneOf ('\\' +>> '\"' +>> blank16)
+quotedString :: Parser V
+quotedString = do
+  char '"'
+  s <- manyChar (escapeNewLine <|> nonEscape)
+  char '"'
+  return $ pruneV s
 
--- quotedString :: Parser (Vec 64 Char)
--- quotedString = do
---   char '"'
---   s <- manyChar (escapeNewLine <|> nonEscape)
---   char '"'
---   return s
+-- | Pointless specific parsers
+--
+numberP :: Parser ValueP'
+numberP = do
+  d <- numberInt
+  return (NumP' d)
 
--- -- | Pointless specific parsers
--- --
--- numberP :: Parser ValueP'
--- numberP = do
---   d <- numberInt
---   return (NumP' d)
+charP :: Parser ValueP'
+charP = do
+  _ <- char '\''
+  c <- newline <|> firstLetter
+  _ <- char '\''
+  return (Chr' c)
 
--- charP :: Parser ValueP'
--- charP = do
---   _ <- char '\''
---   c <- newline <|> firstLetter
---   _ <- char '\''
---   return (Chr' c)
+quotedStringP :: Parser ValueP'
+quotedStringP = do
+  str <- quotedString
+  case str of
+    V2    v -> return (Str' (V2 v))
+    V4    v -> return (Str' (V4 v))
+    V8    v -> return (Str' (V8 v))
+    V16   v -> return (Str' (V16 v))
+    V32   v -> return (Str' (V32 v))
+    V64   v -> return (Str' (V64 v))
+    V128  v -> return (Str' (V128 v))
+    V256  v -> return (Str' (V256 v))
+    V512  v -> return (Str' (V512 v))
+    V1024 v -> return (Str' (V1024 v))
+    _       -> failure
 
--- quotedStringP :: Parser ValueP'
--- quotedStringP = do
---   str <- quotedString
---   return (Str' (take d32 str))
+word :: Parser ValueP'
+word = do
+  c  <- firstLetter
+  cs <- manyChar wordLetter
+  case cs of
+    V2  v -> return (Sym' (c :> select d0 d1 d2 v ++ drop d3 blank16))
+    V4  v -> return (Sym' (c :> select d0 d1 d4 v ++ drop d5 blank16))
+    V8  v -> return (Sym' (c :> select d0 d1 d8 v ++ drop d9 blank16))
+    V16 v -> return (Sym' (select d0 d1 d16 (c +>> v)))
+    _     -> failure
 
--- word :: Parser ValueP'
--- word = do
---   c  <- firstLetter
---   cs <- manyChar wordLetter
---   return (Sym' (select d0 d1 d16 (c +>> cs)))
+lineComment :: Parser ()
+lineComment = char '$' >> manyTillChar anyChar newline >> spaces >> return ()
 
--- lineComment :: Parser ()
--- lineComment = char '$' >> manyTillChar anyChar newline >> spaces >> return ()
+blockComment :: Parser ()
+blockComment =
+  char '{' >> manyTillChar anyChar (char '}') >> char '}' >> spaces >> return ()
 
--- blockComment :: Parser ()
--- blockComment =
---   char '{' >> manyTillChar anyChar (char '}') >> char '}' >> spaces >> return ()
+comment :: Parser ()
+comment = lineComment <|> blockComment
 
--- comment :: Parser ()
--- comment = lineComment <|> blockComment
+manyEmpty :: Parser () -> Parser ()
+manyEmpty p = do
+  com <- lookAhead p
+  if com
+    then do
+      _ <- p
+      _ <- manyEmpty p
+      return ()
+    else return ()
 
--- manyEmpty :: Parser () -> Parser ()
--- manyEmpty p = do
---   com <- lookAhead p
---   if com
---     then do
---       _ <- p
---       _ <- manyEmpty p
---       return ()
---     else return ()
+comments :: Parser ()
+comments = manyEmpty comment
 
--- comments :: Parser ()
--- comments = manyEmpty comment
+specification :: Parser ()
+specification =
+  char '(' >> manyTillChar anyChar (char ')') >> char ')' >> spaces >> return ()
 
--- specification :: Parser ()
--- specification =
---   char '(' >> manyTillChar anyChar (char ')') >> char ')' >> spaces >> return ()
+specifications :: Parser ()
+specifications = manyEmpty specification
 
--- specifications :: Parser ()
--- specifications = manyEmpty specification
+spacesCommentsSpecifications :: Parser ()
+spacesCommentsSpecifications = spaces >> comments >> specifications >> comments
 
--- spacesCommentsSpecifications :: Parser ()
--- spacesCommentsSpecifications = spaces >> comments >> specifications >> comments
+-- |parsers to get inline test from inside {}
+lineComments :: Parser ()
+lineComments = manyEmpty lineComment
 
--- -- |parsers to get inline test from inside {}
--- lineComments :: Parser ()
--- lineComments = manyEmpty lineComment
+spacesLineCommentsSpecifications :: Parser ()
+spacesLineCommentsSpecifications =
+  spaces >> lineComments >> specifications >> lineComments
+--
+parseValueP :: Parser ValueP' -> V -> ValueP'
+parseValueP p vs = case parse p vs of
+  Just (p, _) -> p
+  Nothing     -> EmptyQ
 
--- spacesLineCommentsSpecifications :: Parser ()
--- spacesLineCommentsSpecifications =
---   spaces >> lineComments >> specifications >> lineComments
--- --
--- parseValueP :: Parser ValueP' -> Vec 64 Char -> ValueP'
--- parseValueP p vs = case parse p vs of
---   Just (p, _) -> p
---   Nothing     -> EmptyQ
+manyQ :: Parser ValueP' -> Parser Q
+manyQ p = Parser
+  ( \vs -> case parseValueP p vs of
+    EmptyQ -> Nothing
+    _      -> Just (mP p vs)
+  )
 
--- manyQ :: Parser ValueP' -> Parser Q
--- manyQ p = Parser
---   ( \vs -> case parseValueP p vs of
---     EmptyQ -> Nothing
---     _      -> Just (mP p vs)
---   )
+mP :: Parser ValueP' -> V -> (Q, V)
+mP p_ vs_ = (pruneQ (Q1024 resQ'), resS)
+ where
+  (resQ, resS) = go p_ vs_ (repeat EmptyQ :: Vec 1024 ValueP')
+  cnt          = foldl (\acc v -> if v == EmptyQ then acc + 1 else acc) 0 resQ
+  resQ'        = rotateLeft resQ cnt
+  go p vs qs = case parseValueP p vs of
+    EmptyQ -> (qs, vs)
+    _      -> do
+      let (vp, vs') = fromJust $ parse p vs
+      go p vs' (qs <<+ vp)
+--
+emptyQuot :: Parser ValueP'
+emptyQuot = do
+  l <- char '['
+  r <- char ']'
+  return (Quot' (Q2 (Chr' l :> Chr' r :> Nil)))
 
--- mP :: Parser ValueP' -> Vec 64 Char -> (Q, Vec 64 Char)
--- mP p_ vs_ = (pruneQ (Q1024 resQ'), resS)
---  where
---   (resQ, resS) = go p_ vs_ (repeat EmptyQ :: Vec 1024 ValueP')
---   cnt          = foldl (\acc v -> if v == EmptyQ then acc + 1 else acc) 0 resQ
---   resQ'        = rotateLeft resQ cnt
---   go p vs qs = case parseValueP p vs of
---     EmptyQ -> (qs, vs)
---     _      -> do
---       let (vp, vs') = fromJust $ parse p vs
---       go p vs' (qs <<+ vp)
+instruction :: Parser ValueP'
+instruction = do
+  _   <- spacesCommentsSpecifications
+  -- res <- numberP <|> charP <|> quotedStringP <|> emptyQuot <|> word 
+  res <-
+    numberP <|> charP <|> quotedStringP <|> emptyQuot <|> quotation <|> word
+  _ <- spacesCommentsSpecifications
+  return res
 
+nakedQuotations :: Parser Q
+nakedQuotations = manyQ instruction
 
--- instruction :: Parser ValueP'
--- instruction = do
---   _   <- spacesCommentsSpecifications
---   res <- numberP <|> charP <|> quotedStringP <|> quotation <|> word
---   _   <- spacesCommentsSpecifications
---   return res
-
--- nakedQuotations :: Parser Q
--- nakedQuotations = manyQ instruction
-
--- quotation :: Parser ValueP'
--- quotation = do
---   _ <- char '['
---   _ <- spaces
---   q <- nakedQuotations
---   -- traceM $ "\nq: " ++ show q
---   _ <- spaces
---   _ <- char ']'
---   return (Quot' q)
+quotation :: Parser ValueP'
+quotation = do
+  _ <- char '['
+  _ <- spaces
+  q <- nakedQuotations
+  -- traceM $ "\nq: " ++ show q
+  _ <- spaces
+  _ <- char ']'
+  return (Quot' q)
 
 -- -- nonTest :: Parser ()
 -- -- nonTest = do
@@ -580,11 +592,21 @@ vecToString vs = do
 -- | Pretty print a (show (Vec n Char))
 showVec :: String -> String
 showVec s = if L.length s > 1 && L.head s == '<' && L.last s == '>'
-  then filter (\c -> c /= ',' && c /= '\'' && c /= '~') $ show s
-  else case L.take 3 s of
-    "Sym" -> "Sym' " P.++ showVec (L.drop 5 s)
-    "Str" -> "Str' " P.++ showVec (L.drop 5 s)
-    _     -> s
+  then filter (\c -> c /= '\'' && c /= '~') $ show s
+  else case L.take 4 s of
+    "Sym'" -> "Sym' " P.++ showVec (L.drop 5 s)
+    "Str'" -> "Str' " P.++ showVec (L.drop 5 s)
+    "Q2 <" -> "Q2 " P.++ showVec (L.drop 3 s) P.++ ", "
+    "Q4 <" -> "Q4 " P.++ showVec (L.drop 3 s) P.++ ", "
+    "Q8 <" -> "Q8 " P.++ showVec (L.drop 3 s) P.++ ", "
+    "Q16 " -> "Q16 " P.++ showVec (L.drop 4 s) P.++ ", "
+    "Q32 " -> "Q32 " P.++ showVec (L.drop 4 s) P.++ ", "
+    "Q64 " -> "Q64 " P.++ showVec (L.drop 4 s) P.++ ", "
+    "Q128" -> "Q128 " P.++ showVec (L.drop 5 s) P.++ ", "
+    "Q256" -> "Q256 " P.++ showVec (L.drop 5 s) P.++ ", "
+    "Q512" -> "Q512 " P.++ showVec (L.drop 5 s) P.++ ", "
+    "1024" -> "Q1024 " P.++ showVec (L.drop 6 s) P.++ ", "
+    _      -> s
 
 -- | Petty print a parse result
 showParse :: Show a => Maybe (a, V) -> String
@@ -623,8 +645,8 @@ loadStr s = pruneV $ V65536 (go s' blank65536)
 padStrN :: Int -> String -> String
 padStrN n s = s P.++ P.replicate (n - L.length s) '~'
 
--- blank16 :: Vec 16 Char
--- blank16 = repeat '~'
+blank16 :: Vec 16 Char
+blank16 = repeat '~'
 
 blank64 :: Vec 64 Char
 blank64 = repeat '~'
@@ -635,18 +657,22 @@ blank1024 = repeat '~'
 blank65536 :: Vec 65536 Char
 blank65536 = repeat '~'
 
--- -- (qs, _) = fromJust $ parse nakedQuotations  (loadStr64 d64 "[10 20 +] dup exec swap exec + [10 20 +] dup exec swap exec +")
+-- xs' = parse nakedQuotations  (loadStr "[10 20 +] dup exec swap exec + [10 20 +] dup exec swap exec +")
+-- ss' = showParse xs'
 
 -- -- | Parser tests.
 -- -- |
+
+p001Src :: V
+p001Src =
+  loadStr
+    "\"p001\" [ 1 n from-to-list [ [3 is-div-by] [5 is-div-by] cleave or ] filter sum ] define"
 
 aaa :: IO ()
 aaa = do
   putStrLn "Pointless in Clash tests\n"
   putStrLn ""
   parserTests
-
-  putStrLn $ show $ parse item (loadStr "abcl")
 
 parserTests :: IO ()
 parserTests = do
@@ -658,7 +684,7 @@ parserTests = do
   putStrLn $ ",  result = " P.++ showParse s1
 
   let s2 = parse (string $ loadStr64 d16 "abc") (loadStr "abc   123")
-      r2 = "(\"<abc>\", \"   123\")"
+      r2 = "(\"<a,b,c,,,,,,,,,,,,,>\", \"   123\")"
   putStr $ "parse string:            " P.++ show (r2 == showParse s2)
   putStrLn $ ",  result = " P.++ showParse s2
 
@@ -737,164 +763,103 @@ parserTests = do
   putStr $ "parse manyTillChar:      " P.++ show (r17 == showParse s17)
   putStrLn $ ",  result = " P.++ showParse s17
 
---   let s18 = parse quotedString (loadStr64 d64 "\"hello world\" 123")
---       r18 = "(\"<hello world>\", \" 123\")"
---   putStr $ "parse quotedString:      " P.++ show (r18 == showParse s18)
---   putStrLn $ ",  result = " P.++ r18
-
---   let s19 = parse firstLetter (loadStr64 d64 "abc")
---       r19 = "('a', \"bc\")"
---   putStr $ "parse firstLetter:       " P.++ show (r19 == showParse s19)
---   putStrLn $ ",  result = " P.++ r19
-
---   let s20 = parse firstLetter (loadStr64 d64 "_abc")
---       r20 = "('_', \"abc\")"
---   putStr $ "parse firstLetter:       " P.++ show (r20 == showParse s20)
---   putStrLn $ ",  result = " P.++ r20
-
---   let s21 = parse charP (loadStr64 d64 "'z' abc")
---       r21 = "(Chr' 'z', \" abc\")"
---   putStr $ "parse charP:             " P.++ show (r21 == showParse s21)
---   putStrLn $ ",  result = " P.++ r21
-
---   let s22 = parse charP (loadStr64 d64 "abc")
---       r22 = "Nothing"
---   putStr $ "parse charP:             " P.++ show (r22 == showParse s22)
---   putStrLn $ ",  result = " P.++ r22
-
---   let s23 = parse numberP (loadStr64 d64 "123 abc")
---       r23 = "(NumP' 123, \" abc\")"
---   putStr $ "parse numberP:           " P.++ show (r23 == showParse s23)
---   putStrLn $ ",  result = " P.++ r23
-
---   let s24 = parse numberP (loadStr64 d64 "-123 abc")
---       r24 = "(NumP' (-123), \" abc\")"
---   putStr $ "parse numberP:           " P.++ show (r24 == showParse s24)
---   putStrLn $ ",  result = " P.++ r24
-
---   let s25 = parse numberP (loadStr64 d64 "abc")
---       r25 = "Nothing"
---   putStr $ "parse numberP:           " P.++ show (r25 == showParse s25)
---   putStrLn $ ",  result = " P.++ r25
-
---   let s26 = parse quotedStringP (loadStr64 d64 "\"abc\" 123")
---       r26 = "(Str' \"<abc>\", \" 123\")"
---   putStr $ "parse quotedStringP:     " P.++ show (r26 == showParse s26)
---   putStrLn $ ",  result = " P.++ r26
-
---   let s27 = parse word (loadStr64 d64 "dup +")
---       r27 = "(Sym' \"<dup>\", \" +\")"
---   putStr $ "parse word:              " P.++ show (r27 == showParse s27)
---   putStrLn $ ",  result = " P.++ r27
-
---   let s28 = parse lineComment (loadStr64 d64 "$ zzz \n dup")
---       r28 = "((), \"dup\")"
---   putStr $ "parse lineComment:       " P.++ show (r28 == showParse s28)
---   putStrLn $ ",  result = " P.++ r28
-
---   let s29 = parse blockComment (loadStr64 d64 "{ zzz } dup")
---       r29 = "((), \"dup\")"
---   putStr $ "parse blockComment:      " P.++ show (r29 == showParse s29)
---   putStrLn $ ",  result = " P.++ r29
-
---   let s30 = parse comment (loadStr64 d64 "$ zzz \n dup")
---       r30 = "((), \"dup\")"
---   putStr $ "parse comment:           " P.++ show (r30 == showParse s30)
---   putStrLn $ ",  result = " P.++ r30
-
---   let s31 = parse comment (loadStr64 d64 "{ zzz } dup")
---       r31 = "((), \"dup\")"
---   putStr $ "parse comment:           " P.++ show (r31 == showParse s31)
---   putStrLn $ ",  result = " P.++ r31
-
---   let s32 = parse comments (loadStr64 d64 "$ a \n {z} {z} dup")
---       r32 = "((), \"dup\")"
---   putStr $ "parse comments:          " P.++ show (r32 == showParse s32)
---   putStrLn $ ",  result = " P.++ r32
-
---   let s33 = parse specification (loadStr64 d64 "( X -> -- ) a")
---       r33 = "((), \"a\")"
---   putStr $ "parse specification:     " P.++ show (r33 == showParse s33)
---   putStrLn $ ",  result = " P.++ r33
-
---   let s34 = parse specifications (loadStr64 d64 "(a) (b) a")
---       r34 = "((), \"a\")"
---   putStr $ "parse specifications:    " P.++ show (r34 == showParse s34)
---   putStrLn $ ",  result = " P.++ r34
-
---   let s35 = parse spacesCommentsSpecifications (loadStr64 d64 " {a} (b) a")
---       r35 = "((), \"a\")"
---   putStr $ "parse spacesCommentsSpecifications: " P.++ show
---     (r35 == showParse s35)
---   putStrLn $ ",  result = " P.++ r35
-
---   let xs =
---         NumP' 1
---           :> Chr' 'a'
---           :> Sym' (loadStr64 d16 "pop")
---           :> Str' (loadStr64 d32 "hello world")
---           :> EmptyQ
---           :> EmptyQ
---           :> EmptyQ
---           :> EmptyQ
---           :> EmptyQ
---           :> Nil
---   putStrLn $ show xs
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  let
+    s18 = parse quotedString (loadStr "\"hello world\" 123")
+    r18
+      = "(V16 <'h','e','l','l','o',' ','w','o','r','l','d','~','~','~','~','~'>, \" 123\")"
+  putStr $ "parse quotedString:      " P.++ show (r18 == showParse s18)
+  putStrLn $ ",  result = " P.++ showParse s18
+
+  let s19 = parse firstLetter (loadStr "abc")
+      r19 = "('a', \"bc\")"
+  putStr $ "parse firstLetter:       " P.++ show (r19 == showParse s19)
+  putStrLn $ ",  result = " P.++ showParse s19
+
+  let s20 = parse firstLetter (loadStr "_abc")
+      r20 = "('_', \"abc\")"
+  putStr $ "parse firstLetter:       " P.++ show (r20 == showParse s20)
+  putStrLn $ ",  result = " P.++ showParse s20
+
+  let s21 = parse charP (loadStr "'z' abc")
+      r21 = "(Chr' 'z', \" abc\")"
+  putStr $ "parse charP:             " P.++ show (r21 == showParse s21)
+  putStrLn $ ",  result = " P.++ showParse s21
+
+  let s22 = parse charP (loadStr "abc")
+      r22 = "Nothing"
+  putStr $ "parse charP:             " P.++ show (r22 == showParse s22)
+  putStrLn $ ",  result = " P.++ showParse s22
+
+  let s23 = parse numberP (loadStr "123 abc")
+      r23 = "(NumP' 123, \" abc\")"
+  putStr $ "parse numberP:           " P.++ show (r23 == showParse s23)
+  putStrLn $ ",  result = " P.++ showParse s23
+
+  let s24 = parse numberP (loadStr "-123 abc")
+      r24 = "(NumP' (-123), \" abc\")"
+  putStr $ "parse numberP:           " P.++ show (r24 == showParse s24)
+  putStrLn $ ",  result = " P.++ showParse s24
+
+  let s25 = parse numberP (loadStr "abc")
+      r25 = "Nothing"
+  putStr $ "parse numberP:           " P.++ show (r25 == showParse s25)
+  putStrLn $ ",  result = " P.++ showParse s25
+
+  let s26 = parse quotedStringP (loadStr "\"abc\" 123")
+      r26 = "(Str' (V4 <'a','b','c','~'>), \" 123\")"
+  putStr $ "parse quotedStringP:     " P.++ show (r26 == showParse s26)
+  putStrLn $ ",  result = " P.++ showParse s26
+
+  let s27 = parse word (loadStr "dup +")
+      r27 = "(Sym' \"<d,u,p,,,,,,,,,,,,,>\", \" +\")"
+  putStr $ "parse word:              " P.++ show (r27 == showParse s27)
+  putStrLn $ ",  result = " P.++ showParse s27
+
+  let s28 = parse lineComment (loadStr "$ zzz \n dup")
+      r28 = "((), \"dup\")"
+  putStr $ "parse lineComment:       " P.++ show (r28 == showParse s28)
+  putStrLn $ ",  result = " P.++ showParse s28
+
+  let s29 = parse blockComment (loadStr "{ zzz } dup")
+      r29 = "((), \"dup\")"
+  putStr $ "parse blockComment:      " P.++ show (r29 == showParse s29)
+  putStrLn $ ",  result = " P.++ showParse s29
+
+  let s30 = parse comment (loadStr "$ zzz \n dup")
+      r30 = "((), \"dup\")"
+  putStr $ "parse comment:           " P.++ show (r30 == showParse s30)
+  putStrLn $ ",  result = " P.++ showParse s30
+
+  let s31 = parse comment (loadStr "{ zzz } dup")
+      r31 = "((), \"dup\")"
+  putStr $ "parse comment:           " P.++ show (r31 == showParse s31)
+  putStrLn $ ",  result = " P.++ showParse s31
+
+  let s32 = parse comments (loadStr "$ a \n {z} {z} dup")
+      r32 = "((), \"dup\")"
+  putStr $ "parse comments:          " P.++ show (r32 == showParse s32)
+  putStrLn $ ",  result = " P.++ showParse s32
+
+  let s33 = parse specification (loadStr "( X -> -- ) a")
+      r33 = "((), \"a\")"
+  putStr $ "parse specification:     " P.++ show (r33 == showParse s33)
+  putStrLn $ ",  result = " P.++ showParse s33
+
+  let s34 = parse specifications (loadStr "(a) (b) a")
+      r34 = "((), \"a\")"
+  putStr $ "parse specifications:    " P.++ show (r34 == showParse s34)
+  putStrLn $ ",  result = " P.++ showParse s34
+
+  let s35 = parse spacesCommentsSpecifications (loadStr " {a} (b) a")
+      r35 = "((), \"a\")"
+  putStr $ "parse spacesCommentsSpecifications: " P.++ show
+    (r35 == showParse s35)
+  putStrLn $ ",  result = " P.++ showParse s35
+
+  let s36        = parse nakedQuotations p001Src
+      (Q4 vs, _) = fromJust s36
+  putStr $ "parse nakedQuotations:    " P.++ show (length vs == 4)
+  putStrLn $ ",  result = " P.++ showParse s36
 
 
 
