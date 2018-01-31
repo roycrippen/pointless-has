@@ -130,7 +130,7 @@ parserTests = do
   putStrLn $ ",  result = " P.++ showParse s20
 
   let s21 = parse charP (loadStr "'z' abc")
-      r21 = "(Chr' 'z', \" abc\")"
+      r21 = "(Chr 'z', \" abc\")"
   putStr $ "parse charP:             " P.++ show (r21 == showParse s21)
   putStrLn $ ",  result = " P.++ showParse s21
 
@@ -155,12 +155,12 @@ parserTests = do
   putStrLn $ ",  result = " P.++ showParse s25
 
   let s26 = parse quotedStringP (loadStr "\"abc\" 123")
-      r26 = "(Str' (V4 <'a','b','c','~'>), \" 123\")"
+      r26 = "(Str (V4 <'a','b','c','~'>), \" 123\")"
   putStr $ "parse quotedStringP:     " P.++ show (r26 == showParse s26)
   putStrLn $ ",  result = " P.++ showParse s26
 
   let s27 = parse word (loadStr "dup +")
-      r27 = "(Sym' \"<d,u,p,,,,,,,,,,,,,>\", \" +\")"
+      r27 = "(Sym \"<d,u,p,,,,,,,,,,,,,>\", \" +\")"
   putStr $ "parse word:              " P.++ show (r27 == showParse s27)
   putStrLn $ ",  result = " P.++ showParse s27
 
@@ -209,6 +209,8 @@ parserTests = do
       (Q4 vs, _) = fromJust s36
   putStr $ "parse nakedQuotations:    " P.++ show (length vs == 4)
   putStrLn $ ",  result = " P.++ showParse s36
+
+
 
 
 

@@ -38,8 +38,8 @@ showVec :: String -> String
 showVec s = if L.length s > 1 && L.head s == '<' && L.last s == '>'
   then filter (\c -> c /= '\'' && c /= '~') $ show s
   else case L.take 4 s of
-    "Sym'" -> "Sym' " P.++ showVec (L.drop 5 s)
-    "Str'" -> "Str' " P.++ showVec (L.drop 5 s)
+    "Sym " -> "Sym " P.++ showVec (L.drop 4 s)
+    "Str " -> "Str " P.++ showVec (L.drop 4 s)
     "Q2 <" -> "Q2 " P.++ showVec (L.drop 3 s) P.++ ", "
     "Q4 <" -> "Q4 " P.++ showVec (L.drop 3 s) P.++ ", "
     "Q8 <" -> "Q8 " P.++ showVec (L.drop 3 s) P.++ ", "

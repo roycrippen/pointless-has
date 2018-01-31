@@ -10,5 +10,6 @@ stack install --resolver=lts-9.21 clash-ghc-0.7.2
 # set path to ghc-8.0.2, must be early in $PATH
 PATH=$HOME/.stack/programs/x86_64-linux/ghc-8.0.2/bin:$PATH
 
-
-
+# build docs and create hoogle db
+stack build --haddock
+stack hoogle
