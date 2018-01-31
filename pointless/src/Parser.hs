@@ -68,17 +68,22 @@ item = Parser
         p x = x !! zero == '~'
         a x = x <<+ '~'
     case vs' of
-      V1024 v -> if p v then Nothing else Just (v !! zero, V1024 (a v))
-      V512  v -> if p v then Nothing else Just (v !! zero, V512 (a v))
-      V256  v -> if p v then Nothing else Just (v !! zero, V256 (a v))
-      V128  v -> if p v then Nothing else Just (v !! zero, V128 (a v))
-      V64   v -> if p v then Nothing else Just (v !! zero, V64 (a v))
-      V32   v -> if p v then Nothing else Just (v !! zero, V32 (a v))
-      V16   v -> if p v then Nothing else Just (v !! zero, V16 (a v))
-      V8    v -> if p v then Nothing else Just (v !! zero, V8 (a v))
-      V4    v -> if p v then Nothing else Just (v !! zero, V4 (a v))
-      V2    v -> if p v then Nothing else Just (v !! zero, V2 (a v))
-      _       -> Nothing
+      V65536 v -> if p v then Nothing else Just (v !! zero, V65536 (a v))
+      V32768 v -> if p v then Nothing else Just (v !! zero, V32768 (a v))
+      V16384 v -> if p v then Nothing else Just (v !! zero, V16384 (a v))
+      V8192  v -> if p v then Nothing else Just (v !! zero, V8192 (a v))
+      V4096  v -> if p v then Nothing else Just (v !! zero, V4096 (a v))
+      V2048  v -> if p v then Nothing else Just (v !! zero, V2048 (a v))
+      V1024  v -> if p v then Nothing else Just (v !! zero, V1024 (a v))
+      V512   v -> if p v then Nothing else Just (v !! zero, V512 (a v))
+      V256   v -> if p v then Nothing else Just (v !! zero, V256 (a v))
+      V128   v -> if p v then Nothing else Just (v !! zero, V128 (a v))
+      V64    v -> if p v then Nothing else Just (v !! zero, V64 (a v))
+      V32    v -> if p v then Nothing else Just (v !! zero, V32 (a v))
+      V16    v -> if p v then Nothing else Just (v !! zero, V16 (a v))
+      V8     v -> if p v then Nothing else Just (v !! zero, V8 (a v))
+      V4     v -> if p v then Nothing else Just (v !! zero, V4 (a v))
+      V2     v -> if p v then Nothing else Just (v !! zero, V2 (a v))
   )
 
 -- | String s matches.
@@ -92,14 +97,20 @@ string s = Parser
         f :: KnownNat n => Vec n Char -> Vec n Char
         f = popN (lengthElem '~' s) '~'
     case vs' of
-      V1024 v -> if p v then Nothing else Just (s, pruneV $ V1024 (f v))
-      V512  v -> if p v then Nothing else Just (s, pruneV $ V512 (f v))
-      V256  v -> if p v then Nothing else Just (s, pruneV $ V256 (f v))
-      V128  v -> if p v then Nothing else Just (s, pruneV $ V128 (f v))
-      V64   v -> if p v then Nothing else Just (s, pruneV $ V64 (f v))
-      V32   v -> if p v then Nothing else Just (s, pruneV $ V32 (f v))
-      V16   v -> if p v then Nothing else Just (s, pruneV $ V16 (f v))
-      _       -> Nothing
+      V65536 v -> if p v then Nothing else Just (s, pruneV $ V65536 (f v))
+      V32768 v -> if p v then Nothing else Just (s, pruneV $ V32768 (f v))
+      V16384 v -> if p v then Nothing else Just (s, pruneV $ V16384 (f v))
+      V8192  v -> if p v then Nothing else Just (s, pruneV $ V8192 (f v))
+      V4096  v -> if p v then Nothing else Just (s, pruneV $ V4096 (f v))
+      V2048  v -> if p v then Nothing else Just (s, pruneV $ V2048 (f v))
+      V1024  v -> if p v then Nothing else Just (s, pruneV $ V1024 (f v))
+      V512   v -> if p v then Nothing else Just (s, pruneV $ V512 (f v))
+      V256   v -> if p v then Nothing else Just (s, pruneV $ V256 (f v))
+      V128   v -> if p v then Nothing else Just (s, pruneV $ V128 (f v))
+      V64    v -> if p v then Nothing else Just (s, pruneV $ V64 (f v))
+      V32    v -> if p v then Nothing else Just (s, pruneV $ V32 (f v))
+      V16    v -> if p v then Nothing else Just (s, pruneV $ V16 (f v))
+      _        -> Nothing
   )
 
 -- | Parse many characters matching p.
@@ -136,17 +147,22 @@ manyTillChar p end = Parser
       right v = popN (fCnt (mapParser v)) '~' v
 
     case vs' of
-      V1024 v -> Just (pruneV $ V1024 (left v), pruneV $ V1024 (right v))
-      V512  v -> Just (pruneV $ V512 (left v), pruneV $ V512 (right v))
-      V256  v -> Just (pruneV $ V256 (left v), pruneV $ V256 (right v))
-      V128  v -> Just (pruneV $ V128 (left v), pruneV $ V128 (right v))
-      V64   v -> Just (pruneV $ V64 (left v), pruneV $ V64 (right v))
-      V32   v -> Just (pruneV $ V32 (left v), pruneV $ V32 (right v))
-      V16   v -> Just (pruneV $ V16 (left v), pruneV $ V16 (right v))
-      V8    v -> Just (pruneV $ V8 (left v), pruneV $ V8 (right v))
-      V4    v -> Just (pruneV $ V4 (left v), pruneV $ V4 (right v))
-      V2    v -> Just (pruneV $ V2 (left v), pruneV $ V2 (right v))
-      _       -> Nothing
+      V65536 v -> Just (pruneV $ V65536 (left v), pruneV $ V65536 (right v))
+      V32768 v -> Just (pruneV $ V32768 (left v), pruneV $ V32768 (right v))
+      V16384 v -> Just (pruneV $ V16384 (left v), pruneV $ V16384 (right v))
+      V8192  v -> Just (pruneV $ V8192 (left v), pruneV $ V8192 (right v))
+      V4096  v -> Just (pruneV $ V4096 (left v), pruneV $ V4096 (right v))
+      V2048  v -> Just (pruneV $ V2048 (left v), pruneV $ V2048 (right v))
+      V1024  v -> Just (pruneV $ V1024 (left v), pruneV $ V1024 (right v))
+      V512   v -> Just (pruneV $ V512 (left v), pruneV $ V512 (right v))
+      V256   v -> Just (pruneV $ V256 (left v), pruneV $ V256 (right v))
+      V128   v -> Just (pruneV $ V128 (left v), pruneV $ V128 (right v))
+      V64    v -> Just (pruneV $ V64 (left v), pruneV $ V64 (right v))
+      V32    v -> Just (pruneV $ V32 (left v), pruneV $ V32 (right v))
+      V16    v -> Just (pruneV $ V16 (left v), pruneV $ V16 (right v))
+      V8     v -> Just (pruneV $ V8 (left v), pruneV $ V8 (right v))
+      V4     v -> Just (pruneV $ V4 (left v), pruneV $ V4 (right v))
+      V2     v -> Just (pruneV $ V2 (left v), pruneV $ V2 (right v))
   )
 
 oneOf :: Vec 16 Char -> Parser Char
@@ -262,15 +278,24 @@ firstLetter :: Parser Char
 firstLetter = letter <|> oneOf symbols
  where
   symbols =
-    '!'
+    '+'
+      :> '-'
+      :> '*'
+      :> '/'
+      :> '<'
+      :> '>'
+      :> '='
+      :> '!'
       :> '?'
+      :> '$'
       :> '%'
       :> '&'
       :> '@'
       :> '´'
+      :> '\''
       :> '_'
       :> Nil
-      ++ (repeat '~' :: Vec 9 Char)
+
 
 wordLetter :: Parser Char
 wordLetter = firstLetter <|> digit
@@ -411,7 +436,7 @@ mP p_ vs_ = (pruneQ (Q1024 resQ'), resS)
     _      -> do
       let (vp, vs') = fromJust $ parse p vs
       go p vs' (qs <<+ vp)
---
+
 emptyQuot :: Parser ValueP
 emptyQuot = do
   _ <- char '['
@@ -515,6 +540,9 @@ blank1024 = repeat '~'
 -- | Create empty string of length 65536
 blank65536 :: Vec 65536 Char
 blank65536 = repeat '~'
+
+
+
 
 
 

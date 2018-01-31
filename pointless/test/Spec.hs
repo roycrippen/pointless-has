@@ -8,13 +8,13 @@ module Main where
 
 import qualified Data.Char as C (digitToInt)
 import qualified Data.List as L (drop, foldl, head, last, length, repeat, reverse, take)
-import qualified Prelude as P (replicate, (++))
+import qualified Prelude as P (replicate, (++), readFile, splitAt)
 
 import Clash.Prelude
 import Control.Monad (ap, liftM, void)
 import Data.Maybe (fromJust, isJust, isNothing)
 import Data.String ()
-import Interpreter (Q (..), V (..), ValueP (..), lengthElem, pruneQ, pruneV)
+import Interpreter 
 import Parser
 
 
@@ -97,8 +97,20 @@ padStrN n s = s P.++ P.replicate (n - L.length s) '~'
 -- -- | Parser tests.
 -- -- |
 
-xs :: Vec 4 Char
-xs = '1' :> '2' :> '3' :> '~' :> Nil
+replaceStr :: String -> String -> String -> String
+replaceStr _   _   []  = []
+replaceStr old new str = go str
+ where
+  go [] = []
+  go str'@(x:xs) =
+    let (prefix, rest) = P.splitAt n str'
+    in  if old == prefix then new P.++ go rest else x : go xs
+  n = L.length old
+
+longV :: Vec 16384 Char
+longV = $(listToVecTH longSrc) ++ (repeat '~' :: Vec 3272 Char)
+
+-- replaceStr "\\n" "\n" src)) ++ (repeat '~' :: Vec 2582 Char
 
 p001Src :: V
 p001Src =
@@ -110,6 +122,10 @@ main = do
   putStrLn "Pointless in Clash tests\n"
   putStrLn ""
   parserTests
+
+  putStrLn "\n\n\n"
+  putStrLn $ showParse $ parse nakedQuotations
+                               (loadStr (replaceStr "\\n" "\n" longSrc))
 
 parserTests :: IO ()
 parserTests = do
@@ -297,13 +313,6 @@ parserTests = do
       (Q4 vs, _) = fromJust s36
   putStr $ "parse nakedQuotations:    " P.++ show (length vs == 4)
   putStrLn $ ",  result = " P.++ showParse s36
-
-
-
-
-
-
-
 
 
 

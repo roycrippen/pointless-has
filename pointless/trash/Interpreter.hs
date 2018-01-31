@@ -63,7 +63,7 @@ data V = V2     (Vec 2     Char)
        | V2048  (Vec 2048  Char)
        | V4096  (Vec 4096  Char)
        | V8192  (Vec 8192  Char)
-       | V16383 (Vec 16383 Char)
+       | V16384 (Vec 16384 Char)
        | V32768 (Vec 32768 Char)
        | V65536 (Vec 65536 Char)
        deriving (Eq, Ord, Show)
@@ -333,7 +333,7 @@ pruneV vvs = case vvs of
     -- 2048 -> V2048 (take d2048 vs)
     -- 4096 -> V4096 (take d4096 vs)
     _    -> vvs
-  V16383 vs -> case newLengthC vs of
+  V16384 vs -> case newLengthC vs of
     2    -> V2 (take d2 vs)
     4    -> V4 (take d4 vs)
     8    -> V8 (take d8 vs)
@@ -362,7 +362,7 @@ pruneV vvs = case vvs of
     -- 2048  -> V2048 (take d2048 vs)
     -- 4096  -> V4096 (take d4096 vs)
     -- 8192  -> V8192 (take d8192 vs)
-    -- 16383 -> V16383 (take d16383 vs)
+    -- 16384 -> V16384 (take d16384 vs)
     _    -> vvs
   V65536 vs -> case newLengthC vs of
     2    -> V2 (take d2 vs)
@@ -378,7 +378,7 @@ pruneV vvs = case vvs of
     -- 2048  -> V2048 (take d2048 vs)
     -- 4096  -> V4096 (take d4096 vs)
     -- 8192  -> V8192 (take d8192 vs)
-    -- 16383 -> V16383 (take d16383 vs)
+    -- 16384 -> V16384 (take d16384 vs)
     -- 32768 -> V32768 (take d32768 vs)
     _    -> vvs
   _ -> vvs
