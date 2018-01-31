@@ -6,7 +6,7 @@ module Parser where
 import qualified Data.Char as C (digitToInt)
 import qualified Prelude   as P ()
 
-import Clash.Prelude hiding ((<|>))
+import CLaSH.Prelude hiding ((<|>))
 import Control.Monad (ap, liftM, void)
 import Data.Maybe    (fromJust, isJust, isNothing)
 import Interpreter   (Q (..), V (..), ValueP (..), lengthElem, pruneQ, pruneV)

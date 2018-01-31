@@ -16,6 +16,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Interpreter
                      , Parser
+                     , NonHW
                      , Primitives
                      , SocketServer
                      , Repl
@@ -49,6 +50,7 @@ test-suite pointless-test
   other-modules:      Interpreter
                      , Parser
                      , Primitives
+                     , NonHW
                      , SocketServer
                      , Repl
   build-depends:       base

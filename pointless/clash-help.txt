@@ -1,10 +1,14 @@
-stack exec --resolver=nightly-2017-08-15 -- clash --interactive Aaa.hs
+# load a file in clashi
+stack exec --resolver=lts-9.21 -- clash --interactive test/Spec.hs
+
+# start clashi
+stack exec --resolver=lts-9.21 -- clash --interactive 
+
+# install clash 0.7.2
+stack install --resolver=lts-9.21 clash-ghc-0.7.2
+
+# set path to ghc-8.0.2, must be early in $PATH
+PATH=$HOME/.stack/programs/x86_64-linux/ghc-8.0.2/bin:$PATH
 
 
-# install latest clash
-git clone https://github.com/clash-lang/clash-compiler.git
-cd clash-compiler
-# remove empty directory
-rmdir clash-prelude    
-git clone https://github.com/clash-lang/clash-prelude.git
-stack install
+
