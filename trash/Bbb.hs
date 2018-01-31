@@ -135,7 +135,7 @@ spaces = void (manyChar (satisfies isSpace))
 digit :: Parser Char
 digit = satisfies isDigit
  where
-  isDigit c = isJust (findIndex (==c) digits)
+  isDigit c = isJust (elemIndex c digits)
   digits =
     '0' :> '1' :> '2' :> '3' :> '4' :> '5' :> '6' :> '7' :> '8' :> '9' :> Nil
 
@@ -158,7 +158,7 @@ numberInt = do
 
 
 letter :: Parser Char
-letter = satisfies isAlpha where isAlpha c = isJust (findIndex (==c) letters)
+letter = satisfies isAlpha where isAlpha c = isJust (elemIndex c letters)
 
 azLower :: Vec 26 Char
 azLower =
@@ -457,7 +457,7 @@ dropN cnt c vs = dropN (cnt - 1) c (vs <<+ c)
 
 -- | Count non '~' consecutive charaters starting a Vector
 lengthElem :: (Eq a, KnownNat n) => a -> Vec n a -> Int
-lengthElem a vs = case findIndex (==a) vs of
+lengthElem a vs = case elemIndex a vs of
   Just n -> fromIntegral (toInteger n)
   _      -> length vs
 

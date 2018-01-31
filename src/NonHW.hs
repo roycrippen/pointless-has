@@ -101,5 +101,3 @@ replaceStr old new str = go str
 
 longV :: Vec 16384 Char
 longV = $(listToVecTH longSrc) ++ (repeat '~' :: Vec 3272 Char)
-
--- replaceStr "\\n" "\n" src 

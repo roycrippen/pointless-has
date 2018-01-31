@@ -192,7 +192,7 @@ spaces = void (manyChar (satisfies isSpace))
 digit :: Parser Char
 digit = satisfies isDigit
  where
-  isDigit c = isJust (findIndex (==c) digits)
+  isDigit c = isJust (elemIndex c digits)
   digits =
     '0' :> '1' :> '2' :> '3' :> '4' :> '5' :> '6' :> '7' :> '8' :> '9' :> Nil
 
@@ -209,7 +209,7 @@ numberInt = do
     _     -> failure
 
 letter :: Parser Char
-letter = satisfies isAlpha where isAlpha c = isJust (findIndex (==c) letters)
+letter = satisfies isAlpha where isAlpha c = isJust (elemIndex c letters)
 
 azLower :: Vec 26 Char
 azLower =
@@ -426,9 +426,9 @@ manyQ p = Parser
   )
 
 mP :: Parser ValueP -> V -> (Q, V)
-mP p_ vs_ = (pruneQ (Q1024 resQ'), resS)
+mP p_ vs_ = (pruneQ (Q64 resQ'), resS)
  where
-  (resQ, resS) = go p_ vs_ (repeat EmptyQ :: Vec 1024 ValueP)
+  (resQ, resS) = go p_ vs_ (repeat EmptyQ :: Vec 64 ValueP)
   cnt          = foldl (\acc v -> if v == EmptyQ then acc + 1 else acc) 0 resQ
   resQ'        = rotateLeft resQ cnt
   go p vs qs = case parseValueP p vs of
@@ -499,7 +499,7 @@ quotation = do
 -- | Compare two vector strings.
 -- | <a,b,c,~...> == <a,b,c,d...>
 isStrMatch :: Vec 16 Char -> Vec 16 Char -> Bool
-isStrMatch xs vs = foldl (&&) True zipped
+isStrMatch xs vs = fold (&&) zipped
   where zipped = zipWith (\x v -> x == v || x == '~') xs vs
 
 -- | Get the character by applying parser p or '~' if Nothing.

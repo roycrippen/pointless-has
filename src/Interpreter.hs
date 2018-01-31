@@ -183,7 +183,7 @@ newLengthC vs = case lengthElem '~' vs of
 
 -- | Count non '~' consecutive charaters starting a Vector.
 lengthElem :: (Eq a, KnownNat n) => a -> Vec n a -> Int
-lengthElem a vs = case CLaSH.Prelude.findIndex (==a) vs of
+lengthElem a vs = case CLaSH.Prelude.elemIndex a vs of
   Just n -> fromIntegral (toInteger n)
   _      -> CLaSH.Prelude.length vs
 
