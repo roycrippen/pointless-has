@@ -1,16 +1,12 @@
-resolver: nightly-2017-08-15
+resolver:  lts-9.21
 
 packages:
-- pointless
-- clash-compiler/clash-prelude
-- clash-compiler/clash-lib
-- clash-compiler/clash-ghc
-- clash-compiler/testsuite
+- '.'
 
 extra-deps:
-- ghc-tcplugins-extra-0.2.1
-- ghc-typelits-extra-0.2.3
-- ghc-typelits-knownnat-0.3
-- ghc-typelits-natnormalise-0.5.3
-- uu-interleaved-0.2.0.0
-- uu-parsinglib-2.9.1.1
+- clash-prelude-0.11.2
+- clash-lib-0.7.1
+- clash-ghc-0.7.2
+- clash-systemverilog-0.7.2
+- clash-verilog-0.7.2
+- clash-vhdl-0.7.2
