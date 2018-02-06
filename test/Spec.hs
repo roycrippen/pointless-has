@@ -2,7 +2,7 @@
 {-# LANGUAGE GADTs               #-}
 {-# LANGUAGE TypeOperators       #-}
 
--- stack exec --resolver=nightly-2017-08-15 -- clash --interactive pointless/test/Spec.hs
+-- stack exec --resolver=lts-9.14 -- clash --interactive test/Spec.hs
 
 import CLaSH.Prelude
 -- import Control.Monad (ap, liftM, void)
@@ -209,6 +209,8 @@ parserTests = do
       (Q4 vs, _) = fromJust s36
   putStr $ "parse nakedQuotations:    " P.++ show (length vs == 4)
   putStrLn $ ",  result = " P.++ showParse s36
+
+
 
 
 
