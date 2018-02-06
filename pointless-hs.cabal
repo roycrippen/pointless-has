@@ -11,7 +11,6 @@ category:            Language
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
-data-files:          data/*.joy
 
 library
   hs-source-dirs:      src
@@ -47,13 +46,6 @@ test-suite pointless-hs-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  other-modules:      Interpreter
-                     , Parser
-                     , PointlessParser
-                     , Primitives
-                     , Core
-                     , SocketServer
-                     , Repl
   build-depends:       base
                      , containers
                      , text
