@@ -2,13 +2,23 @@ module PointlessParser where
 
 -- import           Debug.Trace
 import           Interpreter
-import           Parser      (Parser, anyChar, char, firstLetter, many, manyTill, newline,
-                              numberDouble, quotedString, spaces, string, wordLetter, (<|>))
+import           Parser                                   ( Parser
+                                                          , anyChar
+                                                          , char
+                                                          , firstLetter
+                                                          , many
+                                                          , manyTill
+                                                          , newline
+                                                          , numberDouble
+                                                          , quotedString
+                                                          , spaces
+                                                          , string
+                                                          , wordLetter
+                                                          , (<|>)
+                                                          )
 
 numberP :: Parser ValueP
-numberP = do
-  d <- numberDouble
-  return (NumP d)
+numberP = NumP <$> numberDouble
 
 charP :: Parser ValueP
 charP = do
@@ -18,9 +28,7 @@ charP = do
   return (Chr c)
 
 quotedStringP :: Parser ValueP
-quotedStringP = do
-  str <- quotedString
-  return (Str str)
+quotedStringP = Str <$> quotedString
 
 word :: Parser ValueP
 word = do

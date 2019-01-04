@@ -1,9 +1,12 @@
 module Parser where
 
-import           Control.Applicative (pure)
-import           Control.Monad       (ap, liftM, void)
-import           Data.List           (find)
-import           Data.Maybe          (isJust)
+import           Control.Applicative                      ( pure )
+import           Control.Monad                            ( ap
+                                                          , liftM
+                                                          , void
+                                                          )
+import           Data.List                                ( find )
+import           Data.Maybe                               ( isJust )
 -- import           Debug.Trace
 
 newtype Parser a = Parser (String -> [(a, String)])
@@ -19,15 +22,15 @@ instance Applicative Parser where
   (<*>) = ap
 
 instance Monad Parser where
-   return a = Parser (\s -> [(a,s)])
-   p >>= f = Parser (concatMap (\ (a, s') -> parse (f a) s') . parse p)
+  return a = Parser (\s -> [(a, s)])
+  p >>= f = Parser (concatMap (\(a, s') -> parse (f a) s') . parse p)
 
 item :: Parser Char
 item = Parser item'
  where
   item' s = case s of
-    ""     -> []
-    (c:cs) -> [(c, cs)]
+    ""       -> []
+    (c : cs) -> [(c, cs)]
 
 class Monad m => MonadPlus m where
   mzero :: m a
@@ -39,9 +42,9 @@ instance MonadPlus Parser where
 
 option :: Parser a -> Parser a -> Parser a
 option p q = Parser
-  ( \s -> case parse (mplus p q) s of
-    []    -> []
-    (x:_) -> [x]
+  (\s -> case parse (mplus p q) s of
+    []      -> []
+    (x : _) -> [x]
   )
 
 (<|>) :: Parser a -> Parser a -> Parser a
@@ -54,8 +57,8 @@ char :: Char -> Parser Char
 char c = satisfies (c ==)
 
 string :: String -> Parser String
-string ""     = return ""
-string (c:cs) = do
+string ""       = return ""
+string (c : cs) = do
   _ <- char c
   _ <- string cs
   return (c : cs)
@@ -76,7 +79,7 @@ sepBy1 :: Parser a -> Parser b -> Parser [a]
 p `sepBy1` sep = do
   a  <- p
   as <- many
-    ( do
+    (do
       _ <- sep
       p
     )
@@ -91,7 +94,7 @@ p `chainl1` op = do
   rest a
  where
   rest a =
-    ( do
+    (do
         f <- op
         b <- p
         rest (f a b)
@@ -128,7 +131,7 @@ manyTill1 p end = do
 
 lookAhead :: Parser a -> Parser Bool
 lookAhead p = Parser
-  ( \s -> case parse p s of
+  (\s -> case parse p s of
     [] -> [(False, s)]
     _  -> [(True, s)]
   )
